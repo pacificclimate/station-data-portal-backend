@@ -1,0 +1,6 @@
+/.pytest_cache
+/sdpb.egg-info
+/venv
+
+# IDEs
+/.idea
