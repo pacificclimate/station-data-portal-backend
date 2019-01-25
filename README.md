@@ -144,6 +144,8 @@ Response:
     "id": String,
     "uri": String,
     "native_id": String,
+    "min_obs_time": String,
+    "max_obs_time": String,
     "network_uri": String,  // unique identifier
     // histories should be sorted by sdate/edate
     // history[0] will, at least initially, be the supplier of all this info;

@@ -14,9 +14,9 @@ def station_collection_item_rep(station):
     return {
         'id': station.id,
         'uri': station_uri(station),
+        'native_id': station.native_id,
         'min_obs_time': station.min_obs_time,
         'max_obs_time': station.max_obs_time,
-        'native_id': station.native_id,
         'network_uri': network_uri(station.network),
         'histories': [history_rep(history) for history in station.histories]
     }

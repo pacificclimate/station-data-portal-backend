@@ -1,3 +1,8 @@
+# Enable helper functions to be imported
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), 'helpers'))
+
 import datetime
 
 from pytest import fixture
@@ -153,7 +158,7 @@ def tst_stations(tst_networks):
     """Stations"""
     network = tst_networks[0]
     return [
-        make_tst_station(label, network) for label in ['P', 'Q']
+        make_tst_station(label, network) for label in ['S1', 'S2']
     ]
 
 @fixture(scope='function')
@@ -179,5 +184,36 @@ def make_tst_history(label, station):
         station=station,
     )
 
+@fixture(scope='function')
+def tst_histories(tst_stations):
+    """Histories"""
+    station = tst_stations[0]
+    return [
+        make_tst_history(label, station) for label in ['P', 'Q']
+    ]
 
 
+# Observations
+
+def make_tst_observation(label, history, variable):
+    return Obs(
+        datum=99,
+        history=history,
+        variable=variable,
+    )
+
+
+@fixture(scope='function')
+def tst_observations(tst_histories, tst_variables):
+    """Observations"""
+    history = tst_histories[0]
+    variable = tst_variables[0]
+    return [
+        make_tst_observation(label, history, variable) for label in ['one', 'two']
+    ]
+
+
+@fixture(scope='function')
+def observation_session(session, tst_observations):
+    session.add_all(tst_observations)
+    yield session

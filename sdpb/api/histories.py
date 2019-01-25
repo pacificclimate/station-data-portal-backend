@@ -4,11 +4,7 @@ from sdpb.api.variables import variable_uri
 def history_rep(history):
     """Return representation of a history"""
 
-    variables = {
-        variable
-        for observation in history.observations
-        for variable in observation.variables
-    }
+    variables = {obs.variable for obs in history.observations}
 
     return {
         'id': history.id,
