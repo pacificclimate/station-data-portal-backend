@@ -1,10 +1,10 @@
 from pycds import Network, Variable, Station
 from sdpb.api.networks import \
     network_uri, network_collection_item_rep, network_collection_rep, \
-    get_network_collection_rep
+    get_network_collection_rep, get_network_item_rep
 from sdpb.api.variables import \
     variable_uri, variable_collection_item_rep, variable_collection_rep, \
-    get_variable_collection_rep
+    get_variable_collection_rep, get_variable_item_rep
 from sdpb.api.stations import \
     station_uri, station_collection_item_rep, station_collection_rep, \
     get_station_collection_rep
@@ -38,6 +38,19 @@ def test_network_collection(network_session, tst_networks):
     ]
 
 
+def test_network_item(network_session, tst_networks):
+    for nw in tst_networks:
+        result = get_network_item_rep(network_session, nw.id)
+        assert result ==         {
+            'id': nw.id,
+            'name': nw.name,
+            'long_name': nw.long_name,
+            'virtual': nw.virtual,
+            'color': nw.color,
+            'uri': network_uri(nw),
+        }
+
+
 # Variables
 
 def test_variable_uri():
@@ -54,6 +67,7 @@ def test_variable_collection(variable_session, tst_variables):
     assert results == [
         {
             'id': var.id,
+            'uri': variable_uri(var),
             'name': var.name,
             'display_name': var.display_name,
             'short_name': var.short_name,
@@ -61,11 +75,27 @@ def test_variable_collection(variable_session, tst_variables):
             'cell_method': var.cell_method,
             'unit': var.unit,
             'precision': var.precision,
-            'uri': variable_uri(var),
             'network_uri': network_uri(var.network),
         }
         for var in tst_variables
     ]
+
+
+def test_variable_item(variable_session, tst_variables):
+    for var in tst_variables:
+        result = get_variable_item_rep(variable_session, var.id)
+        assert result ==         {
+            'id': var.id,
+            'uri': variable_uri(var),
+            'name': var.name,
+            'display_name': var.display_name,
+            'short_name': var.short_name,
+            'standard_name': var.standard_name,
+            'cell_method': var.cell_method,
+            'unit': var.unit,
+            'precision': var.precision,
+            'network_uri': network_uri(var.network),
+        }
 
 
 # Stations

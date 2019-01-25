@@ -111,6 +111,7 @@ def tst_networks():
 @fixture(scope='function')
 def network_session(session, tst_networks):
     session.add_all(tst_networks)
+    session.flush()
     yield session
 
 
@@ -140,6 +141,7 @@ def tst_variables(tst_networks):
 @fixture(scope='function')
 def variable_session(session, tst_variables):
     session.add_all(tst_variables)
+    session.flush()
     yield session
 
 
@@ -164,6 +166,7 @@ def tst_stations(tst_networks):
 @fixture(scope='function')
 def station_session(session, tst_stations):
     session.add_all(tst_stations)
+    session.flush()
     yield session
 
 
@@ -216,4 +219,5 @@ def tst_observations(tst_histories, tst_variables):
 @fixture(scope='function')
 def observation_session(session, tst_observations):
     session.add_all(tst_observations)
+    session.flush()
     yield session

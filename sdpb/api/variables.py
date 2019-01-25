@@ -6,10 +6,8 @@ def variable_uri(variable):
     return '/variables/{}'.format(variable.id)
 
 
-def variable_collection_item_rep(variable):
-    """Return representation of a variable collection item.
-    May conceivably be different than representation of a single a variable item.
-    """
+def variable_rep(variable):
+    """Return representation of a single variable item."""
     return {
         'id': variable.id,
         'uri': variable_uri(variable),
@@ -24,11 +22,24 @@ def variable_collection_item_rep(variable):
     }
 
 
-def variable_collection_rep(networks):
-    return [variable_collection_item_rep(network) for network in networks]
+def get_variable_item_rep(session, id=None):
+    assert id is not None
+    variable = session.query(Variable).filter_by(id=id).one()
+    return variable_rep(variable)
+
+
+def variable_collection_item_rep(variable):
+    """Return representation of a variable collection item.
+    May conceivably be different than representation of a single a variable item.
+    """
+    return variable_rep(variable)
+
+
+def variable_collection_rep(variables):
+    return [variable_collection_item_rep(variable) for variable in variables]
 
 
 def get_variable_collection_rep(session):
     """Get variables from database, and return their representation."""
-    variables = session.query(Variable)
-    return variable_collection_rep(variables.all())
+    variables = session.query(Variable).order_by(Variable.id.asc()).all()
+    return variable_collection_rep(variables)

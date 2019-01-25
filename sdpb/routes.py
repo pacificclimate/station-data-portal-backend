@@ -18,6 +18,10 @@ def add_routes(app):
         '/<any(networks, variables, stations):collection>',
         methods=['GET']
     )
+    @app.route(
+        '/<any(networks, variables, stations):collection>/<int:id>',
+        methods=['GET']
+    )
     def dispatch(**kwargs):
         return sdpb.api.dispatch(db.session, **kwargs)
     # dispatch = partial(sdpb.api.dispatch, db.session)  # rats, this doesn't work
