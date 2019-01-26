@@ -37,5 +37,6 @@ def network_collection_rep(networks):
 
 def get_network_collection_rep(session):
     """Get networks from database, and return their representation."""
+    print('### get_network_collection_rep')
     networks = session.query(Network).order_by(Network.id.asc()).all()
     return network_collection_rep(networks)

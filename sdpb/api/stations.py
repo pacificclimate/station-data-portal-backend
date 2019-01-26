@@ -1,6 +1,7 @@
 from pycds import Station
 from sdpb.api.networks import network_uri
 from sdpb.api.histories import history_rep
+from sdpb.util import date_rep
 
 
 def station_uri(station):
@@ -14,8 +15,8 @@ def station_rep(station):
         'id': station.id,
         'uri': station_uri(station),
         'native_id': station.native_id,
-        'min_obs_time': station.min_obs_time,
-        'max_obs_time': station.max_obs_time,
+        'min_obs_time': date_rep(station.min_obs_time),
+        'max_obs_time': date_rep(station.max_obs_time),
         'network_uri': network_uri(station.network),
         'histories': [history_rep(history) for history in station.histories]
     }

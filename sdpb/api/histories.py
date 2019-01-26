@@ -1,4 +1,5 @@
 from sdpb.api.variables import variable_uri
+from sdpb.util import date_rep
 
 
 def history_rep(history):
@@ -9,11 +10,11 @@ def history_rep(history):
     return {
         'id': history.id,
         'station_name': history.station_name,
-        'lon': history.lon,
-        'lat': history.lat,
-        'elevation': history.elevation,
-        'sdate': history.sdate,
-        'edate': history.edate,
+        'lon': float(history.lon),
+        'lat': float(history.lat),
+        'elevation': float(history.elevation),
+        'sdate': date_rep(history.sdate),
+        'edate': date_rep(history.edate),
         'tz_offset': history.tz_offset,
         'province': history.province,
         'country': history.country,

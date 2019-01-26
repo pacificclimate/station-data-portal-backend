@@ -9,6 +9,7 @@ from sdpb.api.stations import \
     station_uri, station_collection_item_rep, station_collection_rep, \
     get_station_collection_rep
 
+from sdpb.util import date_rep
 from helpers import omit
 
 
@@ -119,8 +120,8 @@ def test_station_collection(observation_session, tst_stations):
                    'id': stn.id,
                    'uri': station_uri(stn),
                    'native_id': stn.native_id,
-                   'min_obs_time': stn.min_obs_time,
-                   'max_obs_time': stn.max_obs_time,
+                   'min_obs_time': date_rep(stn.min_obs_time),
+                   'max_obs_time': date_rep(stn.max_obs_time),
                    'network_uri': network_uri(stn.network),
                }
         for (r_hx, stn_hx) in zip(r['histories'], stn.histories):
@@ -131,8 +132,8 @@ def test_station_collection(observation_session, tst_stations):
                        'lon': stn_hx.lon,
                        'lat': stn_hx.lat,
                        'elevation': stn_hx.elevation,
-                       'sdate': stn_hx.sdate,
-                       'edate': stn_hx.edate,
+                       'sdate': date_rep(stn_hx.sdate),
+                       'edate': date_rep(stn_hx.edate),
                        'tz_offset': stn_hx.tz_offset,
                        'province': stn_hx.province,
                        'country': stn_hx.country,
