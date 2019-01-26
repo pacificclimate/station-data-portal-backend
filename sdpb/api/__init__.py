@@ -4,6 +4,9 @@ from sdpb.api.variables import \
     get_variable_item_rep, get_variable_collection_rep
 from sdpb.api.stations import \
     get_station_collection_rep, get_station_item_rep
+from sdpb.api.histories import \
+    get_history_collection_rep, get_history_item_rep
+
 from werkzeug.wrappers import BaseResponse as Response
 from flask import abort
 # from flask import Response
@@ -15,11 +18,13 @@ methods = {
         'networks': get_network_item_rep,
         'variables': get_variable_item_rep,
         'stations': get_station_item_rep,
+        'histories': get_history_item_rep,
     },
     'collections': {
         'networks': get_network_collection_rep,
         'variables': get_variable_collection_rep,
         'stations': get_station_collection_rep,
+        'histories': get_history_collection_rep,
     },
 }
 

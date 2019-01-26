@@ -15,11 +15,11 @@ def add_routes(app):
     db = SQLAlchemy(app)
 
     @app.route(
-        '/<any(networks, variables, stations):collection>',
+        '/<any(networks, variables, stations, histories):collection>',
         methods=['GET']
     )
     @app.route(
-        '/<any(networks, variables, stations):collection>/<int:id>',
+        '/<any(networks, variables, stations, histories):collection>/<int:id>',
         methods=['GET']
     )
     def dispatch(**kwargs):
