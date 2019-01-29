@@ -6,22 +6,19 @@ def add_routes(app):
     # app.url_map.converters['valid_year'] = ValidYearConverter
     # app.url_map.converters['int_month'] = MonthConverter
 
-    def components(collection):
-        """Helper for setting up routes"""
-        return {
-            'collection': '<any({}):collection>'.format(collection),
-        }
-
     db = SQLAlchemy(app)
 
+    # TODO: Break this up into separate dispatchers for collections, items, etc.
     @app.route(
         '/<any(networks, variables, stations, histories):collection>',
         methods=['GET']
     )
+    def dispatch_collection(**kwargs):
+        return sdpb.api.dispatch_collection(db.session, **kwargs)
+
     @app.route(
         '/<any(networks, variables, stations, histories):collection>/<int:id>',
         methods=['GET']
     )
-    def dispatch(**kwargs):
-        return sdpb.api.dispatch(db.session, **kwargs)
-    # dispatch = partial(sdpb.api.dispatch, db.session)  # rats, this doesn't work
+    def dispatch_collection_item(**kwargs):
+        return sdpb.api.dispatch_collection_item(db.session, **kwargs)
