@@ -1,9 +1,11 @@
+import time
 import logging
 import sys
+from itertools import groupby
 from flask.logging import default_handler
 from pycds import History, VarsPerHistory, Variable
 from sdpb.api.variables import variable_uri
-from sdpb.util import date_rep
+from sdpb.util import date_rep, get_all_vars_by_hx
 
 
 logger = logging.getLogger(__name__)
@@ -42,14 +44,20 @@ def history_collection_item_rep(history, variables):
     return history_rep(history, variables)
 
 
-def history_collection_rep(histories, all_variables):
+def history_collection_rep(histories, all_vars_by_hx):
     """Return representation of historys collection. """
 
     def variables_for(history):
         """Return those variables connected with a specific history."""
-        # TODO: Optimize this? E.g., currently all_variables is sorted by history_id
-        return [variable for variable in all_variables
-            if variable.history_id == history.id]
+        start_time = time.time()
+        # result = [variable for variable in all_variables if
+        #        variable.history_id == history.id]
+        result = all_vars_by_hx[history.id]
+        logger.debug(
+            'variables_for({}) elapsed time: {}'
+                .format(history.id, time.time() - start_time)
+        )
+        return result
 
     return [history_collection_item_rep(history, variables_for(history))
             for history in histories]
@@ -85,17 +93,6 @@ def get_history_collection_rep(session):
         .limit(1000)
         .all()
     )
-    logger.debug('get vars')
-    all_variables = (
-        session.query(
-            VarsPerHistory.history_id.label('history_id'),
-            VarsPerHistory.vars_id.label('id'),
-        )
-        .order_by(
-            VarsPerHistory.history_id.asc(),
-            VarsPerHistory.vars_id.asc(),
-        )
-        .all()
-    )
-    logger.debug('data retrieved')
-    return history_collection_rep(histories, all_variables)
+    logger.debug('histories retrieved')
+    all_vars_by_hx = get_all_vars_by_hx(session)
+    return history_collection_rep(histories, all_vars_by_hx)
