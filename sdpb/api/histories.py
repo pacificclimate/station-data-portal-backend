@@ -99,7 +99,6 @@ def get_history_collection_rep(session):
     histories = (
         session.query(History)
         .order_by(History.id.asc())
-        .limit(1000)
         .all()
     )
     logger.debug('histories retrieved')
