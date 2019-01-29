@@ -48,10 +48,6 @@ def get_all_histories_by_station(session):
         'get_all_histories_by_station: all_histories elapsed time: {}'
             .format(time.time() - start_time)
     )
-    # logger.debug('len(all_histories) = {}'.format(len(all_histories)))
-    # print('\n### all_histories')
-    # for hx in all_histories[:5]:
-    #     print('id: {id}, station_id: {station_id}'.format(**hx.__dict__))
 
     start_time = time.time()
     result = {
@@ -63,9 +59,6 @@ def get_all_histories_by_station(session):
         'get_all_histories_by_station: grouping elapsed time: {}'
             .format(time.time() - start_time)
     )
-    # print('hoo boy', result)
-    # for station_id, histories in result.items():
-    #     print(station_id, list(histories))
 
     return result
 
