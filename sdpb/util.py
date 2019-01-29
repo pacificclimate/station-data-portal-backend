@@ -28,15 +28,16 @@ def float_rep(x):
     return float(x) if x != None else None
 
 
-def set_logger_level():
+def set_logger_level_from_qp(a_logger):
+    """Set logger level from query parameter `debug`."""
     if request.args.get('debug'):
-        logger.setLevel(logging.DEBUG)
+        a_logger.setLevel(logging.DEBUG)
 
 
 # TODO: Move these into a different util module
 
 def get_all_histories_by_station(session):
-    set_logger_level()
+    set_logger_level_from_qp(logger)
     start_time = time.time()
     all_histories = (
         session.query(History)
@@ -70,7 +71,7 @@ def get_all_histories_by_station(session):
 
 
 def get_all_vars_by_hx(session):
-    set_logger_level()
+    set_logger_level_from_qp(logger)
     start_time = time.time()
     all_variables = (
         session.query(
