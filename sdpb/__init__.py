@@ -10,6 +10,7 @@ def get_app(config_override={}):
     app.config['SQLALCHEMY_DATABASE_URI'] = \
         os.getenv('PCDS_DSN', 'postgresql://httpd@db3.pcic.uvic.ca/crmp')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    # app.config['SQLALCHEMY_ECHO'] = True
     app.config.update(config_override)
     add_routes(app)
     return app
