@@ -15,6 +15,8 @@ from flask import abort
 import json
 
 
+# TODO: flask.url_for !!!!
+
 methods = {
     'collections': {
         'networks': get_network_collection_rep,

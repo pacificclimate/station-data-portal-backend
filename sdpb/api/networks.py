@@ -1,8 +1,9 @@
+from flask import url_for
 from pycds import Network
 
 
 def network_uri(network):
-    return '/networks/{}'.format(network.id)
+    return url_for('dispatch_collection_item', collection='networks', id=network.id)
 
 
 def network_rep(network):

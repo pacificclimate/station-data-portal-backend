@@ -1,5 +1,6 @@
 import time
 import logging
+from flask import url_for
 from flask.logging import default_handler
 from pycds import History, VarsPerHistory, Variable
 from sdpb.api.variables import variable_uri
@@ -12,7 +13,7 @@ logger.setLevel(logging.INFO)
 
 
 def history_uri(history):
-    return '/histories/{}'.format(history.id)
+    return url_for('dispatch_collection_item', collection='histories', id=history.id)
 
 
 def history_rep(history, variables):

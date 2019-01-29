@@ -1,9 +1,10 @@
+from flask import url_for
 from pycds import Variable
 from sdpb.api.networks import network_uri
 
 
 def variable_uri(variable):
-    return '/variables/{}'.format(variable.id)
+    return url_for('dispatch_collection_item', collection='variables', id=variable.id)
 
 
 def variable_rep(variable):

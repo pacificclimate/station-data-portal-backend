@@ -1,6 +1,6 @@
 import time
 import logging
-from flask import request
+from flask import request, url_for
 from flask.logging import default_handler
 from pycds import Station, History
 from sdpb.api.networks import network_uri
@@ -17,7 +17,7 @@ logger.setLevel(logging.INFO)
 
 def station_uri(station):
     """Return uri for a station"""
-    return '/stations/{}'.format(station.id)
+    return url_for('dispatch_collection_item', collection='stations', id=station.id)
 
 
 def station_rep(station, histories, all_vars_by_hx):
