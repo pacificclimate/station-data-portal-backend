@@ -14,13 +14,14 @@ def network_rep(network):
         'name': network.name,
         'long_name': network.long_name,
         'virtual': network.virtual,
+        'publish': network.publish,
         'color': network.color,
     }
 
 
 def get_network_item_rep(session, id=None):
     assert id is not None
-    network = session.query(Network).filter_by(id=id).one()
+    network = session.query(Network).filter_by(id=id, publish=True).one()
     return network_rep(network)
 
 
@@ -38,6 +39,10 @@ def network_collection_rep(networks):
 
 def get_network_collection_rep(session):
     """Get networks from database, and return their representation."""
-    print('### get_network_collection_rep')
-    networks = session.query(Network).order_by(Network.id.asc()).all()
+    networks = (
+        session.query(Network)
+        .filter_by(publish=True)
+        .order_by(Network.id.asc())
+        .all()
+    )
     return network_collection_rep(networks)
