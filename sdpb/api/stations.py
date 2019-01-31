@@ -98,6 +98,9 @@ def get_station_collection_rep(session):
         session.query(Station)
          .order_by(Station.id.asc())
     )
+    stride = int(request.args.get('stride', 0))
+    if stride:
+        q = q.filter(Station.id % stride == 0)
     limit = request.args.get('limit', None)
     if limit:
         q = q.limit(limit)
