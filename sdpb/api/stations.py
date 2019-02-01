@@ -2,7 +2,7 @@ import time
 import logging
 from flask import request, url_for
 from flask.logging import default_handler
-from pycds import Station, History
+from pycds import Network, Station, History
 from sdpb.api.networks import network_uri
 from sdpb.api.histories import history_collection_rep, history_rep
 from sdpb.util import \
@@ -39,7 +39,13 @@ def get_station_item_rep(session, id=None):
     set_logger_level_from_qp(logger)
     assert id is not None
     logger.debug('get station')
-    station = session.query(Station).filter_by(id=id).one()
+    station = (
+        session.query(Station)
+        .select_from(Station)
+        .join(Network, Station.network_id == Network.id)
+        .filter(Station.id==id, Network.publish==True)
+        .one()
+    )
     logger.debug('station retrieved')
     histories = (
         session.query(History)
@@ -96,7 +102,10 @@ def get_station_collection_rep(session):
 
     q = (
         session.query(Station)
-         .order_by(Station.id.asc())
+        .select_from(Station)
+        .join(Network, Station.network_id == Network.id)
+        .filter(Network.publish==True)
+        .order_by(Station.id.asc())
     )
     stride = int(request.args.get('stride', 0))
     if stride:
