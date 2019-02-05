@@ -1,3 +1,4 @@
+from flask import request, url_for
 from flask_sqlalchemy import SQLAlchemy
 import sdpb.api
 
@@ -19,3 +20,10 @@ def add_routes(app):
     )
     def dispatch_collection_item(collection, id):
         return sdpb.api.dispatch_collection_item(db.session, collection, id)
+
+    @app.route(
+        '/observations/counts',
+        methods=['GET']
+    )
+    def observation_counts():
+        return sdpb.api.observation_counts(db.session)

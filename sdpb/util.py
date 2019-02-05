@@ -1,3 +1,4 @@
+import dateutil.parser
 import time
 import logging
 from flask import request
@@ -26,6 +27,12 @@ def date_rep(date):
 
 def float_rep(x):
     return float(x) if x != None else None
+
+
+def parse_date(s):
+    if s is None:
+        return None
+    return dateutil.parser.parse(s)
 
 
 def set_logger_level_from_qp(a_logger):

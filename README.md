@@ -25,6 +25,18 @@ $ source venv/bin/activate
 (venv)$ pip install -r test_requirements.txt
 ```
 
+## Run the service
+
+To run a dev server locally:
+
+```bash
+source venv/bin/activate
+export FLASK_APP=sdpb.wsgi
+FLASK_ENV=development
+flask run
+```
+
+
 ## API design
 
 We follow RESTful design principles in this microservice.
