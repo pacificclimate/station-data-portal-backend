@@ -32,7 +32,7 @@ To run a dev server locally:
 ```bash
 source venv/bin/activate
 export FLASK_APP=sdpb.wsgi
-FLASK_ENV=development
+export FLASK_ENV=development
 flask run
 ```
 
@@ -59,8 +59,9 @@ referred to by a single key in the station representation.
 Information about the network must be obtained by using the key to 
 find the related data from the networks collection.
 
-* A relational keys is the `uri` value for the related object.
-This policy is subject to review.
+* Relational keys are the `uri` value for the related object.
+This policy is subject to review. In fact, it should be changed to
+`id` if only to improve efficiency.
 
 
 ## API
