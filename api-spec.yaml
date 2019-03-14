@@ -1,0 +1,130 @@
+openapi: '3.0.2'
+
+
+info:
+  title: Station Data Portal API
+  description: Get information from from a PCDS/CRMP database. Includes networks, variables, stations, histories.
+  version: '0.1'
+
+
+servers:
+  - url: localhost:0.0.0.0
+    description: Local dev server
+  - url: https://services.pacificclimate.org/station-data-portal
+    description: Production server
+
+
+tags:
+  - name: Networks
+    description: |
+      A network groups together a set of stations. Typically a network is
+      owned or managed by a single organization or entity.
+
+
+paths:
+
+  # Networks
+
+  /networks:
+    get:
+      summary: List all published networks.
+      description: Get a list of short-form descriptions of all published networks.
+      tags:
+        - Networks
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkList'
+
+  /networks/{id}:
+    get:
+      summary: Get description of a network
+      description: Get long-form description of a network
+      tags:
+        - Networks
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Unique id of resource
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Network'
+
+
+components:
+  responses:
+    404NotFound:
+      description: The specified resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: '404'
+            message: Resource not found
+
+  schemas:
+
+    # Response schemas
+
+    ErrorResponse:
+      description: Generic error response body
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+        - code
+        - message
+      example:
+        code: '404'
+        message: Message giving details of problem
+
+    # Networks
+
+    Network:
+      type: object
+      properties:
+        id:
+          description: Unique internal id of network
+          type: string
+        uri:
+          description: URI for this network resource
+          type: string
+        name:
+          description: Short code/abbreviation for network
+          type: string
+        long_name:
+          description: Full name or description of network
+          type: string
+        color:
+          description: Colour for icons etc. representing network
+          type: string
+        virtual:
+          description: Unknown meaning; apparently always empty
+          type: string
+      required:
+        - id
+        - uri
+        - name
+        - long_name
+        - color
+        - virtual
+
+    NetworkList:
+      description: List of networks.
+      type: array
+      items:
+        $ref: '#/components/schemas/Network'
