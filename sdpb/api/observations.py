@@ -13,7 +13,10 @@ from sqlalchemy.sql import func
 from sqlalchemy.sql.expression import cast
 from flask.logging import default_handler
 from flask import request, url_for
-from pycds import ObsCountPerMonthHistory, History
+from pycds import \
+    ObsCountPerMonthHistory, \
+    ClimoObsCount, \
+    History
 from sdpb.util import set_logger_level_from_qp
 
 
@@ -25,7 +28,8 @@ logger.setLevel(logging.INFO)
 def get_counts(session, start_date, end_date, station_ids):
     set_logger_level_from_qp(logger)
 
-    q = (
+    # Set up queries for total counts by station id
+    obsCountQuery = (
         session.query(
             cast(
                 func.sum(ObsCountPerMonthHistory.count),
@@ -36,18 +40,52 @@ def get_counts(session, start_date, end_date, station_ids):
         .join(History)
         .group_by(History.station_id)
     )
-    if start_date:
-        q = q.filter(ObsCountPerMonthHistory.date_trunc >= start_date)
-    if end_date:
-        q = q.filter(ObsCountPerMonthHistory.date_trunc <= end_date)
-    if station_ids:
-        q = q.filter(History.station_id.in_(station_ids))
+    climoCountQuery = (
+        session.query(
+            cast(
+                func.sum(ClimoObsCount.count),
+                sqlalchemy.Integer
+            ).label('total'),
+            History.station_id.label('station_id')
+        )
+        .join(History)
+        .group_by(History.station_id)
+    )
 
-    results = q.all()
+    # Add query filters for start date, end date, station id list.
+    # Note that climo count table does not discriminate on time, therefore
+    # no filters for start and end dates on that query.
+    if start_date:
+        obsCountQuery = (
+            obsCountQuery
+            .filter(ObsCountPerMonthHistory.date_trunc >= start_date)
+        )
+    if end_date:
+        obsCountQuery = (
+            obsCountQuery
+            .filter(ObsCountPerMonthHistory.date_trunc <= end_date)
+        )
+    if station_ids:
+        obsCountQuery = (
+            obsCountQuery
+            .filter(History.station_id.in_(station_ids))
+        )
+        climoCountQuery = (
+            climoCountQuery
+            .filter(History.station_id.in_(station_ids))
+        )
+
+    # Run the queries
+    obsCounts = obsCountQuery.all()
+    climoCounts = climoCountQuery.all()
+
     return {
         'start_date': start_date and start_date.isoformat(),
         'end_date': end_date and end_date.isoformat(),
         'observationCounts': {
-            r.station_id: r.total for r in results
-        }
+            r.station_id: r.total for r in obsCounts
+        },
+        'climatologyCounts' : {
+            r.station_id: r.total for r in climoCounts
+        },
     }
