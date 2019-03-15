@@ -17,9 +17,28 @@ servers:
 tags:
   - name: Networks
     description: |
-      A network groups together a set of stations. Typically a network is
-      owned or managed by a single organization or entity.
-
+      A network groups together a set of stations and variables (see Variables).
+      Typically a network is owned or managed by a single organization or entity,
+      which often forms part of the network name.
+  - name: Variables
+    description: |
+      A variable defines a physical quantity that is reported by one or more
+      stations in a network. A variable is a memeber of a network and has
+      zero or more observations associated with it.
+  - name: Histories
+    description: |
+      A history defines a period in the lifetime of a single station,
+      giving its name, location, frequency of reporting, and variables reported,
+      and specifying the period of time for which this is true.
+  - name: Stations
+    description: |
+      A station represents a source of observations, usually but not necessarily
+      an electromechanical system for measuring environmental variables.
+      A station has one or more histories that define its working lifetime.
+  - name: Observations
+    description: |
+      An observation is a single datum reported by a station for a particular
+      variable.
 
 paths:
 
@@ -59,6 +78,154 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Network'
+        404:
+          $ref: '#/components/responses/404NotFound'
+
+  # Variables
+
+  /variables:
+    get:
+      summary: List all variables.
+      description: Get a list of short-form descriptions of all variables.
+      tags:
+        - Variables
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariableList'
+
+  /variables/{id}:
+    get:
+      summary: Get description of a variable.
+      description: Get long-form description of a variable.
+      tags:
+        - Variables
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Unique id of resource
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Variable'
+        404:
+          $ref: '#/components/responses/404NotFound'
+
+  # Histories
+
+  /histories:
+    get:
+      summary: List all histories.
+      description: Get a list of short-form descriptions of all histories.
+      tags:
+        - Histories
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryList'
+
+  /histories/{id}:
+    get:
+      summary: Get description of a history
+      description: Get long-form description of a history
+      tags:
+        - Histories
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Unique id of resource
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/History'
+        404:
+          $ref: '#/components/responses/404NotFound'
+
+  # Stations
+
+  /stations:
+    get:
+      summary: List all published stations.
+      description: Get a list of short-form descriptions of all stations.
+      tags:
+        - Stations
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StationList'
+
+  /stations/{id}:
+    get:
+      summary: Get description of a station
+      description: Get long-form description of a station
+      tags:
+        - Stations
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Unique id of resource
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Station'
+        404:
+          $ref: '#/components/responses/404NotFound'
+
+  # Observations
+
+  /observations/counts:
+    get:
+      summary: Get observation counts.
+      description: Get approximate counts of observations available for a given date range.
+      tags:
+        - Observations
+      parameters:
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Earliest date (inclusive) of observations counted.
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Latest date (inclusive) of observations counted.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObservationCounts'
 
 
 components:
@@ -95,6 +262,7 @@ components:
     # Networks
 
     Network:
+      description: Full representation of a network resource.
       type: object
       properties:
         id:
@@ -128,3 +296,201 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Network'
+
+    # Variables
+
+    Variable:
+      description: Full representation of a variable resource.
+      type: object
+      properties:
+        id:
+          description: Unique internal id of variable
+          type: string
+        uri:
+          description: URI for this resource
+          type: string
+        name:
+          description: Local or colloquial name of variable within network.
+          type: string
+        standard_name:
+          description: CF Metadata standard name for base variable. cell_method is required to fully understand the meaning of the variable. (See also short_name.)
+          type: string
+        cell_method:
+          description: CF cell_methods (note spelling difference) describing this variable.
+          type: string
+        short_name:
+          description: Short name or code, derived from standard_name and cell_method. This attribute also groups together distinct variables that measure the same quantity, i.e., variables that are essentially the same but which may have different values for name, standard_name, cell_method.
+          type: string
+        display_name:
+          description: Human readable display name for variable. This attribute also groups together distinct variables that measure the same quantity, i.e., variables that are essentially the same but which may have different values for name, standard_name, cell_method.
+          type: string
+        unit:
+          description: Unit of measure for variable values.
+          type: string
+        precision:
+          description: Precision of values. In practice, always null.
+          type: integer
+        network_uri:
+          description: URI of network to which this variable belongs
+          type: string
+      required:
+        - id
+        - uri
+        - name
+        - standard_name
+        - cell_method
+        - short_name
+        - display_name
+        - unit
+        - precision
+        - network_uri
+
+    VariableList:
+      description: List of variables.
+      type: array
+      items:
+        $ref: '#/components/schemas/Variable'
+
+    # Histories
+
+    History:
+      description: Full representation of a history resource.
+      type: object
+      properties:
+        id:
+          description: Unique internal id of history.
+          type: string
+        uri:
+          description: URI for this history resource.
+          type: string
+        station_name:
+          description: Name of station during this history.
+          type: string
+        lon:
+          description: Longitude of station.
+          type: number
+        lat:
+          description: Latitude of station.
+          type: number
+        elevation:
+          description: Elevation of station.
+          type: number
+        sdate:
+          description: Start datetime of history.
+          type: string
+          format: date-time
+        edate:
+          description: End datetime of history. Null if it is the current history.
+          type: string
+          format: date-time
+        tz_offset:
+          description: Time zone offset. Always null in practice.
+          type: string
+          format: interval
+        province:
+          description: Code for province where station is located.
+          type: string
+        country:
+          description: Code for country where station is located.
+          type: string
+        freq:
+          description: Frequency of reporting.
+          type: string
+        variable_uris:
+          description: List of URIs of variables reported.
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - uri
+        - station_name
+        - lon
+        - lat
+        - elevation
+        - sdate
+        - edate
+        - tz_offset
+        - province
+        - country
+        - freq
+        - variable_uris
+
+    HistoryList:
+      description: List of histories.
+      type: array
+      items:
+        $ref: '#/components/schemas/History'
+
+    # Stations
+
+    Station:
+      description: Full representation of a station resource.
+      type: object
+      properties:
+        id:
+          description: Unique internal id of station
+          type: string
+        uri:
+          description: URI for this station resource
+          type: string
+        native_id:
+          description: Network's identifier for station. Not necessarily unique, even within networks.
+          type: string
+        min_obs_time:
+          description: Earliest time of observation from this station.
+          type: string
+          format: date-time
+        max_obs_time:
+          description: Latest time of observation from this station. Null value means station is still reporting.
+          type: string
+          format: date-time
+          nullable: true
+        network_uri:
+          description: URI of network to which this station belongs
+          type: string
+        histories:
+          description: History records for this station.
+          type: array
+          items:
+            $ref: '#/components/schemas/History'
+      required:
+        - id
+        - uri
+        - native_id
+        - min_obs_time
+        - max_obs_time
+        - network_uri
+        - histories
+
+    StationList:
+      description: List of stations.
+      type: array
+      items:
+        $ref: '#/components/schemas/Station'
+
+    # Observations
+  
+    ObservationCounts:
+      description: Counts of observations and climatologies, by station, in a specified date range.
+      type: object
+      properties:
+        start_date:
+          description: Earliest date (inclusive) of observations counted.
+          type: string
+          format: date-time
+        end_date:
+          description: Latest date (inclusive) of observations counted.
+          type: string
+          format: date-time
+        observationCounts:
+          description: Counts, by station id, of observations available in specified date range.
+          type: object
+        climatologyCounts:
+          description: Counts, by station id, of climatologies available in specified date range.
+          type: object
+      required:
+        - start_date
+        - end_date
+        - observationCounts
+        - climatologyCounts
