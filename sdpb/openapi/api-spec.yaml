@@ -228,7 +228,15 @@ paths:
   /observations/counts:
     get:
       summary: Get observation counts.
-      description: Get approximate counts of observations available for a given date range.
+      description: |
+        Get approximate counts of observations available for a given date range.
+        #
+        Response includes counts for
+        * normal observations: point-in-time or short-term statistic (e.g.,
+        daily mean temperature)
+        * climatologies: long-term statisitics, e.g., 30-year mean of temperature
+        #
+        Counts are returned as a hash (dict) keyed by station id.
       tags:
         - Observations
       operationId: sdpb.api.observations.get_counts
@@ -248,9 +256,11 @@ paths:
         - name: station_ids
           in: query
           schema:
-            type: string
-            format: date-time
-          description: Latest date (inclusive) of observations counted.
+            type: array
+            items:
+              type: integer
+          explode: false
+          description: Report counts for these stations only.
       responses:
         200:
           description: Success
@@ -258,6 +268,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ObservationCounts'
+              example:
+                end_date:
+                start_date:
+                station_ids: [1,2,3,4,5]
+                uri: "/observations/counts?station_ids=1&station_ids=2&station_ids=3&station_ids=4&station_ids=5"
+                climatologyCounts:
+                  '1': 12
+                  '3': 12
+                  '4': 12
+                observationCounts:
+                  '1': 15857
+                  '2': 62488
+                  '3': 13544
+                  '4': 8040
+                  '5': 9330
 
 
 components:

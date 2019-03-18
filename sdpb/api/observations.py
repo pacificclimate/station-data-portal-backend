@@ -90,6 +90,7 @@ def get_counts(start_date=None, end_date=None, station_ids=None):
         'uri': observations_counts_uri(start_date=start_date, end_date=end_date, station_ids=station_ids),
         'start_date': start_date,
         'end_date': end_date,
+        'station_ids': station_ids,
         'observationCounts': {
             r.station_id: r.total for r in obsCounts
         },
