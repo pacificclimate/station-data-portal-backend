@@ -268,21 +268,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ObservationCounts'
-              example:
-                end_date:
-                start_date:
-                station_ids: [1,2,3,4,5]
-                uri: "/observations/counts?station_ids=1&station_ids=2&station_ids=3&station_ids=4&station_ids=5"
-                climatologyCounts:
-                  '1': 12
-                  '3': 12
-                  '4': 12
-                observationCounts:
-                  '1': 15857
-                  '2': 62488
-                  '3': 13544
-                  '4': 8040
-                  '5': 9330
 
 
 components:
@@ -347,6 +332,14 @@ components:
         - long_name
         - color
         - virtual
+      example:
+        color: "#FF0000"
+        id: 1
+        long_name: Environment Canada (Canadian Daily Climate Data 2007)
+        name: EC
+        publish: true
+        uri: "/networks/1"
+        virtual:
 
     NetworkList:
       description: List of networks.
@@ -401,6 +394,17 @@ components:
         - unit
         - precision
         - network_uri
+      example:
+        cell_method: 'time: point'
+        display_name: Surface Snow Depth (Point)
+        id: 450
+        name: HEIGHT_OF_SNOW
+        network_uri: "/networks/2"
+        precision:
+        short_name: surface_snow_thickness_point
+        standard_name: surface_snow_thickness
+        unit: cm
+        uri: "/variables/450"
 
     VariableList:
       description: List of variables.
@@ -472,6 +476,30 @@ components:
         - country
         - freq
         - variable_uris
+      example:
+        country:
+        edate:
+        elevation: 13
+        freq: daily
+        id: 999
+        lat: 54.05
+        lon: -128.683333
+        province: BC
+        sdate:
+        station_name: KITIMAT
+        tz_offset:
+        uri: "/histories/999"
+        variable_uris:
+        - "/variables/427"
+        - "/variables/428"
+        - "/variables/429"
+        - "/variables/430"
+        - "/variables/431"
+        - "/variables/432"
+        - "/variables/556"
+        - "/variables/557"
+        - "/variables/558"
+        - "/variables/559"
 
     HistoryList:
       description: List of histories.
@@ -519,6 +547,32 @@ components:
         - max_obs_time
         - network_uri
         - histories
+      example:
+        histories:
+        - country:
+          edate:
+          elevation: 4
+          freq: daily
+          id: 404
+          lat: 48.866667
+          lon: -123.283333
+          province: BC
+          sdate:
+          station_name: ACTIVE PASS
+          tz_offset:
+          uri: "/histories/404"
+          variable_uris:
+          - "/variables/429"
+          - "/variables/430"
+          - "/variables/431"
+          - "/variables/432"
+          - "/variables/559"
+        id: 1
+        max_obs_time: '1996-11-30T00:00:00'
+        min_obs_time: '1984-07-01T00:00:00'
+        native_id: '1010066'
+        network_uri: "/networks/1"
+        uri: "/stations/1"
 
     StationList:
       description: List of stations.
@@ -540,6 +594,14 @@ components:
           description: Latest date (inclusive) of observations counted.
           type: string
           format: date-time
+        station_ids:
+          description: Counts for these stations only.
+          type: array
+          items:
+            type: integer
+        uri:
+          description: URI of this resource
+          type: string
         observationCounts:
           description: Counts, by station id, of observations available in specified date range.
           type: object
@@ -549,5 +611,22 @@ components:
       required:
         - start_date
         - end_date
+        - station_ids
+        - uri
         - observationCounts
         - climatologyCounts
+      example:
+        end_date:
+        start_date:
+        station_ids: [1,2,3,4,5]
+        uri: "/observations/counts?station_ids=1&station_ids=2&station_ids=3&station_ids=4&station_ids=5"
+        climatologyCounts:
+          '1': 12
+          '3': 12
+          '4': 12
+        observationCounts:
+          '1': 15857
+          '2': 62488
+          '3': 13544
+          '4': 8040
+          '5': 9330
