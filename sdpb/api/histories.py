@@ -16,8 +16,7 @@ session = db.session
 
 
 def history_uri(history):
-    return '/histories/{}'.format(history.id)
-    # return url_for('dispatch_collection_item', collection='histories', id=history.id)
+    return url_for('.sdpb_api_histories_get', id=history.id)
 
 
 def history_rep(history, variables):

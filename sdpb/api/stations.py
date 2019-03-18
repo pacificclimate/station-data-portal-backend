@@ -20,8 +20,7 @@ session = db.session
 
 def station_uri(station):
     """Return uri for a station"""
-    return '/stations/{}'.format(station.id)
-    # return url_for('dispatch_collection_item', collection='stations', id=station.id)
+    return url_for('.sdpb_api_stations_get', id=station.id)
 
 
 def station_rep(station, histories, all_vars_by_hx):

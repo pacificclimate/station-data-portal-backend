@@ -6,8 +6,7 @@ from sdpb import db
 session = db.session
 
 def network_uri(network):
-    return '/networks/{}'.format(network.id)
-    # return url_for('networks', id=network.id)
+    return url_for('.sdpb_api_networks_get', id=network.id)
 
 
 def network_rep(network):

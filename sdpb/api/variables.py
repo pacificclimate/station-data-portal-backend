@@ -8,8 +8,7 @@ session = db.session
 
 
 def variable_uri(variable):
-    return '/variables/{}'.format(variable.id)
-    # return url_for('dispatch_collection_item', collection='variables', id=variable.id)
+    return url_for('.sdpb_api_variables_get', id=variable.id)
 
 
 def variable_rep(variable):
