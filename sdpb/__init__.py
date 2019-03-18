@@ -1,11 +1,13 @@
 import os
 import connexion
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 
 
 connexion_app = connexion.FlaskApp(__name__, specification_dir='openapi/')
 
 flask_app = connexion_app.app
+CORS(flask_app)
 flask_app.config.from_mapping(
     SQLALCHEMY_DATABASE_URI=
     os.getenv('PCDS_DSN', 'postgresql://httpd@db3.pcic.uvic.ca/crmp'),
