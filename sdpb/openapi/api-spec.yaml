@@ -245,6 +245,12 @@ paths:
             type: string
             format: date-time
           description: Latest date (inclusive) of observations counted.
+        - name: station_ids
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Latest date (inclusive) of observations counted.
       responses:
         200:
           description: Success
