@@ -1,10 +1,15 @@
 from flask import url_for
 from pycds import Variable
+from sdpb import db
 from sdpb.api.networks import network_uri
 
 
+session = db.session
+
+
 def variable_uri(variable):
-    return url_for('dispatch_collection_item', collection='variables', id=variable.id)
+    return '/variables/{}'.format(variable.id)
+    # return url_for('dispatch_collection_item', collection='variables', id=variable.id)
 
 
 def variable_rep(variable):
@@ -23,7 +28,7 @@ def variable_rep(variable):
     }
 
 
-def get_variable_item_rep(session, id=None):
+def get(id=None):
     assert id is not None
     variable = session.query(Variable).filter_by(id=id).one()
     return variable_rep(variable)
@@ -40,7 +45,7 @@ def variable_collection_rep(variables):
     return [variable_collection_item_rep(variable) for variable in variables]
 
 
-def get_variable_collection_rep(session):
+def list():
     """Get variables from database, and return their representation."""
     variables = session.query(Variable).order_by(Variable.id.asc()).all()
     return variable_collection_rep(variables)

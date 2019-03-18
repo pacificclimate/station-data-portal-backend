@@ -3,6 +3,7 @@ import logging
 from flask import request, url_for
 from flask.logging import default_handler
 from pycds import Network, Station, History
+from sdpb import db
 from sdpb.api.networks import network_uri
 from sdpb.api.histories import history_collection_rep, history_rep
 from sdpb.util import \
@@ -14,10 +15,13 @@ logger = logging.getLogger(__name__)
 logger.addHandler(default_handler)
 logger.setLevel(logging.INFO)
 
+session = db.session
+
 
 def station_uri(station):
     """Return uri for a station"""
-    return url_for('dispatch_collection_item', collection='stations', id=station.id)
+    return '/stations/{}'.format(station.id)
+    # return url_for('dispatch_collection_item', collection='stations', id=station.id)
 
 
 def station_rep(station, histories, all_vars_by_hx):
@@ -35,7 +39,7 @@ def station_rep(station, histories, all_vars_by_hx):
     }
 
 
-def get_station_item_rep(session, id=None):
+def get(id=None):
     set_logger_level_from_qp(logger)
     assert id is not None
     logger.debug('get station')
@@ -95,7 +99,7 @@ def station_collection_rep(stations, all_histories_by_station, all_variables):
     ]
 
 
-def get_station_collection_rep(session):
+def list(stride=None, limit=None, offset=None):
     """Get stations from database, and return their representation."""
     set_logger_level_from_qp(logger)
     logger.debug('get stations')
@@ -107,13 +111,10 @@ def get_station_collection_rep(session):
         .filter(Network.publish==True)
         .order_by(Station.id.asc())
     )
-    stride = int(request.args.get('stride', 0))
     if stride:
         q = q.filter(Station.id % stride == 0)
-    limit = request.args.get('limit', None)
     if limit:
         q = q.limit(limit)
-    offset = request.args.get('offset', None)
     if offset:
         q = q.offset(offset)
 

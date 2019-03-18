@@ -3,6 +3,7 @@ import logging
 from flask import url_for
 from flask.logging import default_handler
 from pycds import History, VarsPerHistory, Variable
+from sdpb import db
 from sdpb.api.variables import variable_uri
 from sdpb.util import date_rep, float_rep, get_all_vars_by_hx, set_logger_level_from_qp
 
@@ -11,9 +12,12 @@ logger = logging.getLogger(__name__)
 logger.addHandler(default_handler)
 logger.setLevel(logging.INFO)
 
+session = db.session
+
 
 def history_uri(history):
-    return url_for('dispatch_collection_item', collection='histories', id=history.id)
+    return '/histories/{}'.format(history.id)
+    # return url_for('dispatch_collection_item', collection='histories', id=history.id)
 
 
 def history_rep(history, variables):
@@ -71,7 +75,7 @@ def history_collection_rep(histories, all_vars_by_hx):
             for history in histories]
 
 
-def get_history_item_rep(session, id=None):
+def get(id=None):
     """Get a single history and associated variables from database,
     and return their representation."""
     set_logger_level_from_qp(logger)
@@ -92,7 +96,7 @@ def get_history_item_rep(session, id=None):
     return history_rep(history, variables)
 
 
-def get_history_collection_rep(session):
+def list():
     """Get histories and associated variables from database,
     and return their representation."""
     set_logger_level_from_qp(logger)

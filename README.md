@@ -31,7 +31,7 @@ To run a dev server locally:
 
 ```bash
 source venv/bin/activate
-export FLASK_APP=sdpb.wsgi
+export FLASK_APP=sdpb:flask_app
 export FLASK_ENV=development
 flask run
 ```

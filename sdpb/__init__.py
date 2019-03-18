@@ -1,16 +1,25 @@
 import os
-from flask import Flask
-from flask_cors import CORS
-from sdpb.routes import add_routes
+import connexion
+from flask_sqlalchemy import SQLAlchemy
 
 
-def get_app(config_override={}):
-    app = Flask(__name__)
-    CORS(app)
-    app.config['SQLALCHEMY_DATABASE_URI'] = \
-        os.getenv('PCDS_DSN', 'postgresql://httpd@db3.pcic.uvic.ca/crmp')
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    # app.config['SQLALCHEMY_ECHO'] = True
-    app.config.update(config_override)
-    add_routes(app)
-    return app
+connexion_app = connexion.FlaskApp(__name__, specification_dir='openapi/')
+
+flask_app = connexion_app.app
+flask_app.config.from_mapping(
+    SQLALCHEMY_DATABASE_URI=
+    os.getenv('PCDS_DSN', 'postgresql://httpd@db3.pcic.uvic.ca/crmp'),
+    SQLALCHEMY_TRACK_MODIFICATIONS=False,
+    SQLALCHEMY_ECHO=False,
+)
+
+db = SQLAlchemy(flask_app)
+
+# Must establish database before adding API spec(s). API specs refer to
+# handlers (`operationId`), which in turn import the database.
+# If you try to add the API spec before the database is defined, then the
+# import fails. This is a consequence of this particular project structure,
+# but it is (otherwise) a nice one and worth imposing this little bit of
+# ordering during setup.
+
+connexion_app.add_api('api-spec.yaml')

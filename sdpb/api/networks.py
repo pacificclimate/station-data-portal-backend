@@ -1,9 +1,13 @@
 from flask import url_for
 from pycds import Network
+from sdpb import db
 
+
+session = db.session
 
 def network_uri(network):
-    return url_for('dispatch_collection_item', collection='networks', id=network.id)
+    return '/networks/{}'.format(network.id)
+    # return url_for('networks', id=network.id)
 
 
 def network_rep(network):
@@ -19,12 +23,6 @@ def network_rep(network):
     }
 
 
-def get_network_item_rep(session, id=None):
-    assert id is not None
-    network = session.query(Network).filter_by(id=id, publish=True).one()
-    return network_rep(network)
-
-
 def network_collection_item_rep(network):
     """Return representation of a network collection item.
     May conceivably be different than representation of a single a network.
@@ -37,12 +35,16 @@ def network_collection_rep(networks):
     return [network_collection_item_rep(network) for network in networks]
 
 
-def get_network_collection_rep(session):
-    """Get networks from database, and return their representation."""
+def list():
     networks = (
         session.query(Network)
-        .filter_by(publish=True)
-        .order_by(Network.id.asc())
-        .all()
+            .filter_by(publish=True)
+            .order_by(Network.id.asc())
+            .all()
     )
     return network_collection_rep(networks)
+
+
+def get(id):
+    network = session.query(Network).filter_by(id=id, publish=True).one()
+    return network_rep(network)

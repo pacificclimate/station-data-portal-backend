@@ -8,7 +8,7 @@ info:
 
 
 servers:
-  - url: localhost:0.0.0.0
+  - url: http://localhost:5000
     description: Local dev server
   - url: https://services.pacificclimate.org/station-data-portal
     description: Production server
@@ -50,6 +50,7 @@ paths:
       description: Get a list of short-form descriptions of all published networks.
       tags:
         - Networks
+      operationId: sdpb.api.networks.list
       responses:
         200:
           description: Success
@@ -64,6 +65,7 @@ paths:
       description: Get long-form description of a network
       tags:
         - Networks
+      operationId: sdpb.api.networks.get
       parameters:
         - name: id
           in: path
@@ -89,6 +91,7 @@ paths:
       description: Get a list of short-form descriptions of all variables.
       tags:
         - Variables
+      operationId: sdpb.api.variables.list
       responses:
         200:
           description: Success
@@ -103,6 +106,7 @@ paths:
       description: Get long-form description of a variable.
       tags:
         - Variables
+      operationId: sdpb.api.variables.get
       parameters:
         - name: id
           in: path
@@ -128,6 +132,7 @@ paths:
       description: Get a list of short-form descriptions of all histories.
       tags:
         - Histories
+      operationId: sdpb.api.histories.list
       responses:
         200:
           description: Success
@@ -142,6 +147,7 @@ paths:
       description: Get long-form description of a history
       tags:
         - Histories
+      operationId: sdpb.api.histories.get
       parameters:
         - name: id
           in: path
@@ -167,6 +173,24 @@ paths:
       description: Get a list of short-form descriptions of all stations.
       tags:
         - Stations
+      operationId: sdpb.api.stations.list
+      parameters:
+        - name: stride
+          in: query
+          description: Get every `stride`-th station
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Maximum number of stations to return
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: Offset of first statoin returned
+          schema:
+            type: integer
+
       responses:
         200:
           description: Success
@@ -181,13 +205,14 @@ paths:
       description: Get long-form description of a station
       tags:
         - Stations
+      operationId: sdpb.api.stations.get
       parameters:
         - name: id
           in: path
           required: true
+          description: Unique id of resource
           schema:
             type: integer
-          description: Unique id of resource
       responses:
         200:
           description: Success
@@ -206,6 +231,7 @@ paths:
       description: Get approximate counts of observations available for a given date range.
       tags:
         - Observations
+      operationId: sdpb.api.observations.get_counts
       parameters:
         - name: start_date
           in: query
