@@ -4,3 +4,4 @@ Flask-Cors==3.0.7
 Flask-SQLAlchemy==2.3.2
 PyCDS>=2.1.0
 connexion==2.2.0
+connexion[swagger-ui]==2.2.0

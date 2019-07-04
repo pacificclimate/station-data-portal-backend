@@ -18,6 +18,8 @@ setup(
         'Flask-SQLAlchemy',
         'Flask-Cors',
         'PyCDS',  # TODO: Add version requirement once versioning with WA tables and views has been set
+        'connexion',
+        'connexion[swagger-ui]',
     ],
     zip_safe=True,
     scripts=['scripts/devserver.py'],
