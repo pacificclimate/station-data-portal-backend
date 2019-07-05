@@ -33,7 +33,8 @@ def app():
     with testing.postgresql.Postgresql() as pg:
         config_override = {
             'TESTING': True,
-            'SQLALCHEMY_DATABASE_URI': pg.url()
+            'SQLALCHEMY_DATABASE_URI': pg.url(),
+            'SERVER_NAME': 'test',
         }
         connexion_app, flask_app, app_db = create_app(config_override)
 
@@ -87,16 +88,26 @@ def engine(db):
 
 @fixture(scope='function')
 def session(engine):
-    """Single-test database session. All session actions are rolled back on teardown"""
     print('#### session')
-    session = sessionmaker(bind=engine)()
+    session = app_db.session
     # Default search path is `"$user", public`. Need to reset that to search crmp (for our db/orm content) and
     # public (for postgis functions)
     session.execute('SET search_path TO crmp, public')
     # print('\nsearch_path', [r for r in session.execute('SHOW search_path')])
     yield session
     session.rollback()
-    session.close()
+    # session.close()
+# def session(engine):
+#     """Single-test database session. All session actions are rolled back on teardown"""
+#     print('#### session')
+#     session = sessionmaker(bind=engine)()
+#     # Default search path is `"$user", public`. Need to reset that to search crmp (for our db/orm content) and
+#     # public (for postgis functions)
+#     session.execute('SET search_path TO crmp, public')
+#     # print('\nsearch_path', [r for r in session.execute('SHOW search_path')])
+#     yield session
+#     session.rollback()
+#     session.close()
 
 
 # Networks
@@ -206,8 +217,16 @@ def tst_histories(tst_stations):
         make_tst_history(label, station) for label in ['P', 'Q']
     ]
 
+@fixture(scope='function')
+def history_session(session, tst_histories):
+    session.add_all(tst_histories)
+    session.flush()
+    yield session
+
 
 # Observations
+# TODO: Add appropriate records to VarsPerHistory, and remove xfail from test
+# test_station_collection_hx_vars
 
 def make_tst_observation(label, history, variable):
     return Obs(

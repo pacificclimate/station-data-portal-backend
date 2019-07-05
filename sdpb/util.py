@@ -37,8 +37,11 @@ def parse_date(s):
 
 def set_logger_level_from_qp(a_logger):
     """Set logger level from query parameter `debug`."""
-    if request.args.get('debug'):
-        a_logger.setLevel(logging.DEBUG)
+    try:
+        if request.args.get('debug'):
+            a_logger.setLevel(logging.DEBUG)
+    except:
+        pass
 
 
 # TODO: Move these into a different util module

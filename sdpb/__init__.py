@@ -3,7 +3,18 @@ import connexion
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 
-# This is a horrible way to do this.
+# This is a nasty way to do this.
+#
+# But at least the clients of this module (are supposed to) use
+# `get_app_session()` instead of importing these globals directly.
+# It would be better to hide these globals inside a singleton class, but that
+# would take more time than I am willing to spend for an essentially isomorphic
+# solution.
+#
+# Note: Clients (API functions) *must* use `get_app_session()`. If instead they
+# import these globals directly, the tests fail because their values are
+# captured by the test framework before they are set to a non-None value.
+
 connexion_app = None
 flask_app = None
 app_db = None
@@ -34,6 +45,12 @@ def create_app(config_override = {}):
 
     connexion_app.add_api('api-spec.yaml')
 
-    print('##### app initialized')
-
     return connexion_app, flask_app, app_db
+
+
+def get_app_db():
+    return app_db
+
+
+def get_app_session():
+    return app_db.session

@@ -3,9 +3,9 @@ import logging
 from flask import request, url_for
 from flask.logging import default_handler
 from pycds import Network, Station, History
-from sdpb import app_db
-from sdpb.api.networks import network_uri
-from sdpb.api.histories import history_collection_rep, history_rep
+from sdpb import get_app_session
+from sdpb.api import networks
+from sdpb.api import histories
 from sdpb.util import \
     date_rep, get_all_histories_by_station, get_all_vars_by_hx, \
     set_logger_level_from_qp
@@ -15,26 +15,24 @@ logger = logging.getLogger(__name__)
 logger.addHandler(default_handler)
 logger.setLevel(logging.INFO)
 
-session = app_db.session
 
-
-def station_uri(station):
+def uri(station):
     """Return uri for a station"""
     return url_for('.sdpb_api_stations_get', id=station.id)
 
 
-def station_rep(station, histories, all_vars_by_hx):
+def single_item_rep(station, hxs, all_vars_by_hx):
     """Return representation of a single station item."""
     set_logger_level_from_qp(logger)
     logger.debug('station_rep id: {}'.format(station.id))
     return {
         'id': station.id,
-        'uri': station_uri(station),
+        'uri': uri(station),
         'native_id': station.native_id,
         'min_obs_time': date_rep(station.min_obs_time),
         'max_obs_time': date_rep(station.max_obs_time),
-        'network_uri': network_uri(station.network),
-        'histories': history_collection_rep(histories, all_vars_by_hx)
+        'network_uri': networks.uri(station.network),
+        'histories': histories.collection_rep(hxs, all_vars_by_hx)
     }
 
 
@@ -42,6 +40,7 @@ def get(id=None):
     set_logger_level_from_qp(logger)
     assert id is not None
     logger.debug('get station')
+    session = get_app_session()
     station = (
         session.query(Station)
         .select_from(Station)
@@ -57,18 +56,18 @@ def get(id=None):
         .all()
     )
     all_vars_by_hx = get_all_vars_by_hx(session)
-    return station_rep(station, histories, all_vars_by_hx)
+    return single_item_rep(station, histories, all_vars_by_hx)
 
 
-def station_collection_item_rep(station, histories, all_vars_by_hx):
+def collection_item_rep(station, histories, all_vars_by_hx):
     """Return representation of a station collection item.
     May conceivably be different than representation of a single a station.
     """
     set_logger_level_from_qp(logger)
-    return station_rep(station, histories, all_vars_by_hx)
+    return single_item_rep(station, histories, all_vars_by_hx)
 
 
-def station_collection_rep(stations, all_histories_by_station, all_variables):
+def collection_rep(stations, all_histories_by_station, all_variables):
     """Return representation of stations collection. """
 
     def histories_for(station):
@@ -91,7 +90,7 @@ def station_collection_rep(stations, all_histories_by_station, all_variables):
 
     set_logger_level_from_qp(logger)
     return [
-        station_collection_item_rep(
+        collection_item_rep(
             station, histories_for(station), all_variables
         )
         for station in stations
@@ -102,6 +101,7 @@ def list(stride=None, limit=None, offset=None):
     """Get stations from database, and return their representation."""
     set_logger_level_from_qp(logger)
     logger.debug('get stations')
+    session = get_app_session()
 
     q = (
         session.query(Station)
@@ -122,4 +122,4 @@ def list(stride=None, limit=None, offset=None):
     all_vars_by_hx = get_all_vars_by_hx(session)
 
     all_histories_by_station = get_all_histories_by_station(session)
-    return station_collection_rep(stations, all_histories_by_station, all_vars_by_hx)
+    return collection_rep(stations, all_histories_by_station, all_vars_by_hx)
