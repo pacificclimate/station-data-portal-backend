@@ -1,16 +1,17 @@
 from flask import url_for
 from pycds import Network
+from sdpb import get_app_session
 
 
-def network_uri(network):
-    return url_for('dispatch_collection_item', collection='networks', id=network.id)
+def uri(network):
+    return url_for('.sdpb_api_networks_get', id=network.id)
 
 
-def network_rep(network):
+def single_item_rep(network):
     """Return representation of a single network item."""
     return {
         'id': network.id,
-        'uri': network_uri(network),
+        'uri': uri(network),
         'name': network.name,
         'long_name': network.long_name,
         'virtual': network.virtual,
@@ -19,30 +20,34 @@ def network_rep(network):
     }
 
 
-def get_network_item_rep(session, id=None):
-    assert id is not None
-    network = session.query(Network).filter_by(id=id, publish=True).one()
-    return network_rep(network)
-
-
-def network_collection_item_rep(network):
+def collection_item_rep(network):
     """Return representation of a network collection item.
     May conceivably be different than representation of a single a network.
     """
-    return network_rep(network)
+    return single_item_rep(network)
 
 
-def network_collection_rep(networks):
+def collection_rep(networks):
     """Return representation of networks collection. """
-    return [network_collection_item_rep(network) for network in networks]
+    return [collection_item_rep(network) for network in networks]
 
 
-def get_network_collection_rep(session):
-    """Get networks from database, and return their representation."""
+def list():
     networks = (
-        session.query(Network)
+        get_app_session()
+        .query(Network)
         .filter_by(publish=True)
         .order_by(Network.id.asc())
         .all()
     )
-    return network_collection_rep(networks)
+    return collection_rep(networks)
+
+
+def get(id):
+    network = (
+        get_app_session()
+        .query(Network)
+        .filter_by(id=id, publish=True)
+        .one()
+    )
+    return single_item_rep(network)

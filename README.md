@@ -66,137 +66,15 @@ This policy is subject to review. In fact, it should be changed to
 
 ## API
 
-This is a **sketch only**. 
-It should be migrated to and filled out in a Swagger definition.
-Do not add a lot of detail here.
+The API proper is defined using [OpenAPI](https://openapis.org/) 
+(formerly known as [Swagger](http://swagger.io/)).
 
-### Networks
+The definition of the SDP backend API is in `sdpb/openapi/api-spec.yaml`.
 
-**`GET /networks`**
+### Tooling
 
-List of all networks
-
-Response:
-
-```javascript
-[
-  {
-    "id": String,  // This is not strictly necessary, as uri serves as a unique identifier
-    "uri": String, // '/networks/{id}'
-    "name": String,
-    "long_name": String,
-    "virtual": String,  // what does this mean??
-    "color": String,  // needed?
-  }
-]
-```
-
-**`GET /networks/{id}`**
-
-Individual network
-
-```javascript
-{
- // same as `/networks` list item
-}
-```
-
-### Variables
-
-**`GET /variables`**
-
-List of all variables collected in database. 
-
-Response:
-
-```javascript
-[
-  {
-    "id": String,  // This is not strictly necessary, as uri serves as a unique identifier
-    "uri": String, // '/variables/{id}'
-    "name": String,  // aka net_var_name
-    "display_name": String,
-    "short_name": String,
-    "standard_name": String,
-    "cell_method": String,
-    "unit": String,
-    "precision": Number,
-    "network_uri": String // '/networks/{id}'
-  }
-]
-```
-
-**`GET /variables/{id}`**
-
-Individual variable description. 
-
-May include additional information.
-
-Response:
-
-```javascript
-{
- // same as `/variables` list item?
-}
-```
-
-### Stations
-
-**`GET /stations`**
-
-List of all stations.
-
-Includes enough data to display it on the map and perform necessary filtering.
-
-
-Response:
-
-```javascript
-[
-  {
-    "id": String,
-    "uri": String,
-    "native_id": String,
-    "min_obs_time": String,
-    "max_obs_time": String,
-    "network_uri": String,  // unique identifier
-    // histories should be sorted by sdate/edate
-    // history[0] will, at least initially, be the supplier of all this info;
-    // others will be there for some unspecified future application
-    "histories": [  
-      {
-        "id": String,
-        "station_name": String,
-        "lon": Number,
-        "lat": Number,
-        "elevation": Number,
-        "sdate": String,
-        "edate": String,
-        "tz_offset": String,  // or omit, and insist sdate, edate are UTC
-        "province": String,
-        "country": String,
-        "freq": String,
-        // Variables collected during this history, as follows: 
-        // { variable | history -> observation -> variable }
-        "variable_uris": [
-            String, // '/variables/{id}'; unique identifier
-        ]
-      }
-    ],
-  }
-]
-```
-
-**`GET /stations/{id}`**
-
-Individual station description. 
-
-May include additional information.
-
-Response:
-
-```javascript
-{
- // same as `/stations` list item
-}
-```
+We use the excellent package [Connexion](https://pypi.org/project/connexion/)
+to wire up the API definition to code entry points.
+In addition, Connexion serves a Swagger UI Console that provides highly human-friendly, 
+interactive documentation of the API. 
+It is served at `{base_path}/ui/` where `base_path` is the base path of the API.

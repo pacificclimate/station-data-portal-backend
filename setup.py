@@ -14,10 +14,13 @@ setup(
     author="Rod Glover",
     author_email="rglover@uvic.ca",
     install_requires=[
+        'python-dateutil',
         'Flask',
         'Flask-SQLAlchemy',
         'Flask-Cors',
         'PyCDS',  # TODO: Add version requirement once versioning with WA tables and views has been set
+        'connexion',
+        'connexion[swagger-ui]',
     ],
     zip_safe=True,
     scripts=['scripts/devserver.py'],

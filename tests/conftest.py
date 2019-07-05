@@ -16,7 +16,11 @@ from sqlalchemy.schema import DDL, CreateSchema
 import pycds
 from pycds import Network, Station, History, Variable, DerivedValue, Obs
 
-from sdpb import get_app
+from sdpb import create_app
+
+connexion_app = None
+flask_app = None
+app_db = None
 
 
 # app, db, session fixtures based on http://alexmic.net/flask-sqlalchemy-pytest/
@@ -24,17 +28,20 @@ from sdpb import get_app
 @fixture(scope='session')
 def app():
     """Session-wide test Flask application"""
+    global connexion_app, flask_app, app_db
+    print('#### app')
     with testing.postgresql.Postgresql() as pg:
         config_override = {
             'TESTING': True,
-            'SQLALCHEMY_DATABASE_URI': pg.url()
+            'SQLALCHEMY_DATABASE_URI': pg.url(),
+            'SERVER_NAME': 'test',
         }
-        app = get_app(config_override)
+        connexion_app, flask_app, app_db = create_app(config_override)
 
-        ctx = app.app_context()
+        ctx = flask_app.app_context()
         ctx.push()
 
-        yield app
+        yield flask_app
 
         ctx.pop()
 
@@ -48,8 +55,9 @@ def test_client(app):
 @fixture(scope='session')
 def db(app):
     """Session-wide test database"""
-    db = SQLAlchemy(app)
-    yield db
+    print('#### db')
+    # db = SQLAlchemy(app)
+    yield app_db
 
     # FIXME: Database hang on teardown
     # Irony: Attempting to tear down the database properly causes the tests to hang at the the end.
@@ -71,6 +79,7 @@ def db(app):
 @fixture(scope='session')
 def engine(db):
     """Session-wide database engine"""
+    print('#### engine')
     engine = db.engine
     engine.execute("create extension postgis")
     engine.execute(CreateSchema('crmp'))
@@ -79,15 +88,26 @@ def engine(db):
 
 @fixture(scope='function')
 def session(engine):
-    """Single-test database session. All session actions are rolled back on teardown"""
-    session = sessionmaker(bind=engine)()
+    print('#### session')
+    session = app_db.session
     # Default search path is `"$user", public`. Need to reset that to search crmp (for our db/orm content) and
     # public (for postgis functions)
     session.execute('SET search_path TO crmp, public')
     # print('\nsearch_path', [r for r in session.execute('SHOW search_path')])
     yield session
     session.rollback()
-    session.close()
+    # session.close()
+# def session(engine):
+#     """Single-test database session. All session actions are rolled back on teardown"""
+#     print('#### session')
+#     session = sessionmaker(bind=engine)()
+#     # Default search path is `"$user", public`. Need to reset that to search crmp (for our db/orm content) and
+#     # public (for postgis functions)
+#     session.execute('SET search_path TO crmp, public')
+#     # print('\nsearch_path', [r for r in session.execute('SHOW search_path')])
+#     yield session
+#     session.rollback()
+#     session.close()
 
 
 # Networks
@@ -104,12 +124,14 @@ def make_tst_network(label):
 @fixture(scope='function')
 def tst_networks():
     """Networks"""
+    print('#### tst_networks')
     return [
         make_tst_network(label) for label in ['A', 'B']
     ]
 
 @fixture(scope='function')
 def network_session(session, tst_networks):
+    print('#### network_session')
     session.add_all(tst_networks)
     session.flush()
     yield session
@@ -195,8 +217,16 @@ def tst_histories(tst_stations):
         make_tst_history(label, station) for label in ['P', 'Q']
     ]
 
+@fixture(scope='function')
+def history_session(session, tst_histories):
+    session.add_all(tst_histories)
+    session.flush()
+    yield session
+
 
 # Observations
+# TODO: Add appropriate records to VarsPerHistory, and remove xfail from test
+# test_station_collection_hx_vars
 
 def make_tst_observation(label, history, variable):
     return Obs(

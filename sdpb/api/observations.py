@@ -17,6 +17,7 @@ from pycds import \
     ObsCountPerMonthHistory, \
     ClimoObsCount, \
     History
+from sdpb import app_db
 from sdpb.util import set_logger_level_from_qp
 
 
@@ -24,8 +25,14 @@ logger = logging.getLogger(__name__)
 logger.addHandler(default_handler)
 logger.setLevel(logging.INFO)
 
+session = app_db.session
 
-def get_counts(session, start_date, end_date, station_ids):
+
+def observations_counts_uri(start_date=None, end_date=None, station_ids=None):
+    return url_for('.sdpb_api_observations_get_counts', start_date=start_date, end_date=end_date, station_ids=station_ids)
+
+
+def get_counts(start_date=None, end_date=None, station_ids=None):
     set_logger_level_from_qp(logger)
 
     # Set up queries for total counts by station id
@@ -80,8 +87,10 @@ def get_counts(session, start_date, end_date, station_ids):
     climoCounts = climoCountQuery.all()
 
     return {
-        'start_date': start_date and start_date.isoformat(),
-        'end_date': end_date and end_date.isoformat(),
+        'uri': observations_counts_uri(start_date=start_date, end_date=end_date, station_ids=station_ids),
+        'start_date': start_date,
+        'end_date': end_date,
+        'station_ids': station_ids,
         'observationCounts': {
             r.station_id: r.total for r in obsCounts
         },

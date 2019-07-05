@@ -3,7 +3,8 @@ import logging
 from flask import url_for
 from flask.logging import default_handler
 from pycds import History, VarsPerHistory, Variable
-from sdpb.api.variables import variable_uri
+from sdpb import get_app_session
+from sdpb.api import variables
 from sdpb.util import date_rep, float_rep, get_all_vars_by_hx, set_logger_level_from_qp
 
 
@@ -12,17 +13,17 @@ logger.addHandler(default_handler)
 logger.setLevel(logging.INFO)
 
 
-def history_uri(history):
-    return url_for('dispatch_collection_item', collection='histories', id=history.id)
+def uri(history):
+    return url_for('.sdpb_api_histories_get', id=history.id)
 
 
-def history_rep(history, variables):
+def single_item_rep(history, vars):
     """Return representation of a history"""
     set_logger_level_from_qp(logger)
     logger.debug('history_rep id: {}'.format(history.id))
     return {
         'id': history.id,
-        'uri': history_uri(history),
+        'uri': uri(history),
         'station_name': history.station_name,
         'lon': float_rep(history.lon),
         'lat': float_rep(history.lat),
@@ -33,19 +34,19 @@ def history_rep(history, variables):
         'province': history.province,
         'country': history.country,
         'freq': history.freq,
-        'variable_uris': [variable_uri(variable) for variable in variables]
+        'variable_uris': [variables.uri(variable) for variable in vars]
     }
 
 
-def history_collection_item_rep(history, variables):
+def collection_item_rep(history, variables):
     """Return representation of a history collection item.
     May conceivably be different than representation of a single a history.
     """
     set_logger_level_from_qp(logger)
-    return history_rep(history, variables)
+    return single_item_rep(history, variables)
 
 
-def history_collection_rep(histories, all_vars_by_hx):
+def collection_rep(histories, all_vars_by_hx):
     """Return representation of historys collection. """
 
     def variables_for(history):
@@ -67,16 +68,17 @@ def history_collection_rep(histories, all_vars_by_hx):
             return []
 
     set_logger_level_from_qp(logger)
-    return [history_collection_item_rep(history, variables_for(history))
+    return [collection_item_rep(history, variables_for(history))
             for history in histories]
 
 
-def get_history_item_rep(session, id=None):
+def get(id=None):
     """Get a single history and associated variables from database,
     and return their representation."""
     set_logger_level_from_qp(logger)
     assert id is not None
     logger.debug('get history')
+    session = get_app_session()
     history = session.query(History).filter_by(id=id).one()
     logger.debug('get vars')
     variables = (
@@ -89,14 +91,15 @@ def get_history_item_rep(session, id=None):
         .all()
     )
     logger.debug('data retrieved')
-    return history_rep(history, variables)
+    return single_item_rep(history, variables)
 
 
-def get_history_collection_rep(session):
+def list():
     """Get histories and associated variables from database,
     and return their representation."""
     set_logger_level_from_qp(logger)
     logger.debug('get histories')
+    session = get_app_session()
     histories = (
         session.query(History)
         .order_by(History.id.asc())
@@ -104,4 +107,4 @@ def get_history_collection_rep(session):
     )
     logger.debug('histories retrieved')
     all_vars_by_hx = get_all_vars_by_hx(session)
-    return history_collection_rep(histories, all_vars_by_hx)
+    return collection_rep(histories, all_vars_by_hx)
