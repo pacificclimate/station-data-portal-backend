@@ -8,17 +8,22 @@ replacement function that returns a fixed, known response. This is the
 function `mock`, which can serve for all .
 """
 
+from unittest.mock import patch
 from pytest import mark
 import json
-import sdpb.api
+import sdpb.api.networks
+import sdpb.api.variables
+import sdpb.api.stations
+import sdpb.api.histories
 
 
 def make_mock_item(name):
-    def mock_item(s, id, **kwargs):
-        """Mock for sdpb.api.method collection item functions, e.g,
-        sdpb.api.method['items']['networks']
+    def mock_item(id):
+        """Mock for sdpb.api.* collection item functions, e.g,
+        `sdpb.api.networks.list()`
         See explanation in module docstring.
         """
+        print('######### mock item', name)
         if id > 10:
             raise Exception('bad')
         return {
@@ -30,11 +35,12 @@ def make_mock_item(name):
 
 
 def make_mock_collection(name):
-    def mock_collection(s, **kwargs):
-        """Mock for sdpb.api.method collection functions, e.g,
-        sdpb.api.method['collections']['networks']
+    def mock_collection():
+        """Mock for sdpb.api.* collection functions, e.g,
+        `sdpb.api.networks.get()`
         See explanation in module docstring.
         """
+        print('######### mock collection', name)
         return {
             'collection': name,
         }
@@ -43,13 +49,25 @@ def make_mock_collection(name):
 
 
 def mock_all_methods(monkeypatch):
-    item_methods = sdpb.api.methods['items']
-    for name in item_methods:
-        monkeypatch.setitem(item_methods, name, make_mock_item(name))
-
-    collection_methods = sdpb.api.methods['collections']
-    for name in collection_methods:
-        monkeypatch.setitem(collection_methods, name, make_mock_collection(name))
+    apis = {
+        'networks': sdpb.api.networks,
+        'variables': sdpb.api.variables,
+        'stations': sdpb.api.stations,
+        'histories': sdpb.api.histories,
+    }
+    # sdpb.api.networks.list = make_mock_collection('networks')
+    # monkeypatch.setitem(sdpb.api.networks, 'list', make_mock_collection('networks'))
+    # for name in apis:
+    #     print('monkeypatch', name)
+    #     monkeypatch.setitem(apis[name].__dict__, 'list', make_mock_collection(name))
+        # monkeypatch.setattr(apis[name], 'get', make_mock_item(name))
+    # item_methods = sdpb.api.methods['items']
+    # for name in item_methods:
+    #     monkeypatch.setitem(item_methods, name, make_mock_item(name))
+    #
+    # collection_methods = sdpb.api.methods['collections']
+    # for name in collection_methods:
+    #     monkeypatch.setitem(collection_methods, name, make_mock_collection(name))
 
 
 @mark.parametrize('route, status', [
@@ -69,9 +87,10 @@ def mock_all_methods(monkeypatch):
     ('/gronks/1', 404),
 ])
 def test_route_validity(monkeypatch, test_client, route, status):
-    mock_all_methods(monkeypatch)
-    response = test_client.get(route)
-    assert response.status_code == status
+    # mock_all_methods(monkeypatch)
+    with patch.object(sdpb.api.networks, 'list', return_value={ 'collection': 'networks' }):
+        response = test_client.get(route)
+        assert response.status_code == status
 
 
 @mark.parametrize('collection', [

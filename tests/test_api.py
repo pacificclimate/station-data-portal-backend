@@ -1,13 +1,13 @@
 from pycds import Network, Variable, Station
 from sdpb.api.networks import \
     network_uri, network_collection_item_rep, network_collection_rep, \
-    get_network_collection_rep, get_network_item_rep
+    list as get_network_collection_rep, get as get_network_item_rep
 from sdpb.api.variables import \
     variable_uri, variable_collection_item_rep, variable_collection_rep, \
-    get_variable_collection_rep, get_variable_item_rep
+    list as get_variable_collection_rep, get as get_variable_item_rep
 from sdpb.api.stations import \
     station_uri, station_collection_item_rep, station_collection_rep, \
-    get_station_collection_rep
+    list as get_station_collection_rep
 
 from sdpb.util import date_rep
 from helpers import omit

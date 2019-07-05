@@ -16,7 +16,7 @@ from sqlalchemy.schema import DDL, CreateSchema
 import pycds
 from pycds import Network, Station, History, Variable, DerivedValue, Obs
 
-from sdpb import get_app
+from sdpb import flask_app, db as app_db
 
 
 # app, db, session fixtures based on http://alexmic.net/flask-sqlalchemy-pytest/
@@ -29,12 +29,12 @@ def app():
             'TESTING': True,
             'SQLALCHEMY_DATABASE_URI': pg.url()
         }
-        app = get_app(config_override)
+        flask_app.config.update(config_override)
 
-        ctx = app.app_context()
+        ctx = flask_app.app_context()
         ctx.push()
 
-        yield app
+        yield flask_app
 
         ctx.pop()
 
@@ -48,8 +48,8 @@ def test_client(app):
 @fixture(scope='session')
 def db(app):
     """Session-wide test database"""
-    db = SQLAlchemy(app)
-    yield db
+    # db = SQLAlchemy(app)
+    yield app_db
 
     # FIXME: Database hang on teardown
     # Irony: Attempting to tear down the database properly causes the tests to hang at the the end.

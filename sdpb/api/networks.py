@@ -35,6 +35,7 @@ def network_collection_rep(networks):
 
 
 def list():
+    print('########### networks.list')
     networks = (
         session.query(Network)
             .filter_by(publish=True)
