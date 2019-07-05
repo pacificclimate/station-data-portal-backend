@@ -14,6 +14,7 @@ setup(
     author="Rod Glover",
     author_email="rglover@uvic.ca",
     install_requires=[
+        'python-dateutil',
         'Flask',
         'Flask-SQLAlchemy',
         'Flask-Cors',

@@ -16,7 +16,11 @@ from sqlalchemy.schema import DDL, CreateSchema
 import pycds
 from pycds import Network, Station, History, Variable, DerivedValue, Obs
 
-from sdpb import flask_app, db as app_db
+from sdpb import create_app
+
+connexion_app = None
+flask_app = None
+app_db = None
 
 
 # app, db, session fixtures based on http://alexmic.net/flask-sqlalchemy-pytest/
@@ -24,12 +28,14 @@ from sdpb import flask_app, db as app_db
 @fixture(scope='session')
 def app():
     """Session-wide test Flask application"""
+    global connexion_app, flask_app, app_db
+    print('#### app')
     with testing.postgresql.Postgresql() as pg:
         config_override = {
             'TESTING': True,
             'SQLALCHEMY_DATABASE_URI': pg.url()
         }
-        flask_app.config.update(config_override)
+        connexion_app, flask_app, app_db = create_app(config_override)
 
         ctx = flask_app.app_context()
         ctx.push()
@@ -48,6 +54,7 @@ def test_client(app):
 @fixture(scope='session')
 def db(app):
     """Session-wide test database"""
+    print('#### db')
     # db = SQLAlchemy(app)
     yield app_db
 
@@ -71,6 +78,7 @@ def db(app):
 @fixture(scope='session')
 def engine(db):
     """Session-wide database engine"""
+    print('#### engine')
     engine = db.engine
     engine.execute("create extension postgis")
     engine.execute(CreateSchema('crmp'))
@@ -80,6 +88,7 @@ def engine(db):
 @fixture(scope='function')
 def session(engine):
     """Single-test database session. All session actions are rolled back on teardown"""
+    print('#### session')
     session = sessionmaker(bind=engine)()
     # Default search path is `"$user", public`. Need to reset that to search crmp (for our db/orm content) and
     # public (for postgis functions)
@@ -104,12 +113,14 @@ def make_tst_network(label):
 @fixture(scope='function')
 def tst_networks():
     """Networks"""
+    print('#### tst_networks')
     return [
         make_tst_network(label) for label in ['A', 'B']
     ]
 
 @fixture(scope='function')
 def network_session(session, tst_networks):
+    print('#### network_session')
     session.add_all(tst_networks)
     session.flush()
     yield session

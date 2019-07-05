@@ -3,7 +3,7 @@ import logging
 from flask import url_for
 from flask.logging import default_handler
 from pycds import History, VarsPerHistory, Variable
-from sdpb import db
+from sdpb import app_db
 from sdpb.api.variables import variable_uri
 from sdpb.util import date_rep, float_rep, get_all_vars_by_hx, set_logger_level_from_qp
 
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(default_handler)
 logger.setLevel(logging.INFO)
 
-session = db.session
+session = app_db.session
 
 
 def history_uri(history):

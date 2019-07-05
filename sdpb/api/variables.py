@@ -1,10 +1,10 @@
 from flask import url_for
 from pycds import Variable
-from sdpb import db
+from sdpb import app_db
 from sdpb.api.networks import network_uri
 
 
-session = db.session
+session = app_db.session
 
 
 def variable_uri(variable):

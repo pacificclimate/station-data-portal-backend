@@ -3,7 +3,7 @@ import logging
 from flask import request, url_for
 from flask.logging import default_handler
 from pycds import Network, Station, History
-from sdpb import db
+from sdpb import app_db
 from sdpb.api.networks import network_uri
 from sdpb.api.histories import history_collection_rep, history_rep
 from sdpb.util import \
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(default_handler)
 logger.setLevel(logging.INFO)
 
-session = db.session
+session = app_db.session
 
 
 def station_uri(station):

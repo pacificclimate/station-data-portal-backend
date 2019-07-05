@@ -17,7 +17,7 @@ from pycds import \
     ObsCountPerMonthHistory, \
     ClimoObsCount, \
     History
-from sdpb import db
+from sdpb import app_db
 from sdpb.util import set_logger_level_from_qp
 
 
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(default_handler)
 logger.setLevel(logging.INFO)
 
-session = db.session
+session = app_db.session
 
 
 def observations_counts_uri(start_date=None, end_date=None, station_ids=None):

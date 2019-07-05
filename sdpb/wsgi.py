@@ -1,3 +1,3 @@
-from sdpb import get_app
+from sdpb import create_app
 
-app = get_app()
+connexion_app, flask_app, app_db = create_app()
