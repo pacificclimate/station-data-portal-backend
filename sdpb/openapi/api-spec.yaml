@@ -225,6 +225,19 @@ paths:
 
   # Observations
 
+  /observations/test:
+    get:
+      summary: Get observation test.
+      operationId: sdpb.api.observations.get_test
+      responses:
+        200:
+          description: Success
+          content:
+            text/plain:
+              schema:
+                type: string
+
+
   /observations/counts:
     get:
       summary: Get observation counts.

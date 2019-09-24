@@ -20,6 +20,10 @@ from pycds import \
 from sdpb import app_db
 from sdpb.util import set_logger_level_from_qp
 
+import pkgutil
+import sdpb
+from pydap.handlers.lib import get_handler, load_handlers, parse_ce
+from pydap.wsgi.app import DapServer
 
 logger = logging.getLogger(__name__)
 logger.addHandler(default_handler)
@@ -28,7 +32,7 @@ logger.setLevel(logging.INFO)
 session = app_db.session
 
 
-def observations_counts_uri(start_date=None, end_date=None, station_ids=None):
+def uri(start_date=None, end_date=None, station_ids=None):
     return url_for('.sdpb_api_observations_get_counts', start_date=start_date, end_date=end_date, station_ids=station_ids)
 
 
@@ -87,7 +91,7 @@ def get_counts(start_date=None, end_date=None, station_ids=None):
     climoCounts = climoCountQuery.all()
 
     return {
-        'uri': observations_counts_uri(start_date=start_date, end_date=end_date, station_ids=station_ids),
+        'uri': uri(start_date=start_date, end_date=end_date, station_ids=station_ids),
         'start_date': start_date,
         'end_date': end_date,
         'station_ids': station_ids,
@@ -98,3 +102,59 @@ def get_counts(start_date=None, end_date=None, station_ids=None):
             r.station_id: r.total for r in climoCounts
         },
     }
+
+
+
+pydap_app = DapServer('/home/rglover/code/station-data-portal-backend/sdpb/data')
+
+
+def get_test():
+    # See if we can wire up the simplest possible PyDAP response to this
+    # endpoint
+    # This will return a fixed file.
+    # The file's type (therefore handler/reader for) is CSV.
+    # The response type (therefore response/writer for) is ASCII.
+
+    handler = get_handler('file.nc')
+    print(handler)
+    return 'Test'
+
+    # filepath = pkgutil.get_data('sdpb', 'data/test.csv')
+    filepath = 'data/test.csv'
+
+    # The following would probably work if the run-time loading of packages
+    # in PyDAP were simpler. But it's not.
+    # handler = CSVHandler(filepath)
+    # query_string = ''
+    # buffer_size = 2**27
+    # projection, selection = parse_ce(query_string)
+    # dataset = handler.parse(projection, selection, buffer_size)
+    # responder = ASCIIResponse(dataset)
+
+    handler = get_handler(filepath)
+    query_string = ''
+    buffer_size = 2**27
+    projection, selection = parse_ce(query_string)
+    dataset = handler.parse(projection, selection, buffer_size)
+    responder = handler.responses['ascii'](dataset)
+
+    # But responder is a WSGI app; we want its guts.
+    # Specifically, we want to know how a "responder" turns dataset into
+    # a response.
+    # I really, really, really don't want to have to establish a separate
+    # service for these endpoints. Routing is the issue.
+    # responder is also an __iter__
+    # BUT WAIT ... https://flask.palletsprojects.com/en/1.1.x/quickstart/#about-responses
+    # says that the return value from this function can be a WSGI application
+    return 'Test'
+    return responder
+
+
+def get_timeseries_csv():
+    return 'csv'
+
+def get_timeseries_nc():
+    return 'nc'
+
+def get_timeseries_xslx():
+    return 'xslx'
