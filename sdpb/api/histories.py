@@ -2,7 +2,7 @@ import time
 import logging
 from flask import url_for
 from flask.logging import default_handler
-from pycds import History, VarsPerHistory, Variable
+from pycds import History, VarsPerHistory, Network, Station
 from sdpb import get_app_session
 from sdpb.api import variables
 from sdpb.util import date_rep, float_rep, get_all_vars_by_hx, set_logger_level_from_qp
@@ -79,7 +79,15 @@ def get(id=None):
     assert id is not None
     logger.debug('get history')
     session = get_app_session()
-    history = session.query(History).filter_by(id=id).one()
+    history = (
+        session.
+            query(History)
+            .select_from(History)
+            .join(Station, History.station_id_id == Station.id)
+            .join(Network, Station.network_id == Network.id)
+            .filter(History.id==id, Network.publish==True)
+            .one()
+    )
     logger.debug('get vars')
     variables = (
         session.query(
@@ -101,8 +109,13 @@ def list():
     logger.debug('get histories')
     session = get_app_session()
     histories = (
-        session.query(History)
-        .order_by(History.id.asc())
+        session
+            .query(History)
+            .select_from(History)
+            .join(Station, History.station_id == Station.id)
+            .join(Network, Station.network_id == Network.id)
+            .filter(Network.publish==True)
+            .order_by(History.id.asc())
         .all()
     )
     logger.debug('histories retrieved')

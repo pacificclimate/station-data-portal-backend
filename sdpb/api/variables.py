@@ -1,5 +1,5 @@
 from flask import url_for
-from pycds import Variable
+from pycds import Network, Variable
 from sdpb import get_app_session
 from sdpb.api import networks
 
@@ -26,7 +26,14 @@ def single_item_rep(variable):
 
 def get(id=None):
     assert id is not None
-    variable = get_app_session().query(Variable).filter_by(id=id).one()
+    variable = (
+        get_app_session()
+            .query(Variable)
+            .select_from(Variable)
+            .join(Network, Variable.network_id == Network.id)
+            .filter(Variable.id==id, Network.publish==True)
+            .one()
+    )
     return single_item_rep(variable)
 
 
@@ -43,5 +50,13 @@ def collection_rep(variables):
 
 def list():
     """Get variables from database, and return their representation."""
-    variables = get_app_session().query(Variable).order_by(Variable.id.asc()).all()
+    variables = (
+        get_app_session()
+            .query(Variable)
+            .select_from(Variable)
+            .join(Network, Variable.network_id == Network.id)
+            .filter(Network.publish==True)
+            .order_by(Variable.id.asc())
+            .all()
+    )
     return collection_rep(variables)

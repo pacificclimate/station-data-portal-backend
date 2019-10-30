@@ -28,21 +28,23 @@ def test_network_collection(network_session, tst_networks):
             'uri': networks.uri(nw),
         }
         for nw in tst_networks
+        if nw.publish
     ]
 
 
 def test_network_item(network_session, tst_networks):
     for nw in tst_networks:
-        result = networks.get(nw.id)
-        assert result ==         {
-            'id': nw.id,
-            'name': nw.name,
-            'long_name': nw.long_name,
-            'virtual': nw.virtual,
-            'publish': nw.publish,
-            'color': nw.color,
-            'uri': networks.uri(nw),
-        }
+        if nw.publish:
+            result = networks.get(nw.id)
+            assert result ==         {
+                'id': nw.id,
+                'name': nw.name,
+                'long_name': nw.long_name,
+                'virtual': nw.virtual,
+                'publish': nw.publish,
+                'color': nw.color,
+                'uri': networks.uri(nw),
+            }
 
 
 # Variables
@@ -52,7 +54,7 @@ def test_variables_uri(app):
     assert variables.uri(variable) == 'http://test/variables/99'
 
 
-def test_variable_collection(variable_session, tst_variables):
+def test_variable_collection(variable_session, tst_networks, tst_variables):
     vars = sorted(
         variables.list(),
         key=lambda r: r['id']
@@ -71,24 +73,26 @@ def test_variable_collection(variable_session, tst_variables):
             'network_uri': networks.uri(var.network),
         }
         for var in tst_variables
+        if var.network == tst_networks[0]
     ]
 
 
-def test_variable_item(variable_session, tst_variables):
+def test_variable_item(variable_session, tst_networks, tst_variables):
     for var in tst_variables:
-        result = variables.get(var.id)
-        assert result ==         {
-            'id': var.id,
-            'uri': variables.uri(var),
-            'name': var.name,
-            'display_name': var.display_name,
-            'short_name': var.short_name,
-            'standard_name': var.standard_name,
-            'cell_method': var.cell_method,
-            'unit': var.unit,
-            'precision': var.precision,
-            'network_uri': networks.uri(var.network),
-        }
+        if var.network == tst_networks[0]:
+            result = variables.get(var.id)
+            assert result == {
+                'id': var.id,
+                'uri': variables.uri(var),
+                'name': var.name,
+                'display_name': var.display_name,
+                'short_name': var.short_name,
+                'standard_name': var.standard_name,
+                'cell_method': var.cell_method,
+                'unit': var.unit,
+                'precision': var.precision,
+                'network_uri': networks.uri(var.network),
+            }
 
 
 # Histories
@@ -97,7 +101,9 @@ def test_history_uri(app):
     variable = History(id=99)
     assert histories.uri(variable) == 'http://test/histories/99'
 
-def test_history_collection_omit_vars(history_session, tst_histories):
+def test_history_collection_omit_vars(
+        history_session, tst_networks, tst_histories
+):
     hxs = sorted(
         histories.list(),
         key=lambda r: r['id']
@@ -118,6 +124,7 @@ def test_history_collection_omit_vars(history_session, tst_histories):
             'freq': hx.freq,
         }
         for hx in tst_histories
+        if hx.station.network == tst_networks[0]
     ]
 
 
@@ -128,7 +135,9 @@ def test_stations_uri(app):
     assert stations.uri(station) == 'http://test/stations/99'
 
 
-def test_station_collection_omit_hx(app, observation_session, tst_stations):
+def test_station_collection_omit_hx(
+        app, observation_session, tst_networks, tst_stations
+):
     stns = sorted(
         stations.list(),
         key=lambda r: r['id']
@@ -143,21 +152,25 @@ def test_station_collection_omit_hx(app, observation_session, tst_stations):
             'network_uri': networks.uri(stn.network),
         }
         for stn in tst_stations
+        if stn.network == tst_networks[0]
     ]
 
 
-def test_station_collection_hx_omit_vars(app, observation_session, tst_stations):
-    stns = sorted(
+def test_station_collection_hx_omit_vars(
+        app, observation_session, tst_networks, tst_stations
+):
+    stn_reps = sorted(
         stations.list(),
         key=lambda r: r['id']
     )
 
     assert [
         [
-            omit(stn_hx, ['variable_uris'])
-            for stn_hx in stn['histories']
+            omit(stn_hx_rep, ['variable_uris'])
+            for stn_hx_rep in stn_rep['histories']
         ]
-        for stn in stns
+        for stn_rep in stn_reps
+        if stn_rep['network_uri'] == networks.uri(tst_networks[0])
     ] == [
         [
             {
@@ -177,25 +190,30 @@ def test_station_collection_hx_omit_vars(app, observation_session, tst_stations)
             for stn_hx in stn.histories
         ]
         for stn in tst_stations
+        if stn.network == tst_networks[0]
     ]
 
 @pytest.mark.xfail(reason='Test fixtures don\'t populate VarsPerHistory')
-def test_station_collection_hx_vars(app, observation_session, tst_stations):
-    stns = sorted(
+def test_station_collection_hx_vars(
+        app, observation_session, tst_networks, tst_stations
+):
+    stn_reps = sorted(
         stations.list(),
         key=lambda r: r['id']
     )
 
     assert [
         [
-            set(stn_hx['variable_uris'])
-            for stn_hx in stn['histories']
+            set(stn_hx_rep['variable_uris'])
+            for stn_hx_rep in stn_rep['histories']
         ]
-        for stn in stns
+        for stn_rep in stn_reps
+        if stn_rep['network_uri'] == networks.uri(tst_networks[0])
     ] == [
         [
             {variables.uri(obs.variable) for obs in stn_hx.observations}
             for stn_hx in stn.histories
         ]
         for stn in tst_stations
+        if stn.network == tst_networks[0]
     ]
