@@ -112,12 +112,12 @@ def session(engine):
 
 # Networks
 
-def make_tst_network(label):
+def make_tst_network(label, publish):
     return Network(
         name='Network {}'.format(label),
         long_name='Network {} long name'.format(label),
         virtual='Network {} virtual'.format(label),
-        publish=True,
+        publish=publish,
         color='Network {} color'.format(label),
     )
 
@@ -126,7 +126,7 @@ def tst_networks():
     """Networks"""
     print('#### tst_networks')
     return [
-        make_tst_network(label) for label in ['A', 'B']
+        make_tst_network(label, label < 'C') for label in ['A', 'B', 'C', 'D']
     ]
 
 @fixture(scope='function')
@@ -155,9 +155,12 @@ def make_tst_variable(label, network):
 @fixture(scope='function')
 def tst_variables(tst_networks):
     """Variables"""
-    network = tst_networks[0]
+    network0 = tst_networks[0]  # published
+    network3 = tst_networks[3]  # not published
     return [
-        make_tst_variable(label, network) for label in ['X', 'Y']
+        make_tst_variable(label, network0) for label in ['W', 'X']
+    ] + [
+        make_tst_variable(label, network3) for label in ['Y', 'Z']
     ]
 
 @fixture(scope='function')
@@ -180,9 +183,12 @@ def make_tst_station(label, network):
 @fixture(scope='function')
 def tst_stations(tst_networks):
     """Stations"""
-    network = tst_networks[0]
+    network0 = tst_networks[0]  # published
+    network3 = tst_networks[3]  # not published
     return [
-        make_tst_station(label, network) for label in ['S1', 'S2']
+        make_tst_station(label, network0) for label in ['S1', 'S2']
+    ] + [
+        make_tst_station(label, network3) for label in ['S3', 'S4']
     ]
 
 @fixture(scope='function')
@@ -212,9 +218,12 @@ def make_tst_history(label, station):
 @fixture(scope='function')
 def tst_histories(tst_stations):
     """Histories"""
-    station = tst_stations[0]
+    station0 = tst_stations[0]
+    station3 = tst_stations[3]
     return [
-        make_tst_history(label, station) for label in ['P', 'Q']
+        make_tst_history(label, station0) for label in ['P', 'Q']
+    ] + [
+        make_tst_history(label, station3) for label in ['R', 'S']
     ]
 
 @fixture(scope='function')
