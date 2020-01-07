@@ -12,6 +12,4 @@ install:
   - pip install -U pip
   - pip install -i https://pypi.pacificclimate.org/simple/ -r requirements.txt -r test_requirements.txt
   - pip install -i https://pypi.pacificclimate.org/simple/ .
-before_script:
-  - psql -U postgres -c "create extension postgis"
 script: py.test -v
