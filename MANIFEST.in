@@ -1,1 +1,1 @@
-sdpb/openapi/*.yaml
+include sdpb/openapi/*.yaml
