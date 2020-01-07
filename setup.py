@@ -23,6 +23,7 @@ setup(
         'connexion[swagger-ui]',
     ],
     zip_safe=True,
+    include_package_data=True,
     tests_require=['pytest', 'testing.postgresql'],
     classifiers='''Development Status :: 2 - Pre-Alpha
 Environment :: Web Environment
@@ -30,9 +31,8 @@ Intended Audience :: Developers
 Intended Audience :: Science/Research
 License :: OSI Approved :: GNU General Public License v3 (GPLv3)
 Operating System :: OS Independent
-Programming Language :: Python :: 2.7
-Programming Language :: Python :: 3.4
 Programming Language :: Python :: 3.5
+Programming Language :: Python :: 3.7
 Topic :: Internet
 Topic :: Scientific/Engineering
 Topic :: Database
