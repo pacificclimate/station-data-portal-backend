@@ -23,6 +23,7 @@ setup(
         'connexion[swagger-ui]',
     ],
     zip_safe=True,
+    include_package_data=True,
     tests_require=['pytest', 'testing.postgresql'],
     classifiers='''Development Status :: 2 - Pre-Alpha
 Environment :: Web Environment
