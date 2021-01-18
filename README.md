@@ -84,3 +84,16 @@ to wire up the API definition to code entry points.
 Connexion also serves a Swagger UI Console that provides human-friendly, 
 interactive documentation of the API. 
 It is served at `{base_path}/ui/` where `base_path` is the base path of the API.
+
+## Unit tests
+
+In order to run the unit tests, you need a suitable environment, namely
+one with a friendly version of PostgreSQL.
+It does not seem to be easy to set up such an environment on Ubuntu 20.04 or
+later; the default installation is PostgreSQL 13, and it does not like 
+`CREATE EXTENSION plypythonu`, which is required for the PyCDS database to
+be properly created (by migrating an empty database to the latest revision).
+Therefore, we provide a Docker image which has PostgreSQL 10 installed, along
+with compatible PostGIS and plpython extensions. For information on how to
+use this Docker image to run tests conveniently, see the associated 
+[README](./docker/local-postgres-10/README.md).
