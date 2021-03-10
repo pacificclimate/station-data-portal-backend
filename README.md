@@ -16,8 +16,8 @@ See [Creating Virtual Environments](https://packaging.python.org/installing/#cre
 overview of these tools.
 
 ```bash
-$ git clone https://github.com/pacificclimate/weather-anomaly-data-service
-$ cd weather-anomaly-data-service
+$ git clone https://github.com/pacificclimate/station-data-portal-backend
+$ cd station-data-portal-backend
 $ python3 -m venv venv
 $ source venv/bin/activate
 (venv)$ pip install -U pip
@@ -33,6 +33,7 @@ To run a dev server locally:
 source venv/bin/activate
 export FLASK_APP=sdpb.wsgi
 export FLASK_ENV=development
+export PCDS_DSN=postgresql://user@host/dbname
 flask run
 ```
 
