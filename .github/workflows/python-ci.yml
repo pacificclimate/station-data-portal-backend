@@ -8,30 +8,57 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: [3.6, 3.7]
+        python-version: [3.6, 3.7, 3.8]
 
     steps:
     - uses: actions/checkout@v2
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
+
+    - name: Install system-level dependencies
       env:
         PIP_INDEX_URL: https://pypi.pacificclimate.org/simple
       run: |
         sudo apt-get update
         sudo apt install postgresql-13 postgresql-13-postgis-3
-        pip install -U pip wheel
-        pip install .
-        pip install -r test_requirements.txt
+
+    - name: Install pipenv
+      run: |
+        pip install -U pipenv
+
+    - id: cache-pipenv
+      uses: actions/cache@v2
+      with:
+        path: ~/.local/share/virtualenvs
+        key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+
+    - name: Install dependencies if changed
+      if: steps.cache-pipenv.outputs.cache-hit != 'true' && ${{ matrix.python-version == '3.8' }}
+      env:
+        PIP_INDEX_URL: https://pypi.pacificclimate.org/simple
+      run: |
+        pipenv install --deploy --dev
+
+    - name: Re-install dependencies if alternative python version
+      if: ${{ matrix.python-version != '3.8' }}
+      env:
+        PIP_INDEX_URL: https://pypi.pacificclimate.org/simple
+      run: |
+        mv Pipfile.lock do-not-use
+        pipenv install --python ${{ matrix.python-version }} --dev
+
     - name: Test with pytest (full)
       if: github.ref == 'refs/heads/master'
       run: |
-        py.test -m "not online" -v
+        pipenv run pytest -m "not online" -v
+
     - name: Test with pytest (fast)
       if: github.ref != 'refs/heads/master'
       run: |
-        py.test -m "not online and not slow" -v
-    - name: Code Quality
+        pipenv run pytest -m "not online and not slow" -v
+
+    - name: Check code formatting
       run: black . --check
