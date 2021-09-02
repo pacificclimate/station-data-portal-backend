@@ -21,17 +21,18 @@ jobs:
         PIP_INDEX_URL: https://pypi.pacificclimate.org/simple
       run: |
         sudo apt-get update
-        sudo apt install postgresql-13 postgresql-13-postgis-3
-        pip install -U pip wheel
-        pip install .
-        pip install -r test_requirements.txt
-    - name: Test with pytest (full)
-      if: github.ref == 'refs/heads/master'
-      run: |
-        py.test -m "not online" -v
-    - name: Test with pytest (fast)
-      if: github.ref != 'refs/heads/master'
-      run: |
-        py.test -m "not online and not slow" -v
-    - name: Code Quality
-      run: black . --check
+        sudo apt-cache search postgresql-13-postgis
+#        sudo apt install postgresql-13 postgresql-13-postgis-3
+#        pip install -U pip wheel
+#        pip install .
+#        pip install -r test_requirements.txt
+#    - name: Test with pytest (full)
+#      if: github.ref == 'refs/heads/master'
+#      run: |
+#        py.test -m "not online" -v
+#    - name: Test with pytest (fast)
+#      if: github.ref != 'refs/heads/master'
+#      run: |
+#        py.test -m "not online and not slow" -v
+#    - name: Code Quality
+#      run: black . --check
