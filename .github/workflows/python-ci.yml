@@ -65,4 +65,4 @@ jobs:
         pipenv run pytest -m "not online and not slow" -v
 
     - name: Check code formatting
-      run: black . --check
+      run: pipenv run black . --check
