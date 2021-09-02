@@ -28,7 +28,7 @@ def collection_item_rep(network):
 
 
 def collection_rep(networks):
-    """Return representation of networks collection. """
+    """Return representation of networks collection."""
     return [collection_item_rep(network) for network in networks]
 
 

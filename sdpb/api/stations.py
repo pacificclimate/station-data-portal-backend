@@ -68,7 +68,7 @@ def collection_item_rep(station, histories, all_vars_by_hx):
 
 
 def collection_rep(stations, all_histories_by_station, all_variables):
-    """Return representation of stations collection. """
+    """Return representation of stations collection."""
 
     def histories_for(station):
         start_time = time.time()
