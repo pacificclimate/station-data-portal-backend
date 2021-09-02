@@ -1,0 +1,28 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[[source]]
+url = "https://pypi.pacificclimate.org/simple"
+verify_ssl = true
+name = "pcic"
+
+[packages]
+python-dateutil = "==2.7.5"
+pycds = ">=2.1.0"
+connexion = {version = "==2.6.0", extras = ["swagger-ui"]}
+Flask = "==1.0.4"
+Flask-Cors = "==3.0.7"
+Flask-SQLAlchemy = "==2.3.2"
+
+[dev-packages]
+pytest = "*"
+"testing.postgresql" = "*"
+black = "*"
+
+[requires]
+python_version = "3.8"
+
+[pipenv]
+allow_prereleases = true
