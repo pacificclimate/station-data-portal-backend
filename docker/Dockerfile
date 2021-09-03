@@ -4,7 +4,7 @@
 
 FROM ubuntu:20.04
 
-MAINTAINER Rod Glover <rglover@uvic.ca>
+LABEL Maintainer="Rod Glover <rglover@uvic.ca>"
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
