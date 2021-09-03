@@ -5,7 +5,12 @@ from flask.logging import default_handler
 from pycds import History, VarsPerHistory, Network, Station
 from sdpb import get_app_session
 from sdpb.api import variables
-from sdpb.util import date_rep, float_rep, get_all_vars_by_hx, set_logger_level_from_qp
+from sdpb.util import (
+    date_rep,
+    float_rep,
+    get_all_vars_by_hx,
+    set_logger_level_from_qp,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -47,7 +52,7 @@ def collection_item_rep(history, variables):
 
 
 def collection_rep(histories, all_vars_by_hx):
-    """Return representation of historys collection. """
+    """Return representation of historys collection."""
 
     def variables_for(history):
         """Return those variables connected with a specific history."""
@@ -83,7 +88,7 @@ def get(id=None):
     history = (
         session.query(History)
         .select_from(History)
-        .join(Station, History.station_id_id == Station.id)
+        .join(Station, History.station_id == Station.id)
         .join(Network, Station.network_id == Network.id)
         .filter(History.id == id, Network.publish == True)
         .one()

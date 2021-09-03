@@ -79,10 +79,7 @@ def get_all_vars_by_hx(session):
             VarsPerHistory.history_id.label("history_id"),
             VarsPerHistory.vars_id.label("id"),
         )
-        .order_by(
-            VarsPerHistory.history_id.asc(),
-            VarsPerHistory.vars_id.asc(),
-        )
+        .order_by(VarsPerHistory.history_id.asc(), VarsPerHistory.vars_id.asc())
         .all()
     )
     logger.debug(

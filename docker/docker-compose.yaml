@@ -1,0 +1,9 @@
+version: '3.2'
+services:
+  backend:
+    image: pcic/station-data-portal-backend:latest
+    container_name: station-data-portal-backend
+    env_file:
+      - secret.env
+    ports:
+      - "30502:8000"
