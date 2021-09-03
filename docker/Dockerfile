@@ -22,11 +22,10 @@ ADD . /app
 WORKDIR /app
 
 RUN pip3 install -U pipenv --ignore-installed && \
-    pipenv install
+    pipenv install gunicorn # installs all the packages plus gunicorn
 
 EXPOSE 8000
 
-ENV FLASK_APP sdpb.wsgi
-ENV FLASK_ENV development
-
-CMD pipenv run flask run -p 8000 -h 0.0.0.0 --no-reload
+# gunicorn.conf is set up so that Gunicorn settings are set by environment variables.
+# Gunicorn setting [setting] is set by env var GUNICORN_[setting].
+CMD pipenv run gunicorn --config gunicorn.conf --log-config logging.conf -b ":8000" sdpb.wsgi:flask_app

@@ -5,5 +5,15 @@ services:
     container_name: station-data-portal-backend
     env_file:
       - secret.env
+      - gunicorn.env
+    volumes:
+      - type: bind
+        source: ./gunicorn.conf
+        target: /app/gunicorn.conf
+        read_only: true
+      - type: bind
+        source: ./logging.conf
+        target: /app/logging.conf
+        read_only: true
     ports:
       - "30502:8000"
