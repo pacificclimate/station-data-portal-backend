@@ -18,8 +18,39 @@ RUN apt-get update && \
         python3-pip \
         postgresql-client
 
-ADD . /app
-WORKDIR /app
+# Build arguments (scope limited to build). If you wish to use a different user,
+# group, or home dir, override these in the build command or change them here.
+# If you specify build arg USERNAME=root, then the user is root.
+ARG USERNAME=dockremap
+ARG UID=1000
+ARG GROUPNAME=${USERNAME}
+ARG GID=1000
+ARG USER_DIR=/app
+
+# Environment variables (scope NOT limited to build). These are set here so that
+# subsequent builds and containers have access to these build arguments.
+ENV USERNAME=${USERNAME}
+ENV UID=${UID}
+ENV GROUPNAME=${GROUPNAME}
+ENV GID=${GID}
+ENV USER_DIR=${USER_DIR}
+
+# Create non-privileged user, group, and its directory. This is only done if USERNAME is not root.
+RUN if [ "$USERNAME" != "root" ]; \
+    then \
+        echo "Creating non-root user"; \
+        groupadd -r -g ${GID} ${GROUPNAME}; \
+        useradd -r -d ${USER_DIR} -g ${GROUPNAME} -u ${UID} ${USERNAME}; \
+        mkdir -p ${USER_DIR}; \
+        chown ${USERNAME}:${GROUPNAME} ${USER_DIR}; \
+    fi
+
+# Set user
+USER ${USERNAME}
+
+ADD --chown=${USERNAME}:${GROUPNAME} . ${USER_DIR}
+WORKDIR ${USER_DIR}
+ENV PATH=${USER_DIR}/.local/bin:${PATH}
 
 RUN pip3 install -U pipenv --ignore-installed && \
     pipenv install gunicorn # installs all the packages plus gunicorn
