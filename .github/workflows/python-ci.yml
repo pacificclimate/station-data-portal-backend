@@ -54,6 +54,9 @@ jobs:
         mv Pipfile.lock do-not-use
         pipenv install --python ${{ matrix.python-version }} --dev
 
+    - name: Check code formatting
+      run: pipenv run black . --check
+
     - name: Test with pytest (full)
       if: github.ref == 'refs/heads/master'
       run: |
@@ -63,6 +66,3 @@ jobs:
       if: github.ref != 'refs/heads/master'
       run: |
         pipenv run pytest -m "not online and not slow" -v
-
-    - name: Check code formatting
-      run: pipenv run black . --check
