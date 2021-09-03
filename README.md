@@ -1,28 +1,34 @@
 # Station Data Portal Backend
 
-Data service for [Station Data Portal](https://github.com/pacificclimate/station-data-portal) app.
+The Station Data Portal Backend is a (meta)data microservice for the
+[Station Data Portal](https://github.com/pacificclimate/station-data-portal) 
+app.
+
+At present, this service provides only metadata. Actual data downloads
+are provided by an instance of the PDP backend.
 
 ## Summary
 
-This microservice provides data serving the needs of Station Data Portal and
+This service provides data serving the needs of Station Data Portal and
 similar apps.
 
 ## Installation
 
 It is best practice to install using a virtual environment.
-Current recommended practice for Python3.3+ to use the [builtin `venv` module](https://docs.python.org/3/library/venv.html).
-(Alternatively, `virtualenv` can still be used but it has shortcomings corrected in `venv`.)
-See [Creating Virtual Environments](https://packaging.python.org/installing/#creating-virtual-environments) for an
-overview of these tools.
+We use [`pipenv`](https://pipenv.pypa.io/en/latest/) 
+to manage dependencies and create a virtual environment.
+
+To clone the project:
 
 ```bash
 $ git clone https://github.com/pacificclimate/station-data-portal-backend
+```
+
+To install the project:
+
+```bash
 $ cd station-data-portal-backend
-$ python3 -m venv venv
-$ source venv/bin/activate
-(venv)$ pip install -U pip
-(venv)$ pip install -i https://pypi.pacificclimate.org/simple/ -e .
-(venv)$ pip install -r test_requirements.txt
+$ pipenv install
 ```
 
 ## Run the service
@@ -30,11 +36,10 @@ $ source venv/bin/activate
 To run a dev server locally:
 
 ```bash
-source venv/bin/activate
 export FLASK_APP=sdpb.wsgi
 export FLASK_ENV=development
 export PCDS_DSN=postgresql://user@host/dbname
-flask run
+pipenv run flask run
 ```
 
 
@@ -74,8 +79,8 @@ The definition of the SDP backend API is in `sdpb/openapi/api-spec.yaml`.
 
 ### Tooling
 
-We use the excellent package [Connexion](https://pypi.org/project/connexion/)
+We use the package [Connexion](https://pypi.org/project/connexion/)
 to wire up the API definition to code entry points.
-In addition, Connexion serves a Swagger UI Console that provides highly human-friendly, 
+Connexion also serves a Swagger UI Console that provides human-friendly, 
 interactive documentation of the API. 
 It is served at `{base_path}/ui/` where `base_path` is the base path of the API.
