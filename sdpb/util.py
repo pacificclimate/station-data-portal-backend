@@ -3,7 +3,7 @@ import time
 import logging
 from flask import request
 from flask.logging import default_handler
-from itertools import groupby, islice
+from itertools import groupby
 from pycds import History, VarsPerHistory
 
 logger = logging.getLogger(__name__)
@@ -33,6 +33,14 @@ def parse_date(s):
     if s is None:
         return None
     return dateutil.parser.parse(s)
+
+
+def obs_stats_rep(obs_stats):
+    return {
+        "min_obs_time": date_rep(obs_stats.min_obs_time),
+        "max_obs_time": date_rep(obs_stats.max_obs_time),
+        # "obs_count": int(obs_stats.obs_count),
+    }
 
 
 def set_logger_level_from_qp(a_logger):
