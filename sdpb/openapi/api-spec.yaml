@@ -437,12 +437,25 @@ components:
           description: Elevation of station.
           type: number
         sdate:
-          description: Start datetime of history.
+          description: |
+            Start datetime of history. This value is not reliably maintained.
           type: string
           format: date-time
         edate:
-          description: End datetime of history. Null if it is the current history.
+          description: |
+            End datetime of history. Null if it is the current history.
+            This value is not reliably maintained.
           type: string
+          format: date-time
+        min_obs_time:
+          description: |
+            Time of earliest observation associated with this history.
+            Unlike `sdate`, this value is reliable and up to date.
+          format: date-time
+        max_obs_time:
+          description: |
+            Time of latest observation associated with this history.
+            Unlike `edate`, this value is reliable and up to date.
           format: date-time
         tz_offset:
           description: Time zone offset. Always null in practice.
@@ -484,6 +497,8 @@ components:
         id: 999
         lat: 54.05
         lon: -128.683333
+        min_obs_time: "2020-03-01",
+        max_obs_time: "2021-12-22",
         province: BC
         sdate:
         station_name: KITIMAT
