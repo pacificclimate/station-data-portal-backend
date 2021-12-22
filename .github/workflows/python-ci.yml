@@ -55,7 +55,7 @@ jobs:
         pipenv install --python ${{ matrix.python-version }} --dev
 
     - name: Check code formatting
-      run: pipenv run black . --check
+      run: pipenv run black . --check -l 80
 
     - name: Test with pytest (full)
       if: github.ref == 'refs/heads/master'
