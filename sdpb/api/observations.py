@@ -7,12 +7,11 @@ Results may be restricted to a subset of stations by specifying `station_ids`.
 """
 
 import logging
-import dateutil.parser
 import sqlalchemy
 from sqlalchemy.sql import func
 from sqlalchemy.sql.expression import cast
 from flask.logging import default_handler
-from flask import request, url_for
+from flask import url_for
 from pycds import ObsCountPerMonthHistory, ClimoObsCount, History
 from sdpb import app_db
 from sdpb.util import set_logger_level_from_qp
@@ -40,9 +39,9 @@ def get_counts(start_date=None, end_date=None, station_ids=None):
     # Set up queries for total counts by station id
     obsCountQuery = (
         session.query(
-            cast(func.sum(ObsCountPerMonthHistory.count), sqlalchemy.Integer).label(
-                "total"
-            ),
+            cast(
+                func.sum(ObsCountPerMonthHistory.count), sqlalchemy.Integer
+            ).label("total"),
             History.station_id.label("station_id"),
         )
         .join(History)
@@ -50,7 +49,9 @@ def get_counts(start_date=None, end_date=None, station_ids=None):
     )
     climoCountQuery = (
         session.query(
-            cast(func.sum(ClimoObsCount.count), sqlalchemy.Integer).label("total"),
+            cast(func.sum(ClimoObsCount.count), sqlalchemy.Integer).label(
+                "total"
+            ),
             History.station_id.label("station_id"),
         )
         .join(History)
@@ -69,8 +70,12 @@ def get_counts(start_date=None, end_date=None, station_ids=None):
             ObsCountPerMonthHistory.date_trunc <= end_date
         )
     if station_ids:
-        obsCountQuery = obsCountQuery.filter(History.station_id.in_(station_ids))
-        climoCountQuery = climoCountQuery.filter(History.station_id.in_(station_ids))
+        obsCountQuery = obsCountQuery.filter(
+            History.station_id.in_(station_ids)
+        )
+        climoCountQuery = climoCountQuery.filter(
+            History.station_id.in_(station_ids)
+        )
 
     # Run the queries
     obsCounts = obsCountQuery.all()

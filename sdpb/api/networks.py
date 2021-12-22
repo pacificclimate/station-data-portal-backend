@@ -44,5 +44,7 @@ def list():
 
 
 def get(id):
-    network = get_app_session().query(Network).filter_by(id=id, publish=True).one()
+    network = (
+        get_app_session().query(Network).filter_by(id=id, publish=True).one()
+    )
     return single_item_rep(network)
