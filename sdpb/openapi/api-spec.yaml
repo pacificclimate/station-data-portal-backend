@@ -443,7 +443,8 @@ components:
           format: date-time
         edate:
           description: |
-            End datetime of history. Null if it is the current history.
+            End datetime of history. Null if it is the current history and
+            this is considered an 'active' station.
             This value is not reliably maintained.
           type: string
           format: date-time
@@ -484,6 +485,8 @@ components:
         - elevation
         - sdate
         - edate
+        - max_obs_time
+        - min_obs_time
         - tz_offset
         - province
         - country
@@ -497,8 +500,8 @@ components:
         id: 999
         lat: 54.05
         lon: -128.683333
-        min_obs_time: "2020-03-01",
-        max_obs_time: "2021-12-22",
+        max_obs_time: '1996-11-30T00:00:00'
+        min_obs_time: '1984-07-01T00:00:00'
         province: BC
         sdate:
         station_name: KITIMAT
