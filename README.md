@@ -36,9 +36,9 @@ $ pipenv install
 To run a dev server locally:
 
 ```bash
+export PCDS_DSN=postgresql://user@host/dbname
 export FLASK_APP=sdpb.wsgi
 export FLASK_ENV=development
-export PCDS_DSN=postgresql://user@host/dbname
 pipenv run flask run
 ```
 
