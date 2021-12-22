@@ -99,7 +99,9 @@ def test_history_uri(app):
     assert histories.uri(variable) == "http://test/histories/99"
 
 
-def test_history_collection_omit_vars(history_session, tst_networks, tst_histories):
+def test_history_collection_omit_vars(
+    history_session, tst_networks, tst_histories
+):
     hxs = sorted(histories.list(), key=lambda r: r["id"])
     assert list(map(lambda hx: omit(hx, ["variable_uris"]), hxs)) == [
         {
@@ -153,7 +155,10 @@ def test_station_collection_hx_omit_vars(
     stn_reps = sorted(stations.list(), key=lambda r: r["id"])
 
     assert [
-        [omit(stn_hx_rep, ["variable_uris"]) for stn_hx_rep in stn_rep["histories"]]
+        [
+            omit(stn_hx_rep, ["variable_uris"])
+            for stn_hx_rep in stn_rep["histories"]
+        ]
         for stn_rep in stn_reps
         if stn_rep["network_uri"] == networks.uri(tst_networks[0])
     ] == [
@@ -186,7 +191,10 @@ def test_station_collection_hx_vars(
     stn_reps = sorted(stations.list(), key=lambda r: r["id"])
 
     assert [
-        [set(stn_hx_rep["variable_uris"]) for stn_hx_rep in stn_rep["histories"]]
+        [
+            set(stn_hx_rep["variable_uris"])
+            for stn_hx_rep in stn_rep["histories"]
+        ]
         for stn_rep in stn_reps
         if stn_rep["network_uri"] == networks.uri(tst_networks[0])
     ] == [

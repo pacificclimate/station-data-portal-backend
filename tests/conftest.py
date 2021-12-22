@@ -132,7 +132,9 @@ def make_tst_network(label, publish):
 def tst_networks():
     """Networks"""
     print("#### tst_networks")
-    return [make_tst_network(label, label < "C") for label in ["A", "B", "C", "D"]]
+    return [
+        make_tst_network(label, label < "C") for label in ["A", "B", "C", "D"]
+    ]
 
 
 @fixture(scope="function")
@@ -248,11 +250,7 @@ def history_session(session, tst_histories):
 
 
 def make_tst_observation(label, history, variable):
-    return Obs(
-        datum=99,
-        history=history,
-        variable=variable,
-    )
+    return Obs(datum=99, history=history, variable=variable)
 
 
 @fixture(scope="function")
@@ -260,7 +258,10 @@ def tst_observations(tst_histories, tst_variables):
     """Observations"""
     history = tst_histories[0]
     variable = tst_variables[0]
-    return [make_tst_observation(label, history, variable) for label in ["one", "two"]]
+    return [
+        make_tst_observation(label, history, variable)
+        for label in ["one", "two"]
+    ]
 
 
 @fixture(scope="function")
