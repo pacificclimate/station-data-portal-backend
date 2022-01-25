@@ -82,13 +82,13 @@ def app(database_uri):
     ctx.pop()
 
 
-@fixture(scope="session")
+@pytest.fixture(scope="session")
 def test_client(app):
     with app.test_client() as client:
         yield client
 
 
-@fixture(scope="session")
+@pytest.fixture(scope="session")
 def db(app):
     """Session-wide test database"""
     # TODO: Is this necessary? It's somewhat confusing.
@@ -169,14 +169,14 @@ def make_tst_network(label, publish):
     )
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def tst_networks():
     """Networks"""
     print("#### tst_networks")
     return [make_tst_network(label, label < "C") for label in ["A", "B", "C", "D"]]
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def network_session(session, tst_networks):
     print("#### network_session")
     session.add_all(tst_networks)
@@ -201,7 +201,7 @@ def make_tst_variable(label, network):
     )
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def tst_variables(tst_networks):
     """Variables"""
     network0 = tst_networks[0]  # published
@@ -211,7 +211,7 @@ def tst_variables(tst_networks):
     ]
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def variable_session(session, tst_variables):
     session.add_all(tst_variables)
     session.flush()
@@ -230,7 +230,7 @@ def make_tst_station(label, network):
     )
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def tst_stations(tst_networks):
     """Stations"""
     network0 = tst_networks[0]  # published
@@ -240,7 +240,7 @@ def tst_stations(tst_networks):
     ]
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def station_session(session, tst_stations):
     session.add_all(tst_stations)
     session.flush()
@@ -266,7 +266,7 @@ def make_tst_history(label, station):
     )
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def tst_histories(tst_stations):
     """Histories"""
     station0 = tst_stations[0]
@@ -276,7 +276,7 @@ def tst_histories(tst_stations):
     ]
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def history_session(session, tst_histories):
     session.add_all(tst_histories)
     session.flush()
@@ -296,7 +296,7 @@ def make_tst_observation(label, history, variable):
     )
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def tst_observations(tst_histories, tst_variables):
     """Observations"""
     history = tst_histories[0]
@@ -304,7 +304,7 @@ def tst_observations(tst_histories, tst_variables):
     return [make_tst_observation(label, history, variable) for label in ["one", "two"]]
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def observation_session(session, tst_observations):
     session.add_all(tst_observations)
     session.flush()
