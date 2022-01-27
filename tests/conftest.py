@@ -9,11 +9,7 @@ import datetime
 import pytest
 import testing.postgresql
 
-from flask_sqlalchemy import SQLAlchemy
-import sqlalchemy
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.schema import DDL, CreateSchema
+from sqlalchemy.schema import CreateSchema
 
 from alembic.config import Config
 from alembic import command
@@ -24,7 +20,7 @@ import importlib_resources
 
 import pycds
 import pycds.alembic
-from pycds import Network, Station, History, Variable, DerivedValue, Obs
+from pycds import Network, Station, History, Variable, Obs
 
 from sdpb import create_app
 
@@ -120,13 +116,22 @@ def db(app):
 
 def initialize_database(engine, schema_name):
     """Initialize an empty database"""
+    # Add role required by PyCDS migrations for privileged operations.
+    engine.execute(
+        f"CREATE ROLE {pycds.get_su_role_name()} WITH SUPERUSER NOINHERIT;"
+    )
+    # Add extensions required by PyCDS.
     engine.execute('CREATE EXTENSION postgis')
     engine.execute('CREATE EXTENSION plpythonu')
+    # Add schema.
     engine.execute(CreateSchema(schema_name))
 
 
 def migrate_database(script_location, database_uri, revision="head"):
-    """Migrate a database to a specified revision using Alembic"""
+    """
+    Migrate a database to a specified revision using Alembic.
+    This requires a privileged role to be added in advance to the database.
+    """
     alembic_config = alembic.config.Config()
     alembic_config.set_main_option("script_location", script_location)
     alembic_config.set_main_option("sqlalchemy.url", database_uri)
@@ -136,7 +141,7 @@ def migrate_database(script_location, database_uri, revision="head"):
 @pytest.fixture(scope='session')
 def engine(db, schema_name, alembic_script_location, database_uri):
     """Session-wide database engine"""
-    print("#### engine")
+    print("#### engine", database_uri)
     engine = db.engine
     initialize_database(engine, schema_name)
     migrate_database(alembic_script_location, database_uri)
