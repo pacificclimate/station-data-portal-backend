@@ -34,18 +34,18 @@ flask_app = None
 app_db = None
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def schema_name():
     return pycds.get_schema_name()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def database_uri():
     with testing.postgresql.Postgresql() as pg:
         yield pg.url()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def alembic_script_location():
     """
     This fixture extracts the filepath to the installed pycds Alembic content.
@@ -58,15 +58,16 @@ def alembic_script_location():
 
 # app, db, session fixtures based on http://alexmic.net/flask-sqlalchemy-pytest/
 
-@pytest.fixture(scope='session')
+
+@pytest.fixture(scope="session")
 def app(database_uri):
     """Session-wide test Flask application"""
     global connexion_app, flask_app, app_db
-    print('#### app')
+    print("#### app")
     config_override = {
-        'TESTING': True,
-        'SQLALCHEMY_DATABASE_URI': database_uri,
-        'SERVER_NAME': 'test',
+        "TESTING": True,
+        "SQLALCHEMY_DATABASE_URI": database_uri,
+        "SERVER_NAME": "test",
     }
     connexion_app, flask_app, app_db = create_app(config_override)
 
@@ -88,7 +89,7 @@ def test_client(app):
 def db(app):
     """Session-wide test database"""
     # TODO: Is this necessary? It's somewhat confusing.
-    print('#### db')
+    print("#### db")
     # db = SQLAlchemy(app)
     yield app_db
 
@@ -121,8 +122,8 @@ def initialize_database(engine, schema_name):
         f"CREATE ROLE {pycds.get_su_role_name()} WITH SUPERUSER NOINHERIT;"
     )
     # Add extensions required by PyCDS.
-    engine.execute('CREATE EXTENSION postgis')
-    engine.execute('CREATE EXTENSION plpythonu')
+    engine.execute("CREATE EXTENSION postgis")
+    engine.execute("CREATE EXTENSION plpythonu")
     # Add schema.
     engine.execute(CreateSchema(schema_name))
 
@@ -138,7 +139,7 @@ def migrate_database(script_location, database_uri, revision="head"):
     alembic.command.upgrade(alembic_config, revision)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def engine(db, schema_name, alembic_script_location, database_uri):
     """Session-wide database engine"""
     print("#### engine", database_uri)
@@ -147,9 +148,10 @@ def engine(db, schema_name, alembic_script_location, database_uri):
     migrate_database(alembic_script_location, database_uri)
     yield engine
 
-@pytest.fixture(scope='function')
+
+@pytest.fixture(scope="function")
 def session(engine):
-    print('#### session')
+    print("#### session")
     # TODO: Is this necessary? It's somewhat confusing.
     session = app_db.session
     # Default search path is `"$user", public`. Need to reset that to search crmp (for our db/orm content) and
@@ -178,7 +180,9 @@ def make_tst_network(label, publish):
 def tst_networks():
     """Networks"""
     print("#### tst_networks")
-    return [make_tst_network(label, label < "C") for label in ["A", "B", "C", "D"]]
+    return [
+        make_tst_network(label, label < "C") for label in ["A", "B", "C", "D"]
+    ]
 
 
 @pytest.fixture(scope="function")
@@ -294,11 +298,7 @@ def history_session(session, tst_histories):
 
 
 def make_tst_observation(label, history, variable):
-    return Obs(
-        datum=99,
-        history=history,
-        variable=variable,
-    )
+    return Obs(datum=99, history=history, variable=variable)
 
 
 @pytest.fixture(scope="function")
@@ -306,7 +306,10 @@ def tst_observations(tst_histories, tst_variables):
     """Observations"""
     history = tst_histories[0]
     variable = tst_variables[0]
-    return [make_tst_observation(label, history, variable) for label in ["one", "two"]]
+    return [
+        make_tst_observation(label, history, variable)
+        for label in ["one", "two"]
+    ]
 
 
 @pytest.fixture(scope="function")
