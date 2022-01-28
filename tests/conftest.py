@@ -6,92 +6,153 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "helpers"))
 
 import datetime
 
-from pytest import fixture
+import pytest
 import testing.postgresql
 
-from flask_sqlalchemy import SQLAlchemy
-import sqlalchemy
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.schema import DDL, CreateSchema
+from sqlalchemy.schema import CreateSchema
+
+from alembic.config import Config
+from alembic import command
+import alembic.config
+import alembic.command
+
+import importlib_resources
 
 import pycds
-from pycds import Network, Station, History, Variable, DerivedValue, Obs
+import pycds.alembic
+from pycds import Network, Station, History, Variable, Obs
 
 from sdpb import create_app
 
+# These global variables are set by the `app` fixture as part of its setup
+# (i.e., before it yields).
+# TODO: This is ugly and confusing, but possibly necessary or at least
+#  expedient. It was copied from the Weather Anomaly Data Service. Look there
+#  for an explanation and if possible devise a better alternative.
 connexion_app = None
 flask_app = None
 app_db = None
 
 
+@pytest.fixture(scope="session")
+def schema_name():
+    return pycds.get_schema_name()
+
+
+@pytest.fixture(scope="session")
+def database_uri():
+    with testing.postgresql.Postgresql() as pg:
+        yield pg.url()
+
+
+@pytest.fixture(scope="session")
+def alembic_script_location():
+    """
+    This fixture extracts the filepath to the installed pycds Alembic content.
+    The filepath is typically like
+    `/usr/local/lib/python3.6/dist-packages/pycds/alembic`.
+    """
+    source = importlib_resources.files(pycds.alembic)
+    yield str(source)
+
+
 # app, db, session fixtures based on http://alexmic.net/flask-sqlalchemy-pytest/
 
 
-@fixture(scope="session")
-def app():
+@pytest.fixture(scope="session")
+def app(database_uri):
     """Session-wide test Flask application"""
     global connexion_app, flask_app, app_db
     print("#### app")
-    with testing.postgresql.Postgresql() as pg:
-        config_override = {
-            "TESTING": True,
-            "SQLALCHEMY_DATABASE_URI": pg.url(),
-            "SERVER_NAME": "test",
-        }
-        connexion_app, flask_app, app_db = create_app(config_override)
+    config_override = {
+        "TESTING": True,
+        "SQLALCHEMY_DATABASE_URI": database_uri,
+        "SERVER_NAME": "test",
+    }
+    connexion_app, flask_app, app_db = create_app(config_override)
 
-        ctx = flask_app.app_context()
-        ctx.push()
+    ctx = flask_app.app_context()
+    ctx.push()
 
-        yield flask_app
+    yield flask_app
 
-        ctx.pop()
+    ctx.pop()
 
 
-@fixture(scope="session")
+@pytest.fixture(scope="session")
 def test_client(app):
     with app.test_client() as client:
         yield client
 
 
-@fixture(scope="session")
+@pytest.fixture(scope="session")
 def db(app):
     """Session-wide test database"""
+    # TODO: Is this necessary? It's somewhat confusing.
     print("#### db")
     # db = SQLAlchemy(app)
     yield app_db
 
     # FIXME: Database hang on teardown
-    # Irony: Attempting to tear down the database properly causes the tests to hang at the the end.
-    # Workaround: Not tearing down the database prevents the hang, and causes no other apparent problems.
-    # A similar problem with a more elegant solution is documented at
+    # Problem: Ironically, attempting to tear down the database properly causes
+    # the tests to hang at the the end.
+    # Workaround: Not tearing down the database prevents the hang, and causes
+    # no other apparent problems. A similar problem with a more elegant solution
+    # is documented at
     # http://docs.sqlalchemy.org/en/latest/faq/metadata_schema.html#my-program-is-hanging-when-i-say-table-drop-metadata-drop-all
-    # but the solution (to close connections before dropping tables) does not work. The `session` fixture does close
-    # its connection as part of its teardown. That should work, but apparently not for 'drop extension postgis cascade'
+    # but the solution (to close connections before dropping tables) does not
+    # work. The `session` fixture does close its connection as part of its
+    # teardown. That should work, but apparently not for
+    # `drop extension postgis cascade`
     #
-    # Nominally, the following commented out code ought to work, but it hangs at the indicated line
+    # Nominally, the following commented out code ought to work, but it hangs
+    # at the indicated line
 
-    # print('@fixture db: TEARDOWN')
+    # print('@pytest.fixture db: TEARDOWN')
     # db.engine.execute("drop extension postgis cascade")  # >>> hangs here
-    # print('@fixture db: drop_all')
+    # print('@pytest.fixture db: drop_all')
     # pycds.Base.metadata.drop_all(bind=db.engine)
     # pycds.weather_anomaly.Base.metadata.drop_all(bind=db.engine)
 
 
-@fixture(scope="session")
-def engine(db):
+def initialize_database(engine, schema_name):
+    """Initialize an empty database"""
+    # Add role required by PyCDS migrations for privileged operations.
+    engine.execute(
+        f"CREATE ROLE {pycds.get_su_role_name()} WITH SUPERUSER NOINHERIT;"
+    )
+    # Add extensions required by PyCDS.
+    engine.execute("CREATE EXTENSION postgis")
+    engine.execute("CREATE EXTENSION plpythonu")
+    # Add schema.
+    engine.execute(CreateSchema(schema_name))
+
+
+def migrate_database(script_location, database_uri, revision="head"):
+    """
+    Migrate a database to a specified revision using Alembic.
+    This requires a privileged role to be added in advance to the database.
+    """
+    alembic_config = alembic.config.Config()
+    alembic_config.set_main_option("script_location", script_location)
+    alembic_config.set_main_option("sqlalchemy.url", database_uri)
+    alembic.command.upgrade(alembic_config, revision)
+
+
+@pytest.fixture(scope="session")
+def engine(db, schema_name, alembic_script_location, database_uri):
     """Session-wide database engine"""
-    print("#### engine")
+    print("#### engine", database_uri)
     engine = db.engine
-    engine.execute("create extension postgis")
-    engine.execute(CreateSchema("crmp"))
-    pycds.Base.metadata.create_all(bind=engine)
+    initialize_database(engine, schema_name)
+    migrate_database(alembic_script_location, database_uri)
     yield engine
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def session(engine):
     print("#### session")
+    # TODO: Is this necessary? It's somewhat confusing.
     session = app_db.session
     # Default search path is `"$user", public`. Need to reset that to search crmp (for our db/orm content) and
     # public (for postgis functions)
@@ -100,19 +161,6 @@ def session(engine):
     yield session
     session.rollback()
     # session.close()
-
-
-# def session(engine):
-#     """Single-test database session. All session actions are rolled back on teardown"""
-#     print('#### session')
-#     session = sessionmaker(bind=engine)()
-#     # Default search path is `"$user", public`. Need to reset that to search crmp (for our db/orm content) and
-#     # public (for postgis functions)
-#     session.execute('SET search_path TO crmp, public')
-#     # print('\nsearch_path', [r for r in session.execute('SHOW search_path')])
-#     yield session
-#     session.rollback()
-#     session.close()
 
 
 # Networks
@@ -128,14 +176,16 @@ def make_tst_network(label, publish):
     )
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def tst_networks():
     """Networks"""
     print("#### tst_networks")
-    return [make_tst_network(label, label < "C") for label in ["A", "B", "C", "D"]]
+    return [
+        make_tst_network(label, label < "C") for label in ["A", "B", "C", "D"]
+    ]
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def network_session(session, tst_networks):
     print("#### network_session")
     session.add_all(tst_networks)
@@ -160,7 +210,7 @@ def make_tst_variable(label, network):
     )
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def tst_variables(tst_networks):
     """Variables"""
     network0 = tst_networks[0]  # published
@@ -170,7 +220,7 @@ def tst_variables(tst_networks):
     ]
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def variable_session(session, tst_variables):
     session.add_all(tst_variables)
     session.flush()
@@ -189,7 +239,7 @@ def make_tst_station(label, network):
     )
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def tst_stations(tst_networks):
     """Stations"""
     network0 = tst_networks[0]  # published
@@ -199,7 +249,7 @@ def tst_stations(tst_networks):
     ]
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def station_session(session, tst_stations):
     session.add_all(tst_stations)
     session.flush()
@@ -225,7 +275,7 @@ def make_tst_history(label, station):
     )
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def tst_histories(tst_stations):
     """Histories"""
     station0 = tst_stations[0]
@@ -235,7 +285,7 @@ def tst_histories(tst_stations):
     ]
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def history_session(session, tst_histories):
     session.add_all(tst_histories)
     session.flush()
@@ -248,22 +298,21 @@ def history_session(session, tst_histories):
 
 
 def make_tst_observation(label, history, variable):
-    return Obs(
-        datum=99,
-        history=history,
-        variable=variable,
-    )
+    return Obs(datum=99, history=history, variable=variable)
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def tst_observations(tst_histories, tst_variables):
     """Observations"""
     history = tst_histories[0]
     variable = tst_variables[0]
-    return [make_tst_observation(label, history, variable) for label in ["one", "two"]]
+    return [
+        make_tst_observation(label, history, variable)
+        for label in ["one", "two"]
+    ]
 
 
-@fixture(scope="function")
+@pytest.fixture(scope="function")
 def observation_session(session, tst_observations):
     session.add_all(tst_observations)
     session.flush()

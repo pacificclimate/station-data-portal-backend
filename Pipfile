@@ -10,7 +10,7 @@ name = "pcic"
 
 [packages]
 python-dateutil = "==2.7.5"
-pycds = ">=2.1.0"
+pycds = ">=3.2.2"
 connexion = {version = "==2.6.0", extras = ["swagger-ui"]}
 Flask = "==1.0.4"
 Flask-Cors = "==3.0.7"
@@ -20,6 +20,7 @@ Flask-SQLAlchemy = "==2.3.2"
 pytest = "*"
 "testing.postgresql" = "*"
 black = "*"
+sdpb = {editable = true, path = "."}
 
 [requires]
 python_version = "3.8"
