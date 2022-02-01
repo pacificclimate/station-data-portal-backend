@@ -17,6 +17,7 @@ from the database are provided by an instance of the PDP backend.
 - [API Design](docs/api-design.md)
 - [Development](docs/development.md)
 - [Unit testing](docs/unit-testing.md)
+- [Supporting CRMP while it is behind PyCDS head revision](docs/supporting-crmp.md)
 
 ## Releasing
 
