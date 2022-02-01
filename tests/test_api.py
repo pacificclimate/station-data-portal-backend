@@ -2,7 +2,7 @@ import pytest
 from pycds import Network, Variable, Station, History
 from sdpb.api import networks, variables, stations, histories
 from sdpb.util import date_rep, float_rep
-from helpers import omit
+from helpers import find, groupby_dict, omit
 
 
 # Networks
@@ -13,7 +13,7 @@ def test_networks_uri(app):
     assert networks.uri(network) == "http://test/networks/99"
 
 
-def test_network_collection(network_session, tst_networks):
+def test_network_collection(everything_session, tst_networks):
     nws = sorted(networks.list(), key=lambda r: r["id"])
     assert nws == [
         {
@@ -30,7 +30,7 @@ def test_network_collection(network_session, tst_networks):
     ]
 
 
-def test_network_item(network_session, tst_networks):
+def test_network_item(everything_session, tst_networks):
     for nw in tst_networks:
         if nw.publish:
             result = networks.get(nw.id)
@@ -53,7 +53,7 @@ def test_variables_uri(app):
     assert variables.uri(variable) == "http://test/variables/99"
 
 
-def test_variable_collection(variable_session, tst_networks, tst_variables):
+def test_variable_collection(everything_session, tst_networks, tst_variables):
     vars = sorted(variables.list(), key=lambda r: r["id"])
     assert vars == [
         {
@@ -73,7 +73,7 @@ def test_variable_collection(variable_session, tst_networks, tst_variables):
     ]
 
 
-def test_variable_item(variable_session, tst_networks, tst_variables):
+def test_variable_item(everything_session, tst_networks, tst_variables):
     for var in tst_variables:
         if var.network == tst_networks[0]:
             result = variables.get(var.id)
@@ -99,26 +99,53 @@ def test_history_uri(app):
     assert histories.uri(variable) == "http://test/histories/99"
 
 
-def test_history_collection_omit_vars(history_session, tst_networks, tst_histories):
-    hxs = sorted(histories.list(), key=lambda r: r["id"])
-    assert list(map(lambda hx: omit(hx, ["variable_uris"]), hxs)) == [
-        {
-            "id": hx.id,
-            "uri": histories.uri(hx),
-            "station_name": hx.station_name,
-            "lon": float_rep(hx.lon),
-            "lat": float_rep(hx.lat),
-            "elevation": float_rep(hx.elevation),
-            "sdate": date_rep(hx.sdate),
-            "edate": date_rep(hx.edate),
-            "tz_offset": hx.tz_offset,
-            "province": hx.province,
-            "country": hx.country,
-            "freq": hx.freq,
-        }
-        for hx in tst_histories
-        if hx.station.network == tst_networks[0]
+def expected_history_rep(history, all_stn_obs_stats):
+    def history_id_match(r):
+        return r.history_id == history.id
+
+    return {
+        "id": history.id,
+        "uri": histories.uri(history),
+        "station_name": history.station_name,
+        "lon": float_rep(history.lon),
+        "lat": float_rep(history.lat),
+        "elevation": float_rep(history.elevation),
+        "max_obs_time": date_rep(
+            find(all_stn_obs_stats, history_id_match).max_obs_time
+        ),
+        "min_obs_time": date_rep(
+            find(all_stn_obs_stats, history_id_match).min_obs_time
+        ),
+        "sdate": date_rep(history.sdate),
+        "edate": date_rep(history.edate),
+        "tz_offset": history.tz_offset,
+        "province": history.province,
+        "country": history.country,
+        "freq": history.freq,
+    }
+
+
+def history_sans_vars(history):
+    return omit(history, ["variable_uris"])
+
+
+def test_history_collection_omit_vars(
+    everything_session, tst_networks, tst_histories, tst_stn_obs_stats
+):
+    """
+    Test that the history collection includes exactly those histories for
+    published stations.
+    ("omit_vars" refers to not checking the variables
+    associated with the histories -- why are they omitted?)
+    """
+    result = sorted(histories.list(), key=lambda r: r["id"])
+    result_wo_vars = list(map(history_sans_vars, result))
+    expected = [
+        expected_history_rep(thx, tst_stn_obs_stats)
+        for thx in tst_histories
+        if thx.station.network == tst_networks[0]
     ]
+    assert result_wo_vars == expected
 
 
 # Stations
@@ -129,71 +156,42 @@ def test_stations_uri(app):
     assert stations.uri(station) == "http://test/stations/99"
 
 
-def test_station_collection_omit_hx(
-    app, observation_session, tst_networks, tst_stations
-):
-    stns = sorted(stations.list(), key=lambda r: r["id"])
-    assert list(map(lambda stn: omit(stn, ["histories"]), stns)) == [
-        {
-            "id": stn.id,
-            "uri": stations.uri(stn),
-            "native_id": stn.native_id,
-            "min_obs_time": date_rep(stn.min_obs_time),
-            "max_obs_time": date_rep(stn.max_obs_time),
-            "network_uri": networks.uri(stn.network),
-        }
-        for stn in tst_stations
-        if stn.network == tst_networks[0]
-    ]
+def expected_station_rep(station, all_histories, all_stn_obs_stats):
+    hxs_by_station_id = groupby_dict(all_histories, key=lambda h: h.station_id)
+    try:
+        stn_histories = hxs_by_station_id[station.id]
+    except KeyError:
+        stn_histories = []
+
+    return {
+        "id": station.id,
+        "uri": stations.uri(station),
+        "native_id": station.native_id,
+        "min_obs_time": date_rep(station.min_obs_time),
+        "max_obs_time": date_rep(station.max_obs_time),
+        "network_uri": networks.uri(station.network),
+        "histories": [
+            expected_history_rep(hx, all_stn_obs_stats) for hx in stn_histories
+        ],
+    }
 
 
 def test_station_collection_hx_omit_vars(
-    app, observation_session, tst_networks, tst_stations
+    app,
+    everything_session,
+    tst_networks,
+    tst_stations,
+    tst_histories,
+    tst_stn_obs_stats,
 ):
     stn_reps = sorted(stations.list(), key=lambda r: r["id"])
-
-    assert [
-        [omit(stn_hx_rep, ["variable_uris"]) for stn_hx_rep in stn_rep["histories"]]
-        for stn_rep in stn_reps
-        if stn_rep["network_uri"] == networks.uri(tst_networks[0])
-    ] == [
-        [
-            {
-                "id": stn_hx.id,
-                "station_name": stn_hx.station_name,
-                "lon": stn_hx.lon,
-                "lat": stn_hx.lat,
-                "elevation": stn_hx.elevation,
-                "sdate": date_rep(stn_hx.sdate),
-                "edate": date_rep(stn_hx.edate),
-                "tz_offset": stn_hx.tz_offset,
-                "province": stn_hx.province,
-                "country": stn_hx.country,
-                "freq": stn_hx.freq,
-                "uri": histories.uri(stn_hx),
-            }
-            for stn_hx in stn.histories
-        ]
-        for stn in tst_stations
-        if stn.network == tst_networks[0]
+    stn_reps_wo_vars = [
+        {**stn, "histories": [history_sans_vars(hx) for hx in stn["histories"]]}
+        for stn in stn_reps
     ]
-
-
-@pytest.mark.xfail(reason="Test fixtures don't populate VarsPerHistory")
-def test_station_collection_hx_vars(
-    app, observation_session, tst_networks, tst_stations
-):
-    stn_reps = sorted(stations.list(), key=lambda r: r["id"])
-
-    assert [
-        [set(stn_hx_rep["variable_uris"]) for stn_hx_rep in stn_rep["histories"]]
-        for stn_rep in stn_reps
-        if stn_rep["network_uri"] == networks.uri(tst_networks[0])
-    ] == [
-        [
-            {variables.uri(obs.variable) for obs in stn_hx.observations}
-            for stn_hx in stn.histories
-        ]
-        for stn in tst_stations
-        if stn.network == tst_networks[0]
+    expected = [
+        expected_station_rep(station, tst_histories, tst_stn_obs_stats)
+        for station in tst_stations
+        if station.network_id == tst_networks[0].id
     ]
+    assert stn_reps_wo_vars == expected

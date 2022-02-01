@@ -3,8 +3,8 @@ import time
 import logging
 from flask import request
 from flask.logging import default_handler
-from itertools import groupby, islice
-from pycds import History, VarsPerHistory
+from itertools import groupby
+from pycds import History, VarsPerHistory, StationObservationStats
 
 logger = logging.getLogger(__name__)
 logger.addHandler(default_handler)
@@ -35,6 +35,14 @@ def parse_date(s):
     return dateutil.parser.parse(s)
 
 
+def obs_stats_rep(obs_stats):
+    return {
+        "min_obs_time": date_rep(obs_stats.min_obs_time),
+        "max_obs_time": date_rep(obs_stats.max_obs_time),
+        # "obs_count": int(obs_stats.obs_count),
+    }
+
+
 def set_logger_level_from_qp(a_logger):
     """Set logger level from query parameter `debug`."""
     try:
@@ -47,10 +55,20 @@ def set_logger_level_from_qp(a_logger):
 # TODO: Move these into a different util module
 
 
-def get_all_histories_by_station(session):
+def get_all_histories_etc_by_station(session):
     set_logger_level_from_qp(logger)
     start_time = time.time()
-    all_histories = session.query(History).order_by(History.station_id.asc()).all()
+    # TODO: Filter by Network.publish ?
+    all_histories_etc = (
+        session.query(History, StationObservationStats)
+        .select_from(History)
+        .join(
+            StationObservationStats,
+            StationObservationStats.history_id == History.id,
+        )
+        .order_by(History.station_id.asc(), History.id)
+        .all()
+    )
     logger.debug(
         "get_all_histories_by_station: all_histories elapsed time: {}".format(
             time.time() - start_time
@@ -60,7 +78,9 @@ def get_all_histories_by_station(session):
     start_time = time.time()
     result = {
         station_id: list(histories)
-        for station_id, histories in groupby(all_histories, lambda hx: hx.station_id)
+        for station_id, histories in groupby(
+            all_histories_etc, lambda hx_etc: hx_etc.History.station_id
+        )
     }
     logger.debug(
         "get_all_histories_by_station: grouping elapsed time: {}".format(
@@ -91,10 +111,14 @@ def get_all_vars_by_hx(session):
     start_time = time.time()
     result = {
         history_id: list(variables)
-        for history_id, variables in groupby(all_variables, lambda v: v.history_id)
+        for history_id, variables in groupby(
+            all_variables, lambda v: v.history_id
+        )
     }
     logger.debug(
-        "get_all_vars_by_hx: grouping elapsed time: {}".format(time.time() - start_time)
+        "get_all_vars_by_hx: grouping elapsed time: {}".format(
+            time.time() - start_time
+        )
     )
 
     return result
