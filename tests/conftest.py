@@ -26,7 +26,6 @@ import datetime
 import pytest
 import testing.postgresql
 
-from sqlalchemy.inspection import inspect
 from sqlalchemy.schema import CreateSchema
 
 from alembic.config import Config
@@ -173,28 +172,7 @@ def engine(db, schema_name, alembic_script_location, database_uri):
     engine = db.engine
     initialize_database(engine, schema_name)
     migrate_database(alembic_script_location, database_uri)
-    inspector = inspect(engine)
-    print("### inspector", dir(inspector))
-    c = inspector.get_pk_constraint("station_obs_stats_mv", schema=schema_name)
-    print("### pk constraints", c)
-    c = inspector.get_check_constraints("station_obs_stats_mv", schema=schema_name)
-    print("### check constraints", c)
-
     yield engine
-
-
-@pytest.fixture(scope="function")
-def session(engine):
-    print("#### session")
-    # TODO: Is this necessary? It's somewhat confusing.
-    session = app_db.session
-    # Default search path is `"$user", public`. Need to reset that to search crmp (for our db/orm content) and
-    # public (for postgis functions)
-    session.execute("SET search_path TO crmp, public")
-    # print('\nsearch_path', [r for r in session.execute('SHOW search_path')])
-    yield session
-    session.rollback()
-    # session.close()
 
 
 # Networks
@@ -216,12 +194,10 @@ def make_tst_network(label, publish):
 @pytest.fixture(scope="function")
 def tst_networks():
     """Networks"""
-    print("#### tst_networks")
-    r = [make_tst_network(label, label < "C") for label in
-          ["A", "B", "C", "D"]]
-    print("\n### tst_networks")
-    for x in r:
-        print(f"id={x.id} name={x.name}")
+    r = [make_tst_network(label, label < "C") for label in ["A", "B", "C", "D"]]
+    # print("\n### tst_networks")
+    # for x in r:
+    #     print(f"id={x.id} name={x.name}")
     return r
 
 
@@ -277,10 +253,11 @@ def tst_stations(tst_networks):
     network0 = tst_networks[0]  # published
     network3 = tst_networks[3]  # not published
     r = [make_tst_station(label, network0) for label in ["S1", "S2"]] + [
-        make_tst_station(label, network3) for label in ["S3", "S4"]]
-    print("\n### tst_stations")
-    for x in r:
-        print(f"id={x.id} network_id={x.network_id} native_id={x.native_id}")
+        make_tst_station(label, network3) for label in ["S3", "S4"]
+    ]
+    # print("\n### tst_stations")
+    # for x in r:
+    #     print(f"id={x.id} network_id={x.network_id} native_id={x.native_id}")
     return r
 
 
@@ -313,10 +290,13 @@ def tst_histories(tst_stations):
     station0 = tst_stations[0]
     station3 = tst_stations[3]
     r = [make_tst_history(label, station0) for label in ["P", "Q"]] + [
-        make_tst_history(label, station3) for label in ["R", "S"]]
-    print("\n### tst_histories")
-    for x in r:
-        print(f"id={x.id}  station_id={x.station_id}  station_name={x.station_name}")
+        make_tst_history(label, station3) for label in ["R", "S"]
+    ]
+    # print("\n### tst_histories")
+    # for x in r:
+    #     print(
+    #         f"id={x.id}  station_id={x.station_id}  station_name={x.station_name}"
+    #     )
     return r
 
 
@@ -332,7 +312,7 @@ def make_tst_observation(label, history, variable):
         id=next(observation_id),
         datum=99,
         history_id=history.id,
-        vars_id=variable.id
+        vars_id=variable.id,
     )
 
 
@@ -354,7 +334,7 @@ def make_tst_stn_obs_stat(
     history,
     min_obs_time=datetime.datetime(2004, 1, 2, 3, 4, 5),
     max_obs_time=datetime.datetime(2005, 1, 2, 3, 4, 5),
-    obs_count=999
+    obs_count=999,
 ):
     return StationObservationStats(
         station_id=history.station_id,
@@ -372,6 +352,7 @@ def tst_stn_obs_stats(tst_histories):
 
 # Sessions
 
+
 @pytest.fixture(scope="function")
 def session(engine):
     print("#### session")
@@ -386,51 +367,14 @@ def session(engine):
 
 
 @pytest.fixture(scope="function")
-def network_session(session, tst_networks):
-    print("#### network_session")
-    session.add_all(tst_networks)
-    session.flush()
-    yield session
-
-
-@pytest.fixture(scope="function")
-def variable_session(session, tst_variables):
-    session.add_all(tst_variables)
-    session.flush()
-    yield session
-
-
-@pytest.fixture(scope="function")
-def station_session(network_session, tst_stations):
-    session = network_session
-    # TODO: Are flushes necessary?
-    session.add_all(tst_stations)
-    session.flush()
-    yield session
-
-
-@pytest.fixture(scope="function")
-def history_session(station_session, tst_histories, tst_stn_obs_stats):
-    # TODO: Are flushes necessary?
-    session = station_session
-    session.add_all(tst_histories)
-    session.flush()
-    session.add_all(tst_stn_obs_stats)
-    session.flush()
-    yield session
-
-
-@pytest.fixture(scope="function")
-def observation_session(station_session, tst_observations):
-    session.add_all(tst_observations)
-    session.flush()
-    yield session
-
-
-@pytest.fixture(scope="function")
 def everything_session(
-    session, tst_networks, tst_variables, tst_stations, tst_histories,
-    tst_stn_obs_stats, tst_observations
+    session,
+    tst_networks,
+    tst_variables,
+    tst_stations,
+    tst_histories,
+    tst_stn_obs_stats,
+    tst_observations,
 ):
     session.add_all(tst_networks)
     session.flush()

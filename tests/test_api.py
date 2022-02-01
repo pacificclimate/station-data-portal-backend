@@ -30,7 +30,7 @@ def test_network_collection(everything_session, tst_networks):
     ]
 
 
-def test_network_item(network_session, tst_networks):
+def test_network_item(everything_session, tst_networks):
     for nw in tst_networks:
         if nw.publish:
             result = networks.get(nw.id)
@@ -140,13 +140,11 @@ def test_history_collection_omit_vars(
     """
     result = sorted(histories.list(), key=lambda r: r["id"])
     result_wo_vars = list(map(history_sans_vars, result))
-    print("### hxs", result)
     expected = [
         expected_history_rep(thx, tst_stn_obs_stats)
         for thx in tst_histories
         if thx.station.network == tst_networks[0]
     ]
-    print("### expected", expected)
     assert result_wo_vars == expected
 
 
@@ -160,7 +158,6 @@ def test_stations_uri(app):
 
 def expected_station_rep(station, all_histories, all_stn_obs_stats):
     hxs_by_station_id = groupby_dict(all_histories, key=lambda h: h.station_id)
-    print("### hxs_by_station_id", hxs_by_station_id)
     try:
         stn_histories = hxs_by_station_id[station.id]
     except KeyError:
@@ -192,8 +189,6 @@ def test_station_collection_hx_omit_vars(
         {**stn, "histories": [history_sans_vars(hx) for hx in stn["histories"]]}
         for stn in stn_reps
     ]
-    print("### stn_reps", stn_reps)
-
     expected = [
         expected_station_rep(station, tst_histories, tst_stn_obs_stats)
         for station in tst_stations
