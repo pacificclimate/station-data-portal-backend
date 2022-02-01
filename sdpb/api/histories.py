@@ -32,6 +32,7 @@ def uri(history):
 def single_item_rep(history_etc, vars):
     """Return representation of a history"""
     history = history_etc.History
+    sos = history_etc.StationObservationStats
     obs_stats = history_etc.StationObservationStats
     set_logger_level_from_qp(logger)
     logger.debug("history_rep id: {}".format(history.id))
@@ -42,6 +43,8 @@ def single_item_rep(history_etc, vars):
         "lon": float_rep(history.lon),
         "lat": float_rep(history.lat),
         "elevation": float_rep(history.elevation),
+        "max_obs_time": date_rep(sos.max_obs_time),
+        "min_obs_time": date_rep(sos.min_obs_time),
         "sdate": date_rep(history.sdate),
         "edate": date_rep(history.edate),
         "tz_offset": history.tz_offset,
