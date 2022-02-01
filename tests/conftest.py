@@ -191,7 +191,7 @@ def make_tst_network(label, publish):
     )
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def tst_networks():
     """Networks"""
     r = [make_tst_network(label, label < "C") for label in ["A", "B", "C", "D"]]
@@ -221,7 +221,7 @@ def make_tst_variable(label, network):
     )
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def tst_variables(tst_networks):
     """Variables"""
     network0 = tst_networks[0]  # published
@@ -247,7 +247,7 @@ def make_tst_station(label, network):
     )
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def tst_stations(tst_networks):
     """Stations"""
     network0 = tst_networks[0]  # published
@@ -284,7 +284,7 @@ def make_tst_history(label, station):
     )
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def tst_histories(tst_stations):
     """Histories"""
     station0 = tst_stations[0]
@@ -316,7 +316,7 @@ def make_tst_observation(label, history, variable):
     )
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def tst_observations(tst_histories, tst_variables):
     """Observations"""
     history = tst_histories[0]
@@ -345,7 +345,7 @@ def make_tst_stn_obs_stat(
     )
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def tst_stn_obs_stats(tst_histories):
     return [make_tst_stn_obs_stat(history) for history in tst_histories]
 
@@ -353,7 +353,7 @@ def tst_stn_obs_stats(tst_histories):
 # Sessions
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def session(engine):
     print("#### session")
     session = app_db.session
@@ -366,7 +366,7 @@ def session(engine):
     # session.close()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def everything_session(
     session,
     tst_networks,
