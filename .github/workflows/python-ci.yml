@@ -61,7 +61,7 @@ jobs:
         pipenv run pytest -m "not online" -v
 
     - name: Test with pytest (fast)
-      if: github.ref != 'refs/heads/master'
+      if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/crmp'
       run: |
         pipenv run pytest -m "not online and not slow" -v
 
