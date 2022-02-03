@@ -8,7 +8,9 @@ jobs:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8]
+        python-version:
+          - 3.7
+          - 3.8
 
     steps:
     - uses: actions/checkout@v2
@@ -22,38 +24,53 @@ jobs:
       env:
         PIP_INDEX_URL: https://pypi.pacificclimate.org/simple
       run: |
-#        sudo apt-get update
+        sudo apt-get update
         sudo apt-get install -y curl ca-certificates gnupg
         curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
         sudo su -c "echo deb http://apt.postgresql.org/pub/repos/apt `lsb_release -cs`-pgdg main >/etc/apt/sources.list.d/pgdg.list"
         sudo apt-get update
         sudo apt purge postgresql-client-14 postgresql-server-dev-all
-        sudo apt-get install postgresql-plpython-9.5 postgresql-9.5-postgis-2.4
+        sudo apt-get install -yq \
+          libpq-dev \
+          python3.7 \
+          python3.7-dev \
+          python3.7-distutils \
+          python3.7-venv \
+          python3-pip \
+          postgresql-10 \
+          postgresql-plpython-10 \
+          postgresql-10-postgis-2.4
 
     - name: Install pipenv
       run: |
         pip install -U pipenv
 
-    - id: cache-pipenv
-      uses: actions/cache@v2
-      with:
-        path: ~/.local/share/virtualenvs
-        key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-
-    - name: Install dependencies if changed
-      if: steps.cache-pipenv.outputs.cache-hit != 'true' && ${{ matrix.python-version == '3.8' }}
+    - name: Create Pipenv environment
       env:
         PIP_INDEX_URL: https://pypi.pacificclimate.org/simple
       run: |
-        pipenv install --deploy --dev
+        pipenv install --dev
 
-    - name: Re-install dependencies if alternative python version
-      if: ${{ matrix.python-version != '3.8' }}
-      env:
-        PIP_INDEX_URL: https://pypi.pacificclimate.org/simple
-      run: |
-        mv Pipfile.lock do-not-use
-        pipenv install --python ${{ matrix.python-version }} --dev
+#    - id: cache-pipenv
+#      uses: actions/cache@v2
+#      with:
+#        path: ~/.local/share/virtualenvs
+#        key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+#
+#    - name: Install dependencies if changed
+#      if: steps.cache-pipenv.outputs.cache-hit != 'true' && ${{ matrix.python-version == '3.8' }}
+#      env:
+#        PIP_INDEX_URL: https://pypi.pacificclimate.org/simple
+#      run: |
+#        pipenv install --deploy --dev
+#
+#    - name: Re-install dependencies if alternative python version
+#      if: ${{ matrix.python-version != '3.8' }}
+#      env:
+#        PIP_INDEX_URL: https://pypi.pacificclimate.org/simple
+#      run: |
+#        mv Pipfile.lock do-not-use
+#        pipenv install --python ${{ matrix.python-version }} --dev
 
     - name: Test with pytest (full)
       if: github.ref == 'refs/heads/master'
@@ -64,7 +81,3 @@ jobs:
       if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/crmp'
       run: |
         pipenv run pytest -m "not online and not slow" -v
-
-    - name: Check code formatting
-      run: pipenv run black --line-length=80 . --check
-
