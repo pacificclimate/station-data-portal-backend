@@ -1,6 +1,7 @@
 # Station Data Portal Backend
 
-TODO: Add badges
+[![Python CI](https://github.com/pacificclimate/station-data-portal-backend/actions/workflows/python-ci.yml/badge.svg)](https://github.com/pacificclimate/station-data-portal-backend/actions/workflows/python-ci.yml)
+[![Docker Publishing](https://github.com/pacificclimate/station-data-portal-backend/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/pacificclimate/station-data-portal-backend/actions/workflows/docker-publish.yml)
 
 The Station Data Portal Backend is a microservice providing metadata from a 
 [PyCDS](https://github.com/pacificclimate/pycds) database.
