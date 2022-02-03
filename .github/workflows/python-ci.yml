@@ -43,12 +43,6 @@ jobs:
       run: |
         pip install -U pipenv
 
-#    - name: Create Pipenv environment
-#      env:
-#        PIP_INDEX_URL: https://pypi.pacificclimate.org/simple
-#      run: |
-#        pipenv install --dev
-
     - id: cache-pipenv
       uses: actions/cache@v2
       with:
@@ -61,14 +55,6 @@ jobs:
         PIP_INDEX_URL: https://pypi.pacificclimate.org/simple
       run: |
         pipenv install --deploy --dev
-
-#    - name: Re-install dependencies if alternative python version
-#      if: ${{ matrix.python-version != '3.8' }}
-#      env:
-#        PIP_INDEX_URL: https://pypi.pacificclimate.org/simple
-#      run: |
-#        mv Pipfile.lock do-not-use
-#        pipenv install --python ${{ matrix.python-version }} --dev
 
     - name: Test with pytest (full)
       if: github.ref == 'refs/heads/master'
