@@ -1,4 +1,3 @@
-import time
 import logging
 from flask import url_for
 from flask.logging import default_handler
@@ -12,11 +11,12 @@ from sdpb.util import (
     get_all_vars_by_hx,
     set_logger_level_from_qp,
 )
+from sdpb.timing import timing
 
 
 logger = logging.getLogger(__name__)
 logger.addHandler(default_handler)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 
 def uri(station):
@@ -82,23 +82,13 @@ def collection_rep(stations, all_histories_etc_by_station, all_variables):
     """Return representation of stations collection."""
 
     def histories_etc_for(station):
-        start_time = time.time()
-        try:
-            # result = station.histories
-            result = all_histories_etc_by_station[station.id]
-            logger.debug(
-                "histories_for({}) elapsed time: {}".format(
-                    station.id, time.time() - start_time
-                )
-            )
+        with timing("histories_etc_for", log=logger.debug):
+            try:
+                # result = station.histories
+                result = all_histories_etc_by_station[station.id]
+            except Exception as e:
+                result = []
             return result
-        except Exception as e:
-            logger.debug(
-                "Exception retrieving all_histories_by_station[{}]: {}".format(
-                    station.id, e
-                )
-            )
-            return []
 
     set_logger_level_from_qp(logger)
     return [
