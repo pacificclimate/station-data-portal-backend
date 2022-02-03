@@ -1,12 +1,10 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "1738f09fb5829296a18258f40b5f991bd3923b74d8c3d9d8ee1472d731fa2905"
+            "sha256": "5a393851f4801897a00b27fc416ba0967fdb02bb85fc7619ebad64d647c9beb9"
         },
         "pipfile-spec": 6,
-        "requires": {
-            "python_version": "3.8"
-        },
+        "requires": {},
         "sources": [
             {
                 "name": "pypi",
@@ -398,11 +396,11 @@
         },
         "pycds": {
             "hashes": [
-                "sha256:b48e91e1109d35c9661af5f1717036ef717028b079ffec6caaa792a7a591f4b0",
-                "sha256:dffac17b4ee23790cd4be15522a641db823590c9fa131e13a081e0b544a1490a"
+                "sha256:dddf10dbd845d3289ac6e038bcd1edd6adb8691c9f4751074dc11a5d6b8d908f",
+                "sha256:f0c4c7eb8578493396f1e864db6c372d28b51c1d8561bc3cec84eb5b6cf13398"
             ],
             "index": "pypi",
-            "version": "==3.2.0"
+            "version": "==3.3.0"
         },
         "pyparsing": {
             "hashes": [
@@ -543,6 +541,12 @@
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'",
             "version": "==1.4.31"
+        },
+        "sqlalchemy-citext": {
+            "hashes": [
+                "sha256:a1740e693a9a334e7c8f60ae731083fe75ce6c1605bb9ca6644a6f1f63b15b77"
+            ],
+            "version": "==1.8.0"
         },
         "swagger-ui-bundle": {
             "hashes": [
@@ -1015,11 +1019,11 @@
         },
         "pycds": {
             "hashes": [
-                "sha256:b48e91e1109d35c9661af5f1717036ef717028b079ffec6caaa792a7a591f4b0",
-                "sha256:dffac17b4ee23790cd4be15522a641db823590c9fa131e13a081e0b544a1490a"
+                "sha256:dddf10dbd845d3289ac6e038bcd1edd6adb8691c9f4751074dc11a5d6b8d908f",
+                "sha256:f0c4c7eb8578493396f1e864db6c372d28b51c1d8561bc3cec84eb5b6cf13398"
             ],
             "index": "pypi",
-            "version": "==3.2.0"
+            "version": "==3.3.0"
         },
         "pyparsing": {
             "hashes": [
@@ -1186,6 +1190,13 @@
                 "sha256:a1740e693a9a334e7c8f60ae731083fe75ce6c1605bb9ca6644a6f1f63b15b77"
             ],
             "version": "==1.8.0"
+        },
+        "swagger-ui-bundle": {
+            "hashes": [
+                "sha256:b462aa1460261796ab78fd4663961a7f6f347ce01760f1303bbbdf630f11f516",
+                "sha256:cea116ed81147c345001027325c1ddc9ca78c1ee7319935c3c75d3669279d575"
+            ],
+            "version": "==0.0.9"
         },
         "testing.common.database": {
             "hashes": [
