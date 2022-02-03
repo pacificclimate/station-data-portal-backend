@@ -13,7 +13,7 @@ python-dateutil = "==2.7.5"
 pycds = ">=3.3.0"
 connexion = {version = "==2.6.0", extras = ["swagger-ui"]}
 Flask = "==1.0.4"
-Flask-Cors = "==3.0.7"
+Flask-Cors = "==3.0.9"
 Flask-SQLAlchemy = "==2.3.2"
 
 [dev-packages]
