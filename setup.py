@@ -2,7 +2,7 @@ import sys
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
-__version__ = (0, 1, 0)
+__version__ = (3, 0, 0)
 
 setup(
     name="sdpb",
