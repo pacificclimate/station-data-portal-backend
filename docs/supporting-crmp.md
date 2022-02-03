@@ -2,17 +2,38 @@
 
 ## Key points
 
-CRMP requires a backend that uses an early release of PyCDS.
-To do this, we maintain a separate branch, `crmp`.
+To use this backend with CRMP, we must use an early release of PyCDS.
+To do this, we maintain a separate branch, `crmp`, and release from it too.
+
+Basic rules:
 
 - All development work is done primarily on `master`; that is, `master`
   is the base branch for all PRs.
 - Unit tests are written for `master` branch only. Failing unit tests on
   `crmp` are expected. `python-ci` skips tests on `crmp` branch.
-- After changes are merged to `master`, `master` branch is merged into
-  `crmp`, and the version of PyCDS in branch `crmp` adjusted as necessary to
-  remain at a compatible release.
-- Releases is made both from `master` and `crmp`, ideally in lockstep.
+
+Development hints:
+
+- When merging changes in `Pipfile`to `crmp`:
+  - Be careful not to change the correct version for PyCDS on this branch.
+  - Run `pipenv lock` (or `pipenv install --dev`) and commit the updated 
+    `Pipfile.lock` to branch `crmp`.
+- If you change between `master` and `crmp` branches while running tests or 
+  running the server (or some other use), you should update 
+  the Pipenv environment each time. Otherwise you will be using an 
+  incompatible version of PyCDS and potentially of other packages.
+  - In a local Pipenv environment, issue `pipenv install --dev`. 
+  - If you are running a Docker test container, 
+    restart it (it recreates the Pipenv environment for you).
+
+Releases and lifecycle:
+
+- Releases are made both from `master` and `crmp`, usually in lockstep.
+- Before creating a new release:
+  - Merge `master` into `crmp`.
+  - Adjust the version of PyCDS in branch `crmp` as necessary to
+    remain at a compatible release. (This usually means ensuring it is still 
+    at its old value, which at the time of writing is 3.2.0.)
 - Release numbering:
    - Branch `master`: Versions numbered >= 3.
    - Branch `crmp`: Versions numbered >= 1, < 3. This will give us a little
@@ -22,7 +43,7 @@ To do this, we maintain a separate branch, `crmp`.
   `master` branch will be used for releases.
 
 
-## Problem
+## Problem analysis
 
 CRMP database is stuck at PyCDS revision 8fd8f556c548. It cannot be migrated until it is hosted on a version of PG >= 10.
 
@@ -34,7 +55,7 @@ We need to connect this backend (in different instances) to both CRMP and metnor
 
 In both backends, we will in general need the most recent work. (In particular we will need the results of #25 .) We cannot simply use an earlier (also not yet released) version of SDPB.
 
-## Solutions
+## Solution options
 
 ### Option (preferred): Create two release branches for this project
 
