@@ -1,6 +1,5 @@
 import logging
 from flask import url_for
-from flask.logging import default_handler
 from pycds import Network, Station, History, StationObservationStats
 from sdpb import get_app_session
 from sdpb.api import networks
@@ -14,9 +13,7 @@ from sdpb.util import (
 from sdpb.timing import timing
 
 
-logger = logging.getLogger(__name__)
-logger.addHandler(default_handler)
-logger.setLevel(logging.DEBUG)
+logger = logging.getLogger("sdpb")
 
 
 def uri(station):

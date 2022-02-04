@@ -20,9 +20,7 @@ from sdpb.util import (
 )
 
 
-logger = logging.getLogger(__name__)
-logger.addHandler(default_handler)
-logger.setLevel(logging.INFO)
+logger = logging.getLogger("sdpb")
 
 
 def uri(history):

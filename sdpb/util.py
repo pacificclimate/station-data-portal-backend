@@ -2,13 +2,11 @@ import dateutil.parser
 import time
 import logging
 from flask import request
-from flask.logging import default_handler
 from itertools import groupby
 from pycds import History, VarsPerHistory, StationObservationStats
 
-logger = logging.getLogger(__name__)
-logger.addHandler(default_handler)
-logger.setLevel(logging.INFO)
+
+logger = logging.getLogger("sdpb")
 
 
 def dict_from_row(row):
