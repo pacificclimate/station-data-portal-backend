@@ -37,7 +37,10 @@ def single_item_rep(history_etc, vars=None, compact=False):
         "station_name": history.station_name,
         "lon": float_rep(history.lon),
         "lat": float_rep(history.lat),
+        "province": history.province,
+        "freq": history.freq,
         **obs_stats_rep(sos),
+        "variable_uris": [variables.uri(variable) for variable in vars or []],
     }
     if compact:
         return rep
@@ -47,10 +50,7 @@ def single_item_rep(history_etc, vars=None, compact=False):
         "sdate": date_rep(history.sdate),
         "edate": date_rep(history.edate),
         "tz_offset": history.tz_offset,
-        "province": history.province,
         "country": history.country,
-        "freq": history.freq,
-        "variable_uris": [variables.uri(variable) for variable in vars or []],
     }
 
 

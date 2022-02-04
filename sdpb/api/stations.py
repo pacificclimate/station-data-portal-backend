@@ -147,7 +147,8 @@ def list(stride=None, limit=None, offset=None, compact=False):
             stations = q.all()
 
         all_histories_etc_by_station = get_all_histories_etc_by_station(session)
-        all_vars_by_hx = None if compact else get_all_vars_by_hx(session)
+        # all_vars_by_hx = None if compact else get_all_vars_by_hx(session)
+        all_vars_by_hx = get_all_vars_by_hx(session)
 
         with timing("Convert stations to rep", log=logger.debug):
             return collection_rep(
