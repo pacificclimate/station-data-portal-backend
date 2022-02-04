@@ -1,7 +1,5 @@
-import time
 import logging
 from flask import url_for
-from flask.logging import default_handler
 from pycds import (
     History,
     VarsPerHistory,
@@ -18,6 +16,7 @@ from sdpb.util import (
     set_logger_level_from_qp,
     obs_stats_rep,
 )
+from sdpb.timing import timing
 
 
 logger = logging.getLogger("sdpb")
@@ -33,7 +32,6 @@ def single_item_rep(history_etc, vars):
     sos = history_etc.StationObservationStats
     obs_stats = history_etc.StationObservationStats
     set_logger_level_from_qp(logger)
-    logger.debug("history_rep id: {}".format(history.id))
     return {
         "id": history.id,
         "uri": uri(history),
@@ -67,25 +65,19 @@ def collection_rep(histories_etc, all_vars_by_hx):
 
     def variables_for(history):
         """Return those variables connected with a specific history."""
-        logger.debug("variables_for({})".format(history.id))
-        start_time = time.time()
-        try:
-            result = all_vars_by_hx[history.id]
-            logger.debug(
-                "variables_for({}) elapsed time: {}".format(
-                    history.id, time.time() - start_time
-                )
-            )
-            return result
-        except Exception as e:
-            logger.debug(
-                "Exception retrieving all_vars_by_hx[{}]: {}".format(
-                    history.id, e
-                )
-            )
-            return []
+        with timing(
+            f"variables_for {history.id}",
+            log=None,
+            # log=logger.debug,
+        ):
+            try:
+                result = all_vars_by_hx[history.id]
+                return result
+            except KeyError as e:
+                return []
 
     set_logger_level_from_qp(logger)
+
     return [
         collection_item_rep(history_etc, variables_for(history_etc.History))
         for history_etc in histories_etc
@@ -129,21 +121,22 @@ def list():
     """Get histories and associated variables from database,
     and return their representation."""
     set_logger_level_from_qp(logger)
-    logger.debug("get histories")
     session = get_app_session()
-    histories_etc = (
-        session.query(History, StationObservationStats)
-        .select_from(History)
-        .join(Station, History.station_id == Station.id)
-        .join(Network, Station.network_id == Network.id)
-        .join(
-            StationObservationStats,
-            StationObservationStats.history_id == History.id,
-        )
-        .filter(Network.publish == True)
-        .order_by(History.id.asc())
-        .all()
-    )
-    logger.debug("histories retrieved")
-    all_vars_by_hx = get_all_vars_by_hx(session)
-    return collection_rep(histories_etc, all_vars_by_hx)
+    with timing("List all histories", log=logger.debug):
+        with timing("Query all histories etc", log=logger.debug):
+            histories_etc = (
+                session.query(History, StationObservationStats)
+                .select_from(History)
+                .join(Station, History.station_id == Station.id)
+                .join(Network, Station.network_id == Network.id)
+                .join(
+                    StationObservationStats,
+                    StationObservationStats.history_id == History.id,
+                )
+                .filter(Network.publish == True)
+                .order_by(History.id.asc())
+                .all()
+            )
+        all_vars_by_hx = get_all_vars_by_hx(session)
+        with timing("Convert histories etc to rep", log=logger.debug):
+            return collection_rep(histories_etc, all_vars_by_hx)

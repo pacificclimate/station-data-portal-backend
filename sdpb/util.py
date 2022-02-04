@@ -1,9 +1,9 @@
 import dateutil.parser
-import time
 import logging
 from flask import request
 from itertools import groupby
 from pycds import History, VarsPerHistory, StationObservationStats
+from sdpb.timing import timing
 
 
 logger = logging.getLogger("sdpb")
@@ -55,68 +55,46 @@ def set_logger_level_from_qp(a_logger):
 
 def get_all_histories_etc_by_station(session):
     set_logger_level_from_qp(logger)
-    start_time = time.time()
     # TODO: Filter by Network.publish ?
-    all_histories_etc = (
-        session.query(History, StationObservationStats)
-        .select_from(History)
-        .join(
-            StationObservationStats,
-            StationObservationStats.history_id == History.id,
+    with timing("Query all histories by station", log=logger.debug):
+        all_histories_etc = (
+            session.query(History, StationObservationStats)
+            .select_from(History)
+            .join(
+                StationObservationStats,
+                StationObservationStats.history_id == History.id,
+            )
+            .order_by(History.station_id.asc(), History.id)
+            .all()
         )
-        .order_by(History.station_id.asc(), History.id)
-        .all()
-    )
-    logger.debug(
-        "get_all_histories_by_station: all_histories elapsed time: {}".format(
-            time.time() - start_time
-        )
-    )
 
-    start_time = time.time()
-    result = {
-        station_id: list(histories)
-        for station_id, histories in groupby(
-            all_histories_etc, lambda hx_etc: hx_etc.History.station_id
-        )
-    }
-    logger.debug(
-        "get_all_histories_by_station: grouping elapsed time: {}".format(
-            time.time() - start_time
-        )
-    )
+    with timing("Group all histories by station", log=logger.debug):
+        result = {
+            station_id: list(histories)
+            for station_id, histories in groupby(
+                all_histories_etc, lambda hx_etc: hx_etc.History.station_id
+            )
+        }
 
     return result
 
 
 def get_all_vars_by_hx(session):
     set_logger_level_from_qp(logger)
-    start_time = time.time()
-    all_variables = (
-        session.query(
-            VarsPerHistory.history_id.label("history_id"),
-            VarsPerHistory.vars_id.label("id"),
+    with timing("Query all vars by hx", log=logger.debug):
+        all_variables = (
+            session.query(
+                VarsPerHistory.history_id.label("history_id"),
+                VarsPerHistory.vars_id.label("id"),
+            )
+            .order_by(VarsPerHistory.history_id.asc(), VarsPerHistory.vars_id.asc())
+            .all()
         )
-        .order_by(VarsPerHistory.history_id.asc(), VarsPerHistory.vars_id.asc())
-        .all()
-    )
-    logger.debug(
-        "get_all_vars_by_hx: all_variables elapsed time: {}".format(
-            time.time() - start_time
-        )
-    )
-
-    start_time = time.time()
-    result = {
-        history_id: list(variables)
-        for history_id, variables in groupby(
-            all_variables, lambda v: v.history_id
-        )
-    }
-    logger.debug(
-        "get_all_vars_by_hx: grouping elapsed time: {}".format(
-            time.time() - start_time
-        )
-    )
-
+    with timing("Group all vars by hx", log=logger.debug):
+        result = {
+            history_id: list(variables)
+            for history_id, variables in groupby(
+                all_variables, lambda v: v.history_id
+            )
+        }
     return result
