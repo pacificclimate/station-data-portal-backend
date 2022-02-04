@@ -26,11 +26,38 @@ def uri(history):
     return url_for("sdpb_api_histories_get", id=history.id)
 
 
-def single_item_rep(history_etc, vars):
+def single_item_rep(history_etc, vars=None, compact=False):
     """Return representation of a history"""
     history = history_etc.History
     sos = history_etc.StationObservationStats
-    obs_stats = history_etc.StationObservationStats
+    set_logger_level_from_qp(logger)
+    rep = {
+        "id": history.id,
+        "uri": uri(history),
+        "station_name": history.station_name,
+        "lon": float_rep(history.lon),
+        "lat": float_rep(history.lat),
+        **obs_stats_rep(sos),
+    }
+    if compact:
+        return rep
+    return {
+        **rep,
+        "elevation": float_rep(history.elevation),
+        "sdate": date_rep(history.sdate),
+        "edate": date_rep(history.edate),
+        "tz_offset": history.tz_offset,
+        "province": history.province,
+        "country": history.country,
+        "freq": history.freq,
+        "variable_uris": [variables.uri(variable) for variable in vars or []],
+    }
+
+
+def single_item_rep_compact(history_etc):
+    """Return representation of a history"""
+    history = history_etc.History
+    sos = history_etc.StationObservationStats
     set_logger_level_from_qp(logger)
     return {
         "id": history.id,
@@ -39,28 +66,19 @@ def single_item_rep(history_etc, vars):
         "lon": float_rep(history.lon),
         "lat": float_rep(history.lat),
         "elevation": float_rep(history.elevation),
-        "max_obs_time": date_rep(sos.max_obs_time),
-        "min_obs_time": date_rep(sos.min_obs_time),
-        "sdate": date_rep(history.sdate),
-        "edate": date_rep(history.edate),
-        "tz_offset": history.tz_offset,
-        "province": history.province,
-        "country": history.country,
-        "freq": history.freq,
-        **obs_stats_rep(obs_stats),
-        "variable_uris": [variables.uri(variable) for variable in vars],
+        **obs_stats_rep(sos),
     }
 
 
-def collection_item_rep(history_etc, variables):
+def collection_item_rep(history_etc, **kwargs):
     """Return representation of a history collection item.
     May conceivably be different than representation of a single a history.
     """
     set_logger_level_from_qp(logger)
-    return single_item_rep(history_etc, variables)
+    return single_item_rep(history_etc, **kwargs)
 
 
-def collection_rep(histories_etc, all_vars_by_hx):
+def collection_rep(histories_etc, all_vars_by_hx=None, compact=False):
     """Return representation of historys collection."""
 
     def variables_for(history):
@@ -70,6 +88,8 @@ def collection_rep(histories_etc, all_vars_by_hx):
             log=None,
             # log=logger.debug,
         ):
+            if all_vars_by_hx is None:
+                return []
             try:
                 result = all_vars_by_hx[history.id]
                 return result
@@ -79,7 +99,11 @@ def collection_rep(histories_etc, all_vars_by_hx):
     set_logger_level_from_qp(logger)
 
     return [
-        collection_item_rep(history_etc, variables_for(history_etc.History))
+        collection_item_rep(
+            history_etc,
+            vars=variables_for(history_etc.History),
+            compact=compact,
+        )
         for history_etc in histories_etc
     ]
 
@@ -117,7 +141,7 @@ def get(id=None):
     return single_item_rep(history_etc, variables)
 
 
-def list():
+def list(compact=False):
     """Get histories and associated variables from database,
     and return their representation."""
     set_logger_level_from_qp(logger)
@@ -137,6 +161,10 @@ def list():
                 .order_by(History.id.asc())
                 .all()
             )
-        all_vars_by_hx = get_all_vars_by_hx(session)
+
+        all_vars_by_hx = None if compact else get_all_vars_by_hx(session)
+
         with timing("Convert histories etc to rep", log=logger.debug):
-            return collection_rep(histories_etc, all_vars_by_hx)
+            return collection_rep(
+                histories_etc, all_vars_by_hx, compact=compact
+            )

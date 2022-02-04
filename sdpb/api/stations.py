@@ -15,25 +15,36 @@ from sdpb.timing import timing
 
 logger = logging.getLogger("sdpb")
 
+# TODO: Name function parameters consistently
+
 
 def uri(station):
     """Return uri for a station"""
     return url_for("sdpb_api_stations_get", id=station.id)
 
 
-def single_item_rep(station, station_histories_etc, all_vars_by_hx):
+def single_item_rep(
+    station, station_histories_etc, all_vars_by_hx=None, compact=False
+):
     """Return representation of a single station item."""
     set_logger_level_from_qp(logger)
-    return {
+    rep = {
         "id": station.id,
         "uri": uri(station),
         "native_id": station.native_id,
-        "min_obs_time": date_rep(station.min_obs_time),
-        "max_obs_time": date_rep(station.max_obs_time),
         "network_uri": networks.uri(station.network),
         "histories": histories.collection_rep(
-            station_histories_etc, all_vars_by_hx
+            station_histories_etc,
+            all_vars_by_hx=all_vars_by_hx,
+            compact=compact,
         ),
+    }
+    if compact:
+        return rep
+    return {
+        **rep,
+        "min_obs_time": date_rep(station.min_obs_time),
+        "max_obs_time": date_rep(station.max_obs_time),
     }
 
 
@@ -64,15 +75,24 @@ def get(id=None):
     return single_item_rep(station, station_histories_etc, all_vars_by_hx)
 
 
-def collection_item_rep(station, station_histories_etc, all_vars_by_hx):
+def collection_item_rep(
+    station, station_histories_etc, all_vars_by_hx=None, compact=False
+):
     """Return representation of a station collection item.
     May conceivably be different than representation of a single a station.
     """
     set_logger_level_from_qp(logger)
-    return single_item_rep(station, station_histories_etc, all_vars_by_hx)
+    return single_item_rep(
+        station,
+        station_histories_etc,
+        all_vars_by_hx=all_vars_by_hx,
+        compact=compact,
+    )
 
 
-def collection_rep(stations, all_histories_etc_by_station, all_variables):
+def collection_rep(
+    stations, all_histories_etc_by_station, all_variables=None, compact=False
+):
     """Return representation of stations collection."""
 
     def histories_etc_for(station):
@@ -91,14 +111,22 @@ def collection_rep(stations, all_histories_etc_by_station, all_variables):
     set_logger_level_from_qp(logger)
 
     return [
-        collection_item_rep(station, histories_etc_for(station), all_variables)
+        collection_item_rep(
+            station,
+            histories_etc_for(station),
+            all_vars_by_hx=all_variables,
+            compact=compact,
+        )
         for station in stations
     ]
 
 
-def list(stride=None, limit=None, offset=None):
+def list(stride=None, limit=None, offset=None, compact=False):
     """Get stations from database, and return their representation."""
     set_logger_level_from_qp(logger)
+    logger.debug(
+        f"stations.list(stride={stride}, limit={limit}, offset={offset}, compact={compact})"
+    )
     session = get_app_session()
 
     with timing("List all stations", log=logger.debug):
@@ -116,13 +144,15 @@ def list(stride=None, limit=None, offset=None):
                 q = q.limit(limit)
             if offset:
                 q = q.offset(offset)
-
             stations = q.all()
-        all_vars_by_hx = get_all_vars_by_hx(session)
 
         all_histories_etc_by_station = get_all_histories_etc_by_station(session)
+        all_vars_by_hx = None if compact else get_all_vars_by_hx(session)
 
         with timing("Convert stations to rep", log=logger.debug):
             return collection_rep(
-                stations, all_histories_etc_by_station, all_vars_by_hx
+                stations,
+                all_histories_etc_by_station,
+                all_variables=all_vars_by_hx,
+                compact=compact,
             )

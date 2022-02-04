@@ -136,6 +136,12 @@ paths:
       tags:
         - Histories
       operationId: sdpb.api.histories.list
+      parameters:
+        - name: compact
+          in: query
+          description: Return compact representation
+          schema:
+            type: boolean
       responses:
         200:
           description: Success
@@ -178,6 +184,11 @@ paths:
         - Stations
       operationId: sdpb.api.stations.list
       parameters:
+        - name: compact
+          in: query
+          description: Return compact representation
+          schema:
+            type: boolean
         - name: stride
           in: query
           description: Get every `stride`-th station
