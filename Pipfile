@@ -9,6 +9,7 @@ verify_ssl = true
 name = "pcic"
 
 [packages]
+pyyaml = "*"
 python-dateutil = "==2.8.2"
 pycds = {version = "==3.3.0", index = "pcic" }
 connexion = {version = "2.13.0", extras = ["swagger-ui"]}
