@@ -237,6 +237,20 @@ paths:
         404:
           $ref: '#/components/responses/404NotFound'
 
+  /crmp_network_geoserver:
+    get:
+      summary: Results from crmp_network_geoserver view.
+      tags:
+        - Stations
+      operationId: sdpb.api.crmp_network_geoserver.list
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StationList'
+
   # Observations
 
   /observations/counts:
