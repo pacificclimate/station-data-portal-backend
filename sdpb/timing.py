@@ -24,13 +24,16 @@ def timing(
     start_message="{description}: start",
     end_message="{description}: elapsed time {elapsed} ms",
 ):
+    if log is None:
+        yield
+        return
     start = perf_counter() * multiplier
-    if log is not None and start_message is not None:
+    if start_message is not None:
         log(start_message.format(description=description, start=start))
     yield
     end = perf_counter() * multiplier
     elapsed = end - start
-    if log is not None:
+    if end_message is not None:
         log(
             end_message.format(
                 description=description, start=start, end=end, elapsed=elapsed
