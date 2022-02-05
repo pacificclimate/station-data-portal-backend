@@ -5,7 +5,10 @@ from sdpb.api import networks
 
 
 def uri(variable):
-    return url_for("sdpb_api_variables_get", id=variable.id)
+    if isinstance(variable, Variable):
+        return url_for("sdpb_api_variables_get", id=variable.id)
+    # Assuming int
+    return url_for("sdpb_api_variables_get", id=variable)
 
 
 def single_item_rep(variable):
