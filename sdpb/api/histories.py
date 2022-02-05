@@ -54,22 +54,6 @@ def single_item_rep(history_etc, vars=None, compact=False):
     }
 
 
-def single_item_rep_compact(history_etc):
-    """Return representation of a history"""
-    history = history_etc.History
-    sos = history_etc.StationObservationStats
-    set_logger_level_from_qp(logger)
-    return {
-        "id": history.id,
-        "uri": uri(history),
-        "station_name": history.station_name,
-        "lon": float_rep(history.lon),
-        "lat": float_rep(history.lat),
-        "elevation": float_rep(history.elevation),
-        **obs_stats_rep(sos),
-    }
-
-
 def collection_item_rep(history_etc, **kwargs):
     """Return representation of a history collection item.
     May conceivably be different than representation of a single a history.
