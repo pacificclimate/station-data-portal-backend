@@ -4,13 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [[source]]
-url = "https://pypi.pacificclimate.org/simple"
+url = "https://pypi.pacificclimate.org/simple/"
 verify_ssl = true
 name = "pcic"
 
 [packages]
 python-dateutil = "==2.8.2"
-pycds = "==3.3.0"
+pycds = {version = "==3.3.0", index = "pcic" }
 connexion = {version = "2.13.0", extras = ["swagger-ui"]}
 Flask = "==2.1.1"
 Flask-Cors = "==3.0.10"
