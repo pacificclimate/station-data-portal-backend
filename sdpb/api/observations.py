@@ -26,7 +26,7 @@ session = app_db.session
 
 def observations_counts_uri(start_date=None, end_date=None, station_ids=None):
     return url_for(
-        ".sdpb_api_observations_get_counts",
+        "sdpb_api_observations_get_counts",
         start_date=start_date,
         end_date=end_date,
         station_ids=station_ids,
