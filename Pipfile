@@ -11,7 +11,7 @@ name = "pcic"
 [packages]
 python-dateutil = "*"
 pycds = "*"
-connexion = {version = "*", extras = ["swagger-ui"]}
+connexion = {version = "2.13.0", extras = ["swagger-ui"]}
 Flask = "*"
 Flask-Cors = "*"
 Flask-SQLAlchemy = "*"
