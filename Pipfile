@@ -9,12 +9,12 @@ verify_ssl = true
 name = "pcic"
 
 [packages]
-python-dateutil = "*"
-pycds = "*"
+python-dateutil = "==2.8.2"
+pycds = "==4.0.0"
 connexion = {version = "2.13.0", extras = ["swagger-ui"]}
-Flask = "*"
-Flask-Cors = "*"
-Flask-SQLAlchemy = "*"
+Flask = "==2.1.1"
+Flask-Cors = "==3.0.10"
+Flask-SQLAlchemy = "==2.5.1"
 
 [dev-packages]
 pytest = "*"
