@@ -32,16 +32,17 @@ To create a versioned release:
 
 1. Ensure that `crmp` has been appropriately updated. In most cases, this 
    means: 
-   1. Merge `master` into `crmp`. 
-   2. Adjust the version of PyCDS in branch `crmp` as necessary to
+   1. Check out `crmp`.
+   2. Merge `master` into `crmp`. 
+   3. Adjust the version of PyCDS in branch `crmp` as necessary to
   remain at a compatible release. (This usually means ensuring it is still
   at its old value, which at the time of writing is 3.2.0.)
-   3. Run `pipenv lock` (or `pipenv install --dev`) and commit the updated
+   4. Run `pipenv lock` (or `pipenv install --dev`) and commit the updated
   `Pipfile.lock` to branch `crmp`.
 2. Release on `crmp`:
    1. Check out `crmp`.
-   3. Increment `__version__` in `setup.py` (version >=1, < 3).
-   4. Add, commit, and tag, and push these changes:
+   2. Increment `__version__` in `setup.py` (version >=1, < 3).
+   3. Add, commit, and tag, and push these changes:
       ```
       git add setup.py
       git commit -m "Bump crmp to version x.x.x
