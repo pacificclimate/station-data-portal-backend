@@ -21,7 +21,7 @@ logger.setLevel(logging.INFO)
 
 def uri(station):
     """Return uri for a station"""
-    return url_for(".sdpb_api_stations_get", id=station.id)
+    return url_for("sdpb_api_stations_get", id=station.id)
 
 
 def single_item_rep(station, station_histories_etc, all_vars_by_hx):

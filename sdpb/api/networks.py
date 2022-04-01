@@ -4,7 +4,7 @@ from sdpb import get_app_session
 
 
 def uri(network):
-    return url_for(".sdpb_api_networks_get", id=network.id)
+    return url_for("sdpb_api_networks_get", id=network.id)
 
 
 def single_item_rep(network):

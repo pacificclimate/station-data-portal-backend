@@ -26,7 +26,7 @@ logger.setLevel(logging.INFO)
 
 
 def uri(history):
-    return url_for(".sdpb_api_histories_get", id=history.id)
+    return url_for("sdpb_api_histories_get", id=history.id)
 
 
 def single_item_rep(history_etc, vars):
