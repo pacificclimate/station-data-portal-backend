@@ -1,4 +1,7 @@
-openapi: '3.1.0'
+# OpenAPI version is critical to Connexion working properly.
+# At time of writing, it must be 3.0.x, and only 3.0.1 is known for sure to
+# work.
+openapi: '3.0.1'
 
 
 info:

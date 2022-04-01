@@ -5,7 +5,7 @@ from sdpb.api import networks
 
 
 def uri(variable):
-    return url_for(".sdpb_api_variables_get", id=variable.id)
+    return url_for("sdpb_api_variables_get", id=variable.id)
 
 
 def single_item_rep(variable):
