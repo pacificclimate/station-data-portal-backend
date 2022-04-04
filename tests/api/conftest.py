@@ -18,7 +18,8 @@ forward. So in the meantime we do this. Ick.
 import sys
 import os
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "helpers"))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "helpers"))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "api"))
 
 from itertools import count
 import datetime
