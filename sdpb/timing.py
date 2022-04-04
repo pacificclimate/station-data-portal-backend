@@ -16,8 +16,16 @@ from contextlib import contextmanager
 from time import perf_counter
 
 
+def timing(f, *args, **kwargs):
+    start = perf_counter()
+    value = f(*args, **kwargs)
+    end = perf_counter()
+    elapsed = end - start
+    return {"start": start, "end": end, "elapsed": elapsed, "value": value}
+
+
 @contextmanager
-def timing(
+def log_timing(
     description,
     log=None,
     multiplier=1000,

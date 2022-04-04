@@ -10,7 +10,7 @@ from sdpb.util import (
     get_all_vars_by_hx,
     set_logger_level_from_qp,
 )
-from sdpb.timing import timing
+from sdpb.timing import log_timing
 
 
 logger = logging.getLogger("sdpb")
@@ -96,7 +96,7 @@ def collection_rep(
     """Return representation of stations collection."""
 
     def histories_etc_for(station):
-        with timing(
+        with log_timing(
             f"histories_etc_for {station.id}",
             # log=logger.debug,
             log=None,
@@ -129,8 +129,8 @@ def list(stride=None, limit=None, offset=None, compact=False):
     )
     session = get_app_session()
 
-    with timing("List all stations", log=logger.debug):
-        with timing("Query all stations", log=logger.debug):
+    with log_timing("List all stations", log=logger.debug):
+        with log_timing("Query all stations", log=logger.debug):
             q = (
                 session.query(Station)
                 .select_from(Station)
@@ -150,7 +150,7 @@ def list(stride=None, limit=None, offset=None, compact=False):
         # all_vars_by_hx = None if compact else get_all_vars_by_hx(session)
         all_vars_by_hx = get_all_vars_by_hx(session)
 
-        with timing("Convert stations to rep", log=logger.debug):
+        with log_timing("Convert stations to rep", log=logger.debug):
             return collection_rep(
                 stations,
                 all_histories_etc_by_station,

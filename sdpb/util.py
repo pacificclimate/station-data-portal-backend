@@ -3,7 +3,7 @@ import logging
 from flask import request
 from itertools import groupby
 from pycds import History, VarsPerHistory, StationObservationStats
-from sdpb.timing import timing
+from sdpb.timing import log_timing
 
 
 logger = logging.getLogger("sdpb")
@@ -56,7 +56,7 @@ def set_logger_level_from_qp(a_logger):
 def get_all_histories_etc_by_station(session):
     set_logger_level_from_qp(logger)
     # TODO: Filter by Network.publish ?
-    with timing("Query all histories by station", log=logger.debug):
+    with log_timing("Query all histories by station", log=logger.debug):
         all_histories_etc = (
             session.query(History, StationObservationStats)
             .select_from(History)
@@ -68,7 +68,7 @@ def get_all_histories_etc_by_station(session):
             .all()
         )
 
-    with timing("Group all histories by station", log=logger.debug):
+    with log_timing("Group all histories by station", log=logger.debug):
         result = {
             station_id: list(histories)
             for station_id, histories in groupby(
@@ -81,7 +81,7 @@ def get_all_histories_etc_by_station(session):
 
 def get_all_vars_by_hx(session):
     set_logger_level_from_qp(logger)
-    with timing("Query all vars by hx", log=logger.debug):
+    with log_timing("Query all vars by hx", log=logger.debug):
         all_variables = (
             session.query(
                 VarsPerHistory.history_id.label("history_id"),
@@ -90,7 +90,7 @@ def get_all_vars_by_hx(session):
             .order_by(VarsPerHistory.history_id.asc(), VarsPerHistory.vars_id.asc())
             .all()
         )
-    with timing("Group all vars by hx", log=logger.debug):
+    with log_timing("Group all vars by hx", log=logger.debug):
         result = {
             history_id: list(variables)
             for history_id, variables in groupby(

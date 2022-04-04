@@ -2,7 +2,7 @@ import logging
 from flask import url_for
 from pycds import CrmpNetworkGeoserver
 from sdpb import get_app_session
-from sdpb.timing import timing
+from sdpb.timing import log_timing
 
 
 logger = logging.getLogger("sdpb")
@@ -54,13 +54,13 @@ def collection_rep(items):
 
 
 def list():
-    with timing("List all CNG items", log=logger.debug):
-        with timing("Query all CNG items", log=logger.debug):
+    with log_timing("List all CNG items", log=logger.debug):
+        with log_timing("Query all CNG items", log=logger.debug):
             items = (
                 get_app_session()
                 .query(CrmpNetworkGeoserver)
                 .order_by(CrmpNetworkGeoserver.network_id.asc())
                 .all()
             )
-        with timing("Convert CNG items to rep", log=logger.debug):
+        with log_timing("Convert CNG items to rep", log=logger.debug):
             return collection_rep(items)

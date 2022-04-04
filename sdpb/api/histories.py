@@ -16,7 +16,7 @@ from sdpb.util import (
     set_logger_level_from_qp,
     obs_stats_rep,
 )
-from sdpb.timing import timing
+from sdpb.timing import log_timing
 
 
 logger = logging.getLogger("sdpb")
@@ -67,7 +67,7 @@ def collection_rep(histories_etc, all_vars_by_hx=None, compact=False):
 
     def variables_for(history):
         """Return those variables connected with a specific history."""
-        with timing(
+        with log_timing(
             f"variables_for {history.id}",
             log=None,
             # log=logger.debug,
@@ -130,8 +130,8 @@ def list(compact=False):
     and return their representation."""
     set_logger_level_from_qp(logger)
     session = get_app_session()
-    with timing("List all histories", log=logger.debug):
-        with timing("Query all histories etc", log=logger.debug):
+    with log_timing("List all histories", log=logger.debug):
+        with log_timing("Query all histories etc", log=logger.debug):
             histories_etc = (
                 session.query(History, StationObservationStats)
                 .select_from(History)
@@ -148,7 +148,7 @@ def list(compact=False):
 
         all_vars_by_hx = None if compact else get_all_vars_by_hx(session)
 
-        with timing("Convert histories etc to rep", log=logger.debug):
+        with log_timing("Convert histories etc to rep", log=logger.debug):
             return collection_rep(
                 histories_etc, all_vars_by_hx, compact=compact
             )
