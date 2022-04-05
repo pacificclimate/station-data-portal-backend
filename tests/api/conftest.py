@@ -14,13 +14,6 @@ lacking the required relationship attributes) is not on the immediate path
 forward. So in the meantime we do this. Ick.
 """
 
-# Enable helper functions to be imported
-import sys
-import os
-
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "helpers"))
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "api"))
-
 from itertools import count
 import datetime
 
@@ -48,27 +41,10 @@ from pycds import (
 )
 import pycds.alembic
 
-from sdpb import create_app
-
-# These global variables are set by the `app` fixture as part of its setup
-# (i.e., before it yields).
-# TODO: This is ugly and confusing, but possibly necessary or at least
-#  expedient. It was copied from the Weather Anomaly Data Service. Look there
-#  for an explanation and if possible devise a better alternative.
-connexion_app = None
-flask_app = None
-app_db = None
-
 
 @pytest.fixture(scope="session")
 def schema_name():
     return pycds.get_schema_name()
-
-
-@pytest.fixture(scope="session")
-def database_uri():
-    with testing.postgresql.Postgresql() as pg:
-        yield pg.url()
 
 
 @pytest.fixture(scope="session")
@@ -82,63 +58,19 @@ def alembic_script_location():
     yield str(source)
 
 
-# app, db, session fixtures based on http://alexmic.net/flask-sqlalchemy-pytest/
+@pytest.fixture(scope="session")
+def database_uri():
+    with testing.postgresql.Postgresql() as pg:
+        yield pg.url()
 
 
 @pytest.fixture(scope="session")
-def app(database_uri):
-    """Session-wide test Flask application"""
-    global connexion_app, flask_app, app_db
-    print("#### app")
-    config_override = {
+def config_override(database_uri):
+    return {
         "TESTING": True,
         "SQLALCHEMY_DATABASE_URI": database_uri,
         "SERVER_NAME": "test",
     }
-    connexion_app, flask_app, app_db = create_app(config_override)
-
-    ctx = flask_app.app_context()
-    ctx.push()
-
-    yield flask_app
-
-    ctx.pop()
-
-
-@pytest.fixture(scope="session")
-def test_client(app):
-    with app.test_client() as client:
-        yield client
-
-
-@pytest.fixture(scope="session")
-def db(app):
-    """Session-wide test database"""
-    # TODO: Is this necessary? It's somewhat confusing.
-    print("#### db")
-    # db = SQLAlchemy(app)
-    yield app_db
-
-    # FIXME: Database hang on teardown
-    # Problem: Ironically, attempting to tear down the database properly causes
-    # the tests to hang at the the end.
-    # Workaround: Not tearing down the database prevents the hang, and causes
-    # no other apparent problems. A similar problem with a more elegant solution
-    # is documented at
-    # http://docs.sqlalchemy.org/en/latest/faq/metadata_schema.html#my-program-is-hanging-when-i-say-table-drop-metadata-drop-all
-    # but the solution (to close connections before dropping tables) does not
-    # work. The `session` fixture does close its connection as part of its
-    # teardown. That should work, but apparently not for
-    # `drop extension postgis cascade`
-    #
-    # Nominally, the following commented out code ought to work, but it hangs
-    # at the indicated line
-
-    # print('@pytest.fixture db: TEARDOWN')
-    # db.engine.execute("drop extension postgis cascade")  # >>> hangs here
-    # print('@pytest.fixture db: drop_all')
-    # pycds.Base.metadata.drop_all(bind=db.engine)
-    # pycds.weather_anomaly.Base.metadata.drop_all(bind=db.engine)
 
 
 def initialize_database(engine, schema_name):
@@ -167,10 +99,10 @@ def migrate_database(script_location, database_uri, revision="head"):
 
 
 @pytest.fixture(scope="session")
-def engine(db, schema_name, alembic_script_location, database_uri):
+def engine(app_db, schema_name, alembic_script_location, database_uri):
     """Session-wide database engine"""
     print("#### engine", database_uri)
-    engine = db.engine
+    engine = app_db.engine
     initialize_database(engine, schema_name)
     migrate_database(alembic_script_location, database_uri)
     yield engine
@@ -355,11 +287,11 @@ def tst_stn_obs_stats(tst_histories):
 
 
 @pytest.fixture(scope="session")
-def session(engine):
+def session(engine, app_db):
     print("#### session")
     session = app_db.session
     # Default search path is `"$user", public`. Need to reset that to search
-    # crmp (for our db/orm content) and public (for postgis functions)
+    # crmp (for our app_db/orm content) and public (for postgis functions)
     session.execute("SET search_path TO crmp, public")
     # print('\nsearch_path', [r for r in session.execute('SHOW search_path')])
     yield session

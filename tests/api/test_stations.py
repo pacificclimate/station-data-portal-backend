@@ -1,12 +1,11 @@
-import pytest
 from pycds import Station
 from sdpb.api import networks, stations
-from sdpb.util import date_rep, float_rep
-from helpers import find, groupby_dict, omit
+from sdpb.util import date_rep
+from helpers import groupby_dict
 from test_histories import expected_history_rep, history_sans_vars
 
 
-def test_stations_uri(app):
+def test_stations_uri(flask_app):
     station = Station(id=99)
     assert stations.uri(station) == "http://test/stations/99"
 
@@ -32,7 +31,7 @@ def expected_station_rep(station, all_histories, all_stn_obs_stats):
 
 
 def test_station_collection_hx_omit_vars(
-    app,
+    flask_app,
     everything_session,
     tst_networks,
     tst_stations,

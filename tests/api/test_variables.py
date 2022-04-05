@@ -1,11 +1,8 @@
-import pytest
 from pycds import Variable
 from sdpb.api import networks, variables
-from sdpb.util import date_rep, float_rep
-from helpers import find, groupby_dict, omit
 
 
-def test_variables_uri(app):
+def test_variables_uri(flask_app):
     variable = Variable(id=99)
     assert variables.uri(variable) == "http://test/variables/99"
 

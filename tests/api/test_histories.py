@@ -1,11 +1,10 @@
-import pytest
 from pycds import History
 from sdpb.api import histories
 from sdpb.util import date_rep, float_rep
-from helpers import find, groupby_dict, omit
+from helpers import find, omit
 
 
-def test_uri(app):
+def test_uri(flask_app):
     variable = History(id=99)
     assert histories.uri(variable) == "http://test/histories/99"
 

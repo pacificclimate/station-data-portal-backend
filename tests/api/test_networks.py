@@ -1,10 +1,8 @@
-import pytest
 from pycds import Network
 from sdpb.api import networks
-from helpers import find, groupby_dict, omit
 
 
-def test_networks_uri(app):
+def test_networks_uri(flask_app):
     network = Network(id=99)
     assert networks.uri(network) == "http://test/networks/99"
 
