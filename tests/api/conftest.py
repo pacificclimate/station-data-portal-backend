@@ -42,12 +42,12 @@ from pycds import (
 import pycds.alembic
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="package")
 def schema_name():
     return pycds.get_schema_name()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="package")
 def alembic_script_location():
     """
     This fixture extracts the filepath to the installed pycds Alembic content.
@@ -58,13 +58,13 @@ def alembic_script_location():
     yield str(source)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="package")
 def database_uri():
     with testing.postgresql.Postgresql() as pg:
         yield pg.url()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="package")
 def config_override(database_uri):
     return {
         "TESTING": True,
@@ -98,7 +98,7 @@ def migrate_database(script_location, database_uri, revision="head"):
     alembic.command.upgrade(alembic_config, revision)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="package")
 def engine(app_db, schema_name, alembic_script_location, database_uri):
     """Session-wide database engine"""
     print("#### engine", database_uri)
@@ -124,7 +124,7 @@ def make_tst_network(label, publish):
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="package")
 def tst_networks():
     """Networks"""
     r = [make_tst_network(label, label < "C") for label in ["A", "B", "C", "D"]]
@@ -154,7 +154,7 @@ def make_tst_variable(label, network):
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="package")
 def tst_variables(tst_networks):
     """Variables"""
     network0 = tst_networks[0]  # published
@@ -180,7 +180,7 @@ def make_tst_station(label, network):
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="package")
 def tst_stations(tst_networks):
     """Stations"""
     network0 = tst_networks[0]  # published
@@ -217,7 +217,7 @@ def make_tst_history(label, station):
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="package")
 def tst_histories(tst_stations):
     """Histories"""
     station0 = tst_stations[0]
@@ -249,7 +249,7 @@ def make_tst_observation(label, history, variable):
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="package")
 def tst_observations(tst_histories, tst_variables):
     """Observations"""
     history = tst_histories[0]
@@ -278,7 +278,7 @@ def make_tst_stn_obs_stat(
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="package")
 def tst_stn_obs_stats(tst_histories):
     return [make_tst_stn_obs_stat(history) for history in tst_histories]
 
@@ -286,7 +286,7 @@ def tst_stn_obs_stats(tst_histories):
 # Sessions
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="package")
 def session(engine, app_db):
     print("#### session")
     session = app_db.session
@@ -299,7 +299,7 @@ def session(engine, app_db):
     # session.close()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="package")
 def everything_session(
     session,
     tst_networks,

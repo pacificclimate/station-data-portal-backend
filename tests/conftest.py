@@ -9,7 +9,7 @@ import pycds
 from sdpb import create_app
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="package")
 def schema_name():
     return pycds.get_schema_name()
 
@@ -18,22 +18,22 @@ def schema_name():
 # http://alexmic.net/flask-sqlalchemy-pytest/
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="package")
 def database_uri():
     raise NotImplementedError("Fixture database_uri must be implemented")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="package")
 def config_override():
     raise NotImplementedError("Fixture config_override must be implemented")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="package")
 def app_parts(database_uri, config_override):
     yield create_app(config_override)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="package")
 def flask_app(app_parts):
     """Session-wide test Flask application"""
     connexion_app, flask_app, app_db = app_parts
@@ -46,7 +46,7 @@ def flask_app(app_parts):
     ctx.pop()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="package")
 def app_db(app_parts):
     """Session-wide test application database"""
     connexion_app, flask_app, app_db = app_parts
