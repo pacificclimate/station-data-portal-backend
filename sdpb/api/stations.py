@@ -12,8 +12,8 @@ from pycds import Network, Station, History, StationObservationStats
 from sdpb import get_app_session
 from sdpb.api import networks
 from sdpb.api import histories
-from sdpb.util import (
-    date_rep,
+from sdpb.util.representation import date_rep
+from sdpb.util.query import (
     get_all_histories_etc_by_station,
     get_all_vars_by_hx,
     set_logger_level_from_qp,

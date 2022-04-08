@@ -13,7 +13,7 @@ from sqlalchemy.sql.expression import cast
 from flask import url_for
 from pycds import ObsCountPerMonthHistory, ClimoObsCount, History
 from sdpb import app_db
-from sdpb.util import set_logger_level_from_qp
+from sdpb.util.query import set_logger_level_from_qp
 
 
 logger = logging.getLogger("sdpb")

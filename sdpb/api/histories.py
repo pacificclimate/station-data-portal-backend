@@ -16,13 +16,8 @@ from pycds import (
 )
 from sdpb import get_app_session
 from sdpb.api import variables
-from sdpb.util import (
-    date_rep,
-    float_rep,
-    get_all_vars_by_hx,
-    set_logger_level_from_qp,
-    obs_stats_rep,
-)
+from sdpb.util.representation import date_rep, float_rep, obs_stats_rep
+from sdpb.util.query import get_all_vars_by_hx, set_logger_level_from_qp
 from sdpb.timing import log_timing
 
 
