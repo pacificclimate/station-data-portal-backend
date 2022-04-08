@@ -24,8 +24,6 @@ from sdpb.timing import log_timing
 
 logger = logging.getLogger("sdpb")
 
-# TODO: Name function parameters consistently
-
 
 def uri(station):
     """Return uri for a station"""
@@ -171,7 +169,7 @@ def collection_rep(
     ]
 
 
-def get(id=None):
+def get(id=None, compact=True, expand="histories"):
     set_logger_level_from_qp(logger)
     assert id is not None
     session = get_app_session()
@@ -190,7 +188,13 @@ def get(id=None):
         .all()
     )
     all_vars_by_hx = get_all_vars_by_hx(session)
-    return single_item_rep(station, station_histories_etc, all_vars_by_hx)
+    return single_item_rep(
+        station,
+        station_histories_etc,
+        all_vars_by_hx,
+        compact=compact,
+        expand=expand,
+    )
 
 
 def list(

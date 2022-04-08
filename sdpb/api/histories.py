@@ -130,7 +130,7 @@ def collection_rep(histories_etc, all_vars_by_hx=None, compact=False):
     ]
 
 
-def get(id=None):
+def get(id=None, compact=False):
     """Get a single history and associated variables from database,
     and return their representation."""
     set_logger_level_from_qp(logger)
@@ -160,7 +160,7 @@ def get(id=None):
         .all()
     )
     logger.debug("data retrieved")
-    return single_item_rep(history_etc, variables)
+    return single_item_rep(history_etc, variables, compact=compact)
 
 
 def list(province=None, compact=False, group_vars_in_database=True):
