@@ -35,8 +35,6 @@ def get_all_histories_etc_by_station(session):
                 StationObservationStats,
                 StationObservationStats.history_id == History.id,
             )
-            # TODO: Is ordering necessary? Probably not.
-            .order_by(History.station_id.asc(), History.id)
             .all()
         )
 
@@ -85,10 +83,7 @@ def get_all_vars_by_hx(session, group_in_database=True):
                 VarsPerHistory.history_id.label("history_id"),
                 VarsPerHistory.vars_id.label("id"),
             )
-            # TODO: Is ordering necessary? Probably not.
-            .order_by(
-                VarsPerHistory.history_id.asc(), VarsPerHistory.vars_id.asc()
-            ).all()
+            .all()
         )
     with log_timing("Group all vars by hx", log=logger.debug):
         result = {
