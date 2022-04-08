@@ -1,6 +1,6 @@
 from pycds import History
 from sdpb.api import histories
-from sdpb.util import date_rep, float_rep
+from sdpb.util.representation import date_rep, float_rep
 from helpers import find, omit
 
 

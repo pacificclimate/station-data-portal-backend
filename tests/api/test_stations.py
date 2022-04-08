@@ -1,6 +1,6 @@
 from pycds import Station
 from sdpb.api import networks, stations
-from sdpb.util import date_rep
+from sdpb.util.representation import date_rep
 from helpers import groupby_dict
 from test_histories import expected_history_rep, history_sans_vars
 
@@ -38,7 +38,7 @@ def test_station_collection_hx_omit_vars(
     tst_histories,
     tst_stn_obs_stats,
 ):
-    stn_reps = sorted(stations.list(), key=lambda r: r["id"])
+    stn_reps = sorted(stations.list(compact=False), key=lambda r: r["id"])
     stn_reps_wo_vars = [
         {**stn, "histories": [history_sans_vars(hx) for hx in stn["histories"]]}
         for stn in stn_reps
