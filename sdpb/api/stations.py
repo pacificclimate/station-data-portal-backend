@@ -12,7 +12,7 @@ from pycds import Station, History, StationObservationStats
 from sdpb import get_app_session
 from sdpb.api import networks
 from sdpb.api import histories
-from sdpb.util.representation import date_rep
+from sdpb.util.representation import date_rep, is_expanded
 from sdpb.util.query import (
     get_all_histories_etc_by_station,
     get_all_vars_by_hx,
@@ -25,10 +25,6 @@ from sdpb.timing import log_timing
 logger = logging.getLogger("sdpb")
 
 # TODO: Name function parameters consistently
-
-
-def is_expanded(item, expand):
-    return expand is not None and expand == item
 
 
 def uri(station):

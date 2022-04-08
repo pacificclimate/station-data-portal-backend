@@ -21,6 +21,11 @@ def float_rep(x):
     return float(x) if x is not None else None
 
 
+def is_expanded(item, expand):
+    items = (expand or "").split(",")
+    return item in items or "*" in items
+
+
 def parse_date(s):
     if s is None:
         return None
