@@ -1,10 +1,19 @@
+from collections import namedtuple
+import pytest
 from pycds import Variable
 from sdpb.api import networks, variables
 
 
-def test_variables_uri(flask_app):
-    variable = Variable(id=99)
-    assert variables.uri(variable) == "http://test/variables/99"
+Row = namedtuple("Row", "history_id id")
+
+
+@pytest.mark.parametrize("variable, expected", [
+    (Variable(id=11), "http://test/variables/11"),
+    (Row(123, 22), "http://test/variables/22"),
+    (33, "http://test/variables/33"),
+])
+def test_variables_uri(flask_app, variable, expected):
+    assert variables.uri(variable) == expected
 
 
 def test_variable_collection(everything_session, tst_networks, tst_variables):
