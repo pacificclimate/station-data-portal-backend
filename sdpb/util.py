@@ -16,7 +16,9 @@ def dict_from_row(row):
 
 
 def dicts_from_rows(rows):
-    """Return a list of dicts constructed from a list of SQLAlchemy result rows"""
+    """
+    Return a list of dicts constructed from a list of SQLAlchemy result rows
+    """
     return [dict_from_row(row) for row in rows]
 
 
@@ -25,7 +27,7 @@ def date_rep(date):
 
 
 def float_rep(x):
-    return float(x) if x != None else None
+    return float(x) if x is not None else None
 
 
 def parse_date(s):
@@ -90,7 +92,7 @@ def get_all_vars_by_hx(session, group_in_database=True):
         or in this code?
     :return: dict
 
-    Grouping in database appears to be significantly (~25%) faster than
+    Grouping in database appears to be significantly (factor of ~2) faster than
     grouping in code afterwards. Unsurprising.
     """
     set_logger_level_from_qp(logger)
