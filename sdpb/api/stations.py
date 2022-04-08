@@ -1,3 +1,10 @@
+"""
+stations API
+
+A station can have a compact or full representation. A compact representation
+omits some rarely-used attributes in both station proper and its associated
+history items (q.v.).
+"""
 import logging
 from flask import url_for
 from pycds import Network, Station, History, StationObservationStats
@@ -26,7 +33,19 @@ def uri(station):
 def single_item_rep(
     station, station_histories_etc, all_vars_by_hx=None, compact=False
 ):
-    """Return representation of a single station item."""
+    """
+    Return a representation of a single station item.
+
+    :param station: Database result containing a Station.
+    :param station_histories_etc: Iterable containing histories etc.,
+        associated with the station. For definition of histories etc.,
+        see histories module.
+    :param all_vars_by_hx: dict of variables associated to each history,
+        keyed by history id.
+    :param compact: Boolean. Return compact or full representation.
+    :return: dict
+    """
+    """"""
     set_logger_level_from_qp(logger)
     rep = {
         "id": station.id,
@@ -46,6 +65,76 @@ def single_item_rep(
         "min_obs_time": date_rep(station.min_obs_time),
         "max_obs_time": date_rep(station.max_obs_time),
     }
+
+
+def collection_item_rep(
+    station, station_histories_etc, all_vars_by_hx=None, compact=False
+):
+    """
+    Return representation of a station collection item.
+    May conceivably be different than representation of a single station.
+    but at present they are the same.
+
+    :param station: Database result containing a Station.
+    :param station_histories_etc: Iterable containing histories etc.,
+        associated with the station. For definition of histories etc.,
+        see histories module.
+    :param all_vars_by_hx: dict of variables associated to each history,
+        keyed by history id.
+    :param compact: Boolean. Return compact or full representation.
+    :return: dict
+    """
+    set_logger_level_from_qp(logger)
+    return single_item_rep(
+        station,
+        station_histories_etc,
+        all_vars_by_hx=all_vars_by_hx,
+        compact=compact,
+    )
+
+
+def collection_rep(
+    stations, all_histories_etc_by_station, all_vars_by_hx=None, compact=False
+):
+    """
+    Return a representation of a stations collection.
+
+    :param stations: Iterable. Each item is a database result from a
+        Station query.
+    :param all_histories_etc_by_station: dict of histories etc. assocated to
+        each station, keyed by station id.
+    :param all_vars_by_hx: dict of variables associated to each history,
+        keyed by history id.
+    :param compact: Boolean. Return compact or full representation of each
+        station.
+    :return: dict
+    """
+
+    def histories_etc_for(station):
+        with log_timing(
+            f"histories_etc_for {station.id}",
+            # logging this makes the service very very slow
+            # log=logger.debug,
+            log=None,
+        ):
+            try:
+                # result = station.histories
+                result = all_histories_etc_by_station[station.id]
+            except KeyError:
+                result = []
+        return result
+
+    set_logger_level_from_qp(logger)
+
+    return [
+        collection_item_rep(
+            station,
+            histories_etc_for(station),
+            all_vars_by_hx=all_vars_by_hx,
+            compact=compact,
+        )
+        for station in stations
+    ]
 
 
 def get(id=None):
@@ -73,53 +162,6 @@ def get(id=None):
     )
     all_vars_by_hx = get_all_vars_by_hx(session)
     return single_item_rep(station, station_histories_etc, all_vars_by_hx)
-
-
-def collection_item_rep(
-    station, station_histories_etc, all_vars_by_hx=None, compact=False
-):
-    """Return representation of a station collection item.
-    May conceivably be different than representation of a single a station.
-    """
-    set_logger_level_from_qp(logger)
-    return single_item_rep(
-        station,
-        station_histories_etc,
-        all_vars_by_hx=all_vars_by_hx,
-        compact=compact,
-    )
-
-
-def collection_rep(
-    stations, all_histories_etc_by_station, all_variables=None, compact=False
-):
-    """Return representation of stations collection."""
-
-    def histories_etc_for(station):
-        with log_timing(
-            f"histories_etc_for {station.id}",
-            # logging this makes the service very very slow
-            # log=logger.debug,
-            log=None,
-        ):
-            try:
-                # result = station.histories
-                result = all_histories_etc_by_station[station.id]
-            except KeyError:
-                result = []
-        return result
-
-    set_logger_level_from_qp(logger)
-
-    return [
-        collection_item_rep(
-            station,
-            histories_etc_for(station),
-            all_vars_by_hx=all_variables,
-            compact=compact,
-        )
-        for station in stations
-    ]
 
 
 def list(
@@ -169,19 +211,14 @@ def list(
             stations = q.all()
 
         all_histories_etc_by_station = get_all_histories_etc_by_station(session)
-        all_vars_by_hx = (
-            None
-            if compact
-            else get_all_vars_by_hx(
-                session, group_in_database=group_vars_in_database
-            )
+        all_vars_by_hx = get_all_vars_by_hx(
+            session, group_in_database=group_vars_in_database
         )
-        # all_vars_by_hx = get_all_vars_by_hx(session)
 
         with log_timing("Convert stations to rep", log=logger.debug):
             return collection_rep(
                 stations,
                 all_histories_etc_by_station,
-                all_variables=all_vars_by_hx,
+                all_vars_by_hx=all_vars_by_hx,
                 compact=compact,
             )
