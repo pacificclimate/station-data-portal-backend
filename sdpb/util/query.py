@@ -2,7 +2,13 @@ import logging
 from flask import request
 from sqlalchemy import func
 from itertools import groupby
-from pycds import History, VarsPerHistory, StationObservationStats
+from pycds import (
+    Network,
+    Station,
+    History,
+    VarsPerHistory,
+    StationObservationStats,
+)
 from sdpb.timing import log_timing
 
 
@@ -92,3 +98,10 @@ def get_all_vars_by_hx(session, group_in_database=True):
             )
         }
     return result
+
+
+def add_station_network_publish_filter(q):
+    """Add filtering by Network.publish via Station to a query"""
+    return q.join(Network, Station.network_id == Network.id).filter(
+        Network.publish == True
+    )

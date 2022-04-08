@@ -8,7 +8,7 @@ history items (q.v.).
 import logging
 from flask import url_for
 from sqlalchemy import func
-from pycds import Network, Station, History, StationObservationStats
+from pycds import Station, History, StationObservationStats
 from sdpb import get_app_session
 from sdpb.api import networks
 from sdpb.api import histories
@@ -17,6 +17,7 @@ from sdpb.util.query import (
     get_all_histories_etc_by_station,
     get_all_vars_by_hx,
     set_logger_level_from_qp,
+    add_station_network_publish_filter,
 )
 from sdpb.timing import log_timing
 
@@ -178,14 +179,9 @@ def get(id=None):
     set_logger_level_from_qp(logger)
     assert id is not None
     session = get_app_session()
-    station = (
-        session.query(Station)
-        .select_from(Station)
-        .join(Network, Station.network_id == Network.id)
-        .filter(Station.id == id, Network.publish == True)
-        .one()
-    )
-    # TODO: Filter by Network.publish ?
+    q = session.query(Station).select_from(Station).filter(Station.id == id)
+    q = add_station_network_publish_filter(q)
+    station = q.one()
     station_histories_etc = (
         session.query(History, StationObservationStats)
         .select_from(History)
@@ -240,11 +236,7 @@ def list(
                 q = session.query(
                     Station, func.array_agg(History.id).label("history_ids")
                 ).group_by(Station.id)
-            q = (
-                q.join(Network, Station.network_id == Network.id)
-                .filter(Network.publish == True)
-                .order_by(Station.id.asc())
-            )
+            q = add_station_network_publish_filter(q).order_by(Station.id.asc())
             if stride:
                 q = q.filter(Station.id % stride == 0)
             if limit:
