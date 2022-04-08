@@ -40,6 +40,7 @@ def single_item_rep(history_etc, vars=None, compact=False):
         "province": history.province,
         "freq": history.freq,
         **obs_stats_rep(sos),
+        # TODO: Why is this included for compact rep?
         "variable_uris": [variables.uri(variable) for variable in vars or []],
     }
     if compact:
@@ -144,7 +145,7 @@ def list(province=None, compact=False, group_vars_in_database=True):
     session = get_app_session()
     with log_timing("List all histories", log=logger.debug):
         with log_timing("Query all histories etc", log=logger.debug):
-            histories_etc = (
+            q = (
                 session.query(History, StationObservationStats)
                 .select_from(History)
                 .join(Station, History.station_id == Station.id)
@@ -155,8 +156,10 @@ def list(province=None, compact=False, group_vars_in_database=True):
                 )
                 .filter(Network.publish == True)
                 .order_by(History.id.asc())
-                .all()
             )
+            if province:
+                q = q.filter(History.province == province)
+            histories_etc = q.all()
 
         all_vars_by_hx = (
             None

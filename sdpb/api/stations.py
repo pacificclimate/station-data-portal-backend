@@ -98,6 +98,7 @@ def collection_rep(
     def histories_etc_for(station):
         with log_timing(
             f"histories_etc_for {station.id}",
+            # logging this makes the service very very slow
             # log=logger.debug,
             log=None,
         ):
@@ -163,6 +164,8 @@ def list(
                 q = q.limit(limit)
             if offset:
                 q = q.offset(offset)
+            if province:
+                q = q.join(History.station_id, Station.id).filter(offset)
             stations = q.all()
 
         all_histories_etc_by_station = get_all_histories_etc_by_station(session)
