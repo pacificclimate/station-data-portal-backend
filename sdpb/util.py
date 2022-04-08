@@ -1,6 +1,7 @@
 import dateutil.parser
 import logging
 from flask import request
+from sqlalchemy import func
 from itertools import groupby
 from pycds import History, VarsPerHistory, StationObservationStats
 from sdpb.timing import log_timing
@@ -79,15 +80,43 @@ def get_all_histories_etc_by_station(session):
     return result
 
 
-def get_all_vars_by_hx(session):
+def get_all_vars_by_hx(session, group_in_database=True):
+    """
+    Return a dict keyed by history id, with each value containing a list of
+    variables associated with that history id.
+
+    :param session: SQLAlchemy database session
+    :param group_in_database: Boolean. Group variables by history in database
+        or in this code?
+    :return: dict
+
+    It appears grouping in database is significantly (~25%) faster than
+    grouping in code afterwards. Unsurprising.
+    """
     set_logger_level_from_qp(logger)
+    if group_in_database:
+        with log_timing("Query and group all vars by hx", log=logger.debug):
+            rows = (
+                session.query(
+                    VarsPerHistory.history_id.label("history_id"),
+                    func.array_agg(VarsPerHistory.vars_id).label("variable_ids"),
+                )
+                .group_by(VarsPerHistory.history_id)
+                .all()
+            )
+            return {
+                row.history_id: row.variable_ids for row in rows
+            }
+
     with log_timing("Query all vars by hx", log=logger.debug):
         all_variables = (
             session.query(
                 VarsPerHistory.history_id.label("history_id"),
                 VarsPerHistory.vars_id.label("id"),
             )
-            .order_by(VarsPerHistory.history_id.asc(), VarsPerHistory.vars_id.asc())
+            .order_by(
+                VarsPerHistory.history_id.asc(), VarsPerHistory.vars_id.asc()
+            )
             .all()
         )
     with log_timing("Group all vars by hx", log=logger.debug):

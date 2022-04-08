@@ -125,9 +125,21 @@ def get(id=None):
     return single_item_rep(history_etc, variables)
 
 
-def list(compact=False):
-    """Get histories and associated variables from database,
-    and return their representation."""
+def list(province=None, compact=False, group_vars_in_database=True):
+    """
+    Get histories and associated variables from database, and return their 
+    representation.
+        
+    :param province: String. If present, return only histories whose `province`
+        attribute match this value.
+    :param compact: Boolean. Determines whether a compact or full/expanded
+        representation is returned. A compact representation:
+        - omits attributes elevation, sdate, edate, tz_offset, country
+        - does not put information in attribute variables
+    :param group_vars_in_database: Boolean. Perform grouping of vars by
+        history id in database or in code? In db is faster.
+    :return: dict
+    """
     set_logger_level_from_qp(logger)
     session = get_app_session()
     with log_timing("List all histories", log=logger.debug):
@@ -146,7 +158,13 @@ def list(compact=False):
                 .all()
             )
 
-        all_vars_by_hx = None if compact else get_all_vars_by_hx(session)
+        all_vars_by_hx = (
+            None
+            if compact
+            else get_all_vars_by_hx(
+                session, group_in_database=group_vars_in_database
+            )
+        )
 
         with log_timing("Convert histories etc to rep", log=logger.debug):
             return collection_rep(

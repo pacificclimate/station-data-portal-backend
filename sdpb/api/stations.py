@@ -121,8 +121,27 @@ def collection_rep(
     ]
 
 
-def list(stride=None, limit=None, offset=None, compact=False):
-    """Get stations from database, and return their representation."""
+def list(
+    stride=None,
+    limit=None,
+    offset=None,
+    province=None,
+    compact=False,
+    group_vars_in_database=True,
+):
+    """
+    Get stations from database, and return their representation.
+
+    :param stride: Integer. Include only (roughly) every stride-th station.
+    :param limit: Integer. Maximum number of results.
+    :param offset: Integer. Offset for result set.
+    :param province: String. Include only stations whose history.province
+        matches this value.
+    :param compact: Boolean. Return compact rep?
+    :param group_vars_in_database: Boolean. Group variables by history id in
+        database or in code?
+    :return:
+    """
     set_logger_level_from_qp(logger)
     logger.debug(
         f"stations.list(stride={stride}, limit={limit}, offset={offset}, compact={compact})"
@@ -147,8 +166,14 @@ def list(stride=None, limit=None, offset=None, compact=False):
             stations = q.all()
 
         all_histories_etc_by_station = get_all_histories_etc_by_station(session)
-        # all_vars_by_hx = None if compact else get_all_vars_by_hx(session)
-        all_vars_by_hx = get_all_vars_by_hx(session)
+        all_vars_by_hx = (
+            None
+            if compact
+            else get_all_vars_by_hx(
+                session, group_in_database=group_vars_in_database
+            )
+        )
+        # all_vars_by_hx = get_all_vars_by_hx(session)
 
         with log_timing("Convert stations to rep", log=logger.debug):
             return collection_rep(
