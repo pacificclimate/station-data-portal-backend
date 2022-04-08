@@ -1,3 +1,10 @@
+"""
+histories API
+
+A history can have a compact or full representation. A compact representation
+omits some rarely-used attributes. Both representations always contain the
+`variable_uris` attribute.
+"""
 import logging
 from flask import url_for
 from pycds import (
@@ -27,7 +34,16 @@ def uri(history):
 
 
 def single_item_rep(history_etc, vars=None, compact=False):
-    """Return representation of a history"""
+    """
+    Return a representation of a single history item.
+
+    :param history_etc: A database result containing a History and its
+        associated StationObservationStats.
+    :param vars: Iterable containing `Variable`s or variable ids (int)
+        associated with this history.
+    :param compact: Boolean. Return compact or full representation.
+    :return: dict
+    """
     history = history_etc.History
     sos = history_etc.StationObservationStats
     set_logger_level_from_qp(logger)
@@ -40,7 +56,6 @@ def single_item_rep(history_etc, vars=None, compact=False):
         "province": history.province,
         "freq": history.freq,
         **obs_stats_rep(sos),
-        # TODO: Why is this included for compact rep?
         "variable_uris": [variables.uri(variable) for variable in vars or []],
     }
     if compact:
@@ -56,15 +71,36 @@ def single_item_rep(history_etc, vars=None, compact=False):
 
 
 def collection_item_rep(history_etc, **kwargs):
-    """Return representation of a history collection item.
-    May conceivably be different than representation of a single a history.
+    """
+    Return representation of a history collection item.
+    May conceivably be different than representation of a single a history,
+    but at present they are the same.
+
+    :param history_etc: A database result containing a History and its
+        associated StationObservationStats.
+    :param vars: Iterable containing `Variable`s or variable ids (int)
+        associated with this history.
+    :param compact: Boolean. Return compact or full representation.
+    :return: dict
     """
     set_logger_level_from_qp(logger)
     return single_item_rep(history_etc, **kwargs)
 
 
 def collection_rep(histories_etc, all_vars_by_hx=None, compact=False):
-    """Return representation of historys collection."""
+    """
+    Return a representation of a histories collection.
+
+    :param histories_etc: Iterable. Each element yielded is
+        a database result containing a History and its associated
+        StationObservationStats.
+    :param all_vars_by_hx: dict of variables associated to each history,
+        keyed by history id.
+    :param compact: Boolean. Return compact or full representation of each
+        history.
+    :return: list
+    """
+    """"""
 
     def variables_for(history):
         """Return those variables connected with a specific history."""
@@ -161,12 +197,8 @@ def list(province=None, compact=False, group_vars_in_database=True):
                 q = q.filter(History.province == province)
             histories_etc = q.all()
 
-        all_vars_by_hx = (
-            None
-            if compact
-            else get_all_vars_by_hx(
-                session, group_in_database=group_vars_in_database
-            )
+        all_vars_by_hx = get_all_vars_by_hx(
+            session, group_in_database=group_vars_in_database
         )
 
         with log_timing("Convert histories etc to rep", log=logger.debug):

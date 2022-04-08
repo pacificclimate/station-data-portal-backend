@@ -90,7 +90,7 @@ def get_all_vars_by_hx(session, group_in_database=True):
         or in this code?
     :return: dict
 
-    It appears grouping in database is significantly (~25%) faster than
+    Grouping in database appears to be significantly (~25%) faster than
     grouping in code afterwards. Unsurprising.
     """
     set_logger_level_from_qp(logger)
