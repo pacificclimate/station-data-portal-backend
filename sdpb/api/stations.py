@@ -207,7 +207,9 @@ def list(
             if offset:
                 q = q.offset(offset)
             if province:
-                q = q.join(History.station_id, Station.id).filter(offset)
+                q = q.join(History, History.station_id == Station.id).filter(
+                    History.province == province
+                )
             stations = q.all()
 
         all_histories_etc_by_station = get_all_histories_etc_by_station(session)
