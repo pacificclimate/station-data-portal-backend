@@ -30,6 +30,9 @@ logger = logging.getLogger("sdpb")
 
 
 def uri(history):
+    if isinstance(history, int):
+        return url_for("sdpb_api_histories_get", id=history)
+    # Assume it is a History-like object
     return url_for("sdpb_api_histories_get", id=history.id)
 
 
