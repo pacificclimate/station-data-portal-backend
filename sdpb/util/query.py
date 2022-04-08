@@ -26,17 +26,21 @@ def set_logger_level_from_qp(a_logger):
 
 def get_all_histories_etc_by_station(session):
     set_logger_level_from_qp(logger)
-    # TODO: Filter by Network.publish ?
     with log_timing("Query all histories by station", log=logger.debug):
-        all_histories_etc = (
+        q = (
             session.query(History, StationObservationStats)
             .select_from(History)
             .join(
                 StationObservationStats,
                 StationObservationStats.history_id == History.id,
             )
-            .all()
         )
+        # This reduces the number of rows returned, but it's not yet clear it
+        # actually reduces the query time.
+        q = add_station_network_publish_filter(
+            q.join(Station, History.station_id == Station.id)
+        )
+        all_histories_etc = q.all()
 
     with log_timing("Group all histories by station", log=logger.debug):
         result = {
@@ -78,13 +82,10 @@ def get_all_vars_by_hx(session, group_in_database=True):
             return {row.history_id: row.variable_ids for row in rows}
 
     with log_timing("Query all vars by hx", log=logger.debug):
-        all_variables = (
-            session.query(
-                VarsPerHistory.history_id.label("history_id"),
-                VarsPerHistory.vars_id.label("id"),
-            )
-            .all()
-        )
+        all_variables = session.query(
+            VarsPerHistory.history_id.label("history_id"),
+            VarsPerHistory.vars_id.label("id"),
+        ).all()
     with log_timing("Group all vars by hx", log=logger.debug):
         result = {
             history_id: list(variables)
