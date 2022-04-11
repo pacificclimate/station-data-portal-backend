@@ -1,4 +1,5 @@
 import math
+import os
 import pprint
 import pytest
 from sdpb.api import (
@@ -64,17 +65,22 @@ def print_timing(f, label, print_example=False, **kwargs):
 #     print_timing(crmp_network_geoserver.list, "crmp_network_geoserver")
 
 
+def test_repeats_option(repeats):
+    print(f"repeats = {repeats}")
+
+
 def print_tabular(formats, sep=" | ", **values):
     layout = sep.join(f"{{{f}}}" for f in formats)
     print(layout.format(**values))
 
 
-def print_history_timing_table():
+def print_history_timing_table(province, repeats=1):
     formats = (
         "province!s:<5",
         "group_vars_in_database!s:<15",
         "compact!s:<8",
-        "time!s:>10",
+        "total_time!s:>14",
+        "avg_time!s:>14",
         "item_count!s:>10"
     )
     print()
@@ -86,34 +92,37 @@ def print_history_timing_table():
         compact="compact",
         group_vars_in_database="grp vars in db",
         province="prov",
-        time=f"time ({units})",
+        total_time=f"tot time ({units})",
+        avg_time=f"avg time ({units})",
         item_count="# items",
     )
     print()
-    for province in ("BC",):
-        for group_vars_in_database in (True, False):
-            for compact in (False, True):
-                args = dict(
-                    compact=compact,
-                    group_vars_in_database=group_vars_in_database,
-                    province=province,
-                )
-                t = timing(histories.list, **args)
-                print_tabular(
-                    formats,
-                    **args,
-                    time=round(t['elapsed'] * multiplier),
-                    item_count=len(t["value"]),
-                )
+    for group_vars_in_database in (True, False):
+        for compact in (False, True):
+            args = dict(
+                compact=compact,
+                group_vars_in_database=group_vars_in_database,
+                province=province,
+            )
+            t = timing(histories.list, repeats=repeats, **args)
+            total_time = t['elapsed'] * multiplier
+            print_tabular(
+                formats,
+                **args,
+                total_time=round(total_time),
+                avg_time=round(total_time/repeats),
+                item_count=len(t["values"][0]),
+            )
 
 
-def print_station_timing_table():
+def print_station_timing_table(province, repeats=1):
     formats = (
         "province!s:<5",
         "group_vars_in_database!s:<15",
         "compact!s:<8",
         "expand!s:<10",
-        "time!s:>10",
+        "total_time!s:>14",
+        "avg_time!s:>14",
         "item_count!s:>10"
     )
     print()
@@ -126,32 +135,36 @@ def print_station_timing_table():
         group_vars_in_database="grp vars in db",
         province="prov",
         expand="expand",
-        time=f"time ({units})",
+        total_time=f"tot time ({units})",
+        avg_time=f"avg time ({units})",
         item_count="# items",
     )
     print()
-    for province in ("BC",):
-        for group_vars_in_database in (False, True):
-            for compact in (False, True):
-                for expand in (None, "histories"):
-                    args = dict(
-                        compact=compact,
-                        group_vars_in_database=group_vars_in_database,
-                        province=province,
-                        expand=expand,
-                    )
-                    t = timing(stations.list, **args)
-                    print_tabular(
-                        formats,
-                        **args,
-                        time=round(t['elapsed'] * multiplier),
-                        item_count=len(t["value"]),
-                    )
+    for group_vars_in_database in (False, True):
+        for compact in (False, True):
+            for expand in ("histories", None):
+            # for expand in (None, "histories"):
+                args = dict(
+                    compact=compact,
+                    group_vars_in_database=group_vars_in_database,
+                    province=province,
+                    expand=expand,
+                )
+                t = timing(stations.list, repeats=repeats, **args)
+                total_time = t['elapsed'] * multiplier
+                print_tabular(
+                    formats,
+                    **args,
+                    total_time=round(total_time),
+                    avg_time=round(total_time/repeats),
+                    item_count=len(t["values"][0]),
+                )
 
 
-def print_cng_timing_table():
+def print_cng_timing_table(repeats=1):
     formats = (
-        "time!s:>10",
+        "total_time!s:>14",
+        "avg_time!s:>14",
         "item_count!s:>10"
     )
     print()
@@ -160,26 +173,35 @@ def print_cng_timing_table():
     print()
     print_tabular(
         formats,
-        time=f"time ({units})",
+        total_time=f"tot time ({units})",
+        avg_time=f"avg time ({units})",
         item_count="# items",
     )
     print()
     args = dict()
-    t = timing(crmp_network_geoserver.list, **args)
+    t = timing(crmp_network_geoserver.list, repeats=repeats, **args)
+    total_time = t['elapsed'] * multiplier
     print_tabular(
         formats,
         **args,
-        time=round(t['elapsed'] * multiplier),
-        item_count=len(t["value"]),
+        total_time=round(total_time),
+        avg_time=round(total_time/repeats),
+        item_count=len(t["values"][0]),
     )
 
 
-def test_print_timing_tables():
-    # The first use of a session appears to incurs a kind of startup cost of
+# @pytest.mark.parametrize("repeats", (2,))
+def test_print_timing_tables(repeats):
+    dsn = os.getenv("PCDS_DSN")
+    db = "crmp" if "crmp" in dsn else "metnorth"
+    province = "BC" if "crmp" in dsn else None
+    print()
+    print(f"Performance test against {db} database; repeats = {repeats}")
+    # The first use of a session appears to incur a kind of startup cost of
     # about 200 ms. In these tests, the session is created with package scope,
     # is so common to all here. The first print_cng_timing_table() is to absorb
     # the startup cost; the final one is more accurate.
-    print_cng_timing_table()
-    print_history_timing_table()
-    print_station_timing_table()
-    print_cng_timing_table()
+    print_cng_timing_table(repeats=1)
+    print_history_timing_table(province, repeats=repeats)
+    print_station_timing_table(province, repeats=repeats)
+    print_cng_timing_table(repeats=repeats)

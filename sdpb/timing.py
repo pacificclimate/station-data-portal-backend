@@ -16,12 +16,12 @@ from contextlib import contextmanager
 from time import perf_counter
 
 
-def timing(f, *args, **kwargs):
+def timing(f, *args, repeats=1, **kwargs):
     start = perf_counter()
-    value = f(*args, **kwargs)
+    values = tuple(f(*args, **kwargs) for r in range(repeats))
     end = perf_counter()
     elapsed = end - start
-    return {"start": start, "end": end, "elapsed": elapsed, "value": value}
+    return {"start": start, "end": end, "elapsed": elapsed, "values": values}
 
 
 @contextmanager
