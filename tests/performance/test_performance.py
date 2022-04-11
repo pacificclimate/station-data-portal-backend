@@ -78,6 +78,9 @@ def print_history_timing_table():
         "item_count!s:>10"
     )
     print()
+    print("-" * 20)
+    print("Histories")
+    print()
     print_tabular(
         formats,
         compact="compact",
@@ -114,6 +117,9 @@ def print_station_timing_table():
         "item_count!s:>10"
     )
     print()
+    print("-" * 20)
+    print("Stations")
+    print()
     print_tabular(
         formats,
         compact="compact",
@@ -148,6 +154,9 @@ def print_cng_timing_table():
         "time!s:>10",
         "item_count!s:>10"
     )
+    print()
+    print("-" * 20)
+    print("CNG")
     print()
     print_tabular(
         formats,
