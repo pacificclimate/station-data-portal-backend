@@ -249,14 +249,16 @@ def list(
                 )
             stations = q.all()
 
-        all_histories_etc_by_station = (
-            get_all_histories_etc_by_station(session)
-            if expand_histories
-            else None
-        )
-        all_vars_by_hx = get_all_vars_by_hx(
-            session, group_in_database=group_vars_in_database
-        )
+        if expand_histories:
+            all_histories_etc_by_station = get_all_histories_etc_by_station(
+                session, province=province
+            )
+            all_vars_by_hx = get_all_vars_by_hx(
+                session, group_in_database=group_vars_in_database
+            )
+        else:
+            all_histories_etc_by_station = None
+            all_vars_by_hx = None
 
         with log_timing("Convert stations to rep", log=logger.debug):
             return collection_rep(

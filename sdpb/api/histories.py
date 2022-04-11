@@ -7,12 +7,7 @@ omits some rarely-used attributes. Both representations always contain the
 """
 import logging
 from flask import url_for
-from pycds import (
-    History,
-    VarsPerHistory,
-    Station,
-    StationObservationStats,
-)
+from pycds import History, VarsPerHistory, Station, StationObservationStats
 from sdpb import get_app_session
 from sdpb.api import variables
 from sdpb.util.representation import date_rep, float_rep, obs_stats_rep
@@ -20,6 +15,7 @@ from sdpb.util.query import (
     get_all_vars_by_hx,
     set_logger_level_from_qp,
     add_station_network_publish_filter,
+    get_all_histories_etc,
 )
 from sdpb.timing import log_timing
 
@@ -181,26 +177,10 @@ def list(province=None, compact=False, group_vars_in_database=True):
     set_logger_level_from_qp(logger)
     session = get_app_session()
     with log_timing("List all histories", log=logger.debug):
-        with log_timing("Query all histories etc", log=logger.debug):
-            q = (
-                session.query(History, StationObservationStats)
-                .select_from(History)
-                .join(Station, History.station_id == Station.id)
-                .join(
-                    StationObservationStats,
-                    StationObservationStats.history_id == History.id,
-                )
-                .order_by(History.id.asc())
-            )
-            q = add_station_network_publish_filter(q)
-            if province:
-                q = q.filter(History.province == province)
-            histories_etc = q.all()
-
+        histories_etc = get_all_histories_etc(session, province=province)
         all_vars_by_hx = get_all_vars_by_hx(
             session, group_in_database=group_vars_in_database
         )
-
         with log_timing("Convert histories etc to rep", log=logger.debug):
             return collection_rep(
                 histories_etc, all_vars_by_hx, compact=compact
