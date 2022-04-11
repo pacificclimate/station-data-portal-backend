@@ -18,5 +18,5 @@ def database_uri():
 def config_override(database_uri):
     return {
         # Flask errors if it doesn't have a server name. Anything will do ...
-        "SERVER_NAME": "example.com/fake",
+        "SERVER_NAME": "test",
     }
