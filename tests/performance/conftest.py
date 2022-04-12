@@ -1,9 +1,12 @@
 import os
 import pytest
 
+
 # These fixtures allow specifying the number of repeats with a command line
 # option --repeats. See
 # https://docs.pytest.org/en/stable/how-to/parametrize.html#basic-pytest-generate-tests-example
+
+
 def pytest_addoption(parser):
     parser.addoption("--repeats", action="store", default="1")
 
@@ -11,8 +14,8 @@ def pytest_addoption(parser):
 def pytest_generate_tests(metafunc):
     # This is called for every test. Only get/set command line arguments
     # if the argument is specified in the list of test "fixturenames".
-    option_value = metafunc.config.getoption("repeats")
-    if 'repeats' in metafunc.fixturenames and option_value is not None:
+    option_value = metafunc.config.getoption("repeats", 1)
+    if 'repeats' in metafunc.fixturenames:
         metafunc.parametrize("repeats", [int(option_value)])
 
 
