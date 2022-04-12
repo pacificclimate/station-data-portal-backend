@@ -14,7 +14,7 @@ lacking the required relationship attributes) is not on the immediate path
 forward. So in the meantime we do this. Ick.
 """
 
-from itertools import count
+from itertools import count,groupby
 import datetime
 
 import pytest
@@ -70,6 +70,7 @@ def config_override(database_uri):
         "TESTING": True,
         "SQLALCHEMY_DATABASE_URI": database_uri,
         "SERVER_NAME": "test",
+        # "SQLALCHEMY_ECHO": True,
     }
 
 
@@ -109,6 +110,9 @@ def engine(app_db, schema_name, alembic_script_location, database_uri):
 
 
 # Networks
+# Summary:
+#   A, B: published
+#   C, D: not published
 
 network_id = count()
 
@@ -135,6 +139,9 @@ def tst_networks():
 
 
 # Variables
+# Summary:
+#   W, X in network A (published)
+#   Y, Z in network C (unpublished)
 
 variable_id = count()
 
@@ -165,6 +172,9 @@ def tst_variables(tst_networks):
 
 
 # Stations
+# Summary:
+#   S1, S2 in network A (published)
+#   S3, S4 in network C (unpublished)
 
 station_id = count()
 
@@ -195,6 +205,9 @@ def tst_stations(tst_networks):
 
 
 # Histories
+# Summary:
+#   P, Q attached to station S1 (published)
+#   R, S attached to station S3 (unpublished)
 
 history_id = count()
 
@@ -225,22 +238,20 @@ def tst_histories(tst_stations):
     r = [make_tst_history(label, station0) for label in ["P", "Q"]] + [
         make_tst_history(label, station3) for label in ["R", "S"]
     ]
-    # print("\n### tst_histories")
-    # for x in r:
-    #     print(
-    #         f"id={x.id}  station_id={x.station_id}  station_name={x.station_name}"
-    #     )
     return r
 
 
 # Observations
-# TODO: Add appropriate records to VarsPerHistory, and remove xfail from test
-# test_station_collection_hx_vars
+# Summary:
+#   several observations for history P (published), variable W
+#   several observations for history P (published), variable X
+#   several observations for history R (published), variable Y
+#   several observations for history R (published), variable Z
 
 observation_id = count()
 
 
-def make_tst_observation(label, history, variable):
+def make_tst_observation(history, variable):
     return Obs(
         id=next(observation_id),
         datum=99,
@@ -252,15 +263,21 @@ def make_tst_observation(label, history, variable):
 @pytest.fixture(scope="package")
 def tst_observations(tst_histories, tst_variables):
     """Observations"""
-    history = tst_histories[0]
-    variable = tst_variables[0]
+    num_obs = 2
     return [
-        make_tst_observation(label, history, variable)
-        for label in ["one", "two"]
+        make_tst_observation(hx, var)
+        for hx, var in (
+            (tst_histories[0], tst_variables[0]),
+            (tst_histories[0], tst_variables[1]),
+            (tst_histories[2], tst_variables[2]),
+            (tst_histories[2], tst_variables[3]),
+        )
+        for i in range(num_obs)
     ]
 
 
 # Station observation stats
+# Summary: One bogus SOS per history
 
 
 def make_tst_stn_obs_stat(
@@ -283,6 +300,19 @@ def tst_stn_obs_stats(tst_histories):
     return [make_tst_stn_obs_stat(history) for history in tst_histories]
 
 
+# Vars By History
+
+
+@pytest.fixture(scope="package")
+def tst_vars_by_hx(tst_observations):
+    return {
+        hx_id: sorted(list({obs.vars_id for obs in observations}))
+        for hx_id, observations in groupby(
+            tst_observations, lambda obs: obs.history_id
+        )
+    }
+
+
 # Sessions
 
 
@@ -293,7 +323,6 @@ def session(engine, app_db):
     # Default search path is `"$user", public`. Need to reset that to search
     # crmp (for our app_db/orm content) and public (for postgis functions)
     session.execute("SET search_path TO crmp, public")
-    # print('\nsearch_path', [r for r in session.execute('SHOW search_path')])
     yield session
     session.rollback()
     # session.close()
@@ -321,6 +350,6 @@ def everything_session(
     session.flush()
     session.add_all(tst_observations)
     session.flush()
-    VarsPerHistory.refresh()
+    session.execute(VarsPerHistory.refresh())
     session.flush()
     yield session
