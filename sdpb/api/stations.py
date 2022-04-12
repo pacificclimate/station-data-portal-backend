@@ -14,8 +14,10 @@ from sdpb.api import networks
 from sdpb.api import histories
 from sdpb.util.representation import date_rep, is_expanded
 from sdpb.util.query import (
-    get_all_histories_etc_by_station, get_all_vars_by_hx,
-    set_logger_level_from_qp, add_station_network_publish_filter,
+    get_all_histories_etc_by_station,
+    get_all_vars_by_hx,
+    set_logger_level_from_qp,
+    add_station_network_publish_filter,
     add_province_filter,
 )
 from sdpb.timing import log_timing
@@ -227,12 +229,15 @@ def list(
 
     with log_timing("List all stations", log=logger.debug):
         with log_timing("Query all stations", log=logger.debug):
+            # Note: Station is always joined with History, and stations with
+            # no associated history records are not returned.
             if expand_histories:
-                q = session.query(Station).select_from(Station)
-                if provinces:
-                    q = q.join(
-                        History, History.station_id == Station.id
-                    ).distinct()
+                q = (
+                    session.query(Station)
+                    .select_from(Station)
+                    .join(History, History.station_id == Station.id)
+                    .distinct()
+                )
             else:
                 q = (
                     session.query(
