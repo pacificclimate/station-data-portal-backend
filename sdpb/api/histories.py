@@ -159,13 +159,14 @@ def get(id=None, compact=False):
     return single_item_rep(history_etc, variables, compact=compact)
 
 
-def list(province=None, compact=False, group_vars_in_database=True):
+def list(provinces=None, compact=False, group_vars_in_database=True):
     """
     Get histories and associated variables from database, and return their 
     representation.
         
-    :param province: String. If present, return only histories whose `province`
-        attribute match this value.
+    :param provinces: String, in form of comma-separated list, no spaces.
+        If present, return only histories whose `province` attribute match
+        this value. Match means value is None or attribute occurs in list.
     :param compact: Boolean. Determines whether a compact or full/expanded
         representation is returned. A compact representation:
         - omits attributes elevation, sdate, edate, tz_offset, country
@@ -177,7 +178,7 @@ def list(province=None, compact=False, group_vars_in_database=True):
     set_logger_level_from_qp(logger)
     session = get_app_session()
     with log_timing("List all histories", log=logger.debug):
-        histories_etc = get_all_histories_etc(session, province=province)
+        histories_etc = get_all_histories_etc(session, provinces=provinces)
         all_vars_by_hx = get_all_vars_by_hx(
             session, group_in_database=group_vars_in_database
         )

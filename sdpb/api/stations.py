@@ -14,10 +14,9 @@ from sdpb.api import networks
 from sdpb.api import histories
 from sdpb.util.representation import date_rep, is_expanded
 from sdpb.util.query import (
-    get_all_histories_etc_by_station,
-    get_all_vars_by_hx,
-    set_logger_level_from_qp,
-    add_station_network_publish_filter,
+    get_all_histories_etc_by_station, get_all_vars_by_hx,
+    set_logger_level_from_qp, add_station_network_publish_filter,
+    add_province_filter,
 )
 from sdpb.timing import log_timing
 
@@ -134,10 +133,6 @@ def collection_rep(
     :return: dict
     """
 
-    # TODO: Consider always getting history id's in station query and doing
-    #  in-code join on that basis rather than using station id and histories
-    #  grouped by station. Query for histories may be faster that way.
-
     def histories_etc_for(station_etc):
         station = getattr(station_etc, "Station", station_etc)
         with log_timing(
@@ -201,7 +196,7 @@ def list(
     stride=None,
     limit=None,
     offset=None,
-    province=None,
+    provinces=None,
     compact=True,
     group_vars_in_database=True,
     expand="histories",
@@ -212,8 +207,10 @@ def list(
     :param stride: Integer. Include only (roughly) every stride-th station.
     :param limit: Integer. Maximum number of results.
     :param offset: Integer. Offset for result set.
-    :param province: String. Include only stations whose history.province
-        matches this value.
+    :param provinces: String, in form of comma-separated list, no spaces.
+        If present, return only stations with a history whose `province`
+        attribute match this value. Match means value is None or attribute
+        occurs in list.
     :param compact: Boolean. Return compact rep?
     :param group_vars_in_database: Boolean. Group variables by history id in
         database or in code?
@@ -232,26 +229,33 @@ def list(
         with log_timing("Query all stations", log=logger.debug):
             if expand_histories:
                 q = session.query(Station).select_from(Station)
+                if provinces:
+                    q = q.join(
+                        History, History.station_id == Station.id
+                    ).distinct()
             else:
-                q = session.query(
-                    Station, func.array_agg(History.id).label("history_ids")
-                ).group_by(Station.id)
-            q = add_station_network_publish_filter(q).order_by(Station.id.asc())
+                q = (
+                    session.query(
+                        Station, func.array_agg(History.id).label("history_ids")
+                    )
+                    .select_from(Station)
+                    .join(History, History.station_id == Station.id)
+                    .group_by(Station.id)
+                )
+            q = add_station_network_publish_filter(q)
+            q = add_province_filter(q, provinces)
+            q = q.order_by(Station.id.asc())
             if stride:
                 q = q.filter(Station.id % stride == 0)
             if limit:
                 q = q.limit(limit)
             if offset:
                 q = q.offset(offset)
-            if province:
-                q = q.join(History, History.station_id == Station.id).filter(
-                    History.province == province
-                )
             stations = q.all()
 
         if expand_histories:
             all_histories_etc_by_station = get_all_histories_etc_by_station(
-                session, province=province
+                session, provinces=provinces
             )
             all_vars_by_hx = get_all_vars_by_hx(
                 session, group_in_database=group_vars_in_database
