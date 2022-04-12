@@ -89,7 +89,7 @@ def get_all_vars_by_hx(session, group_in_database=True):
         ).all()
     with log_timing("Group all vars by hx", log=logger.debug):
         result = {
-            history_id: list(variables)
+            history_id: list({v.id for v in variables})
             for history_id, variables in groupby(
                 all_variables, lambda v: v.history_id
             )
