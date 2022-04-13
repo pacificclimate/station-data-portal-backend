@@ -7,16 +7,24 @@ import pytest
 # https://docs.pytest.org/en/stable/how-to/parametrize.html#basic-pytest-generate-tests-example
 
 
+options = (
+    ("items", str, "*"),
+    ("repeats", int, "1"),
+    ("delay", int, "0"),
+)
+
 def pytest_addoption(parser):
-    parser.addoption("--repeats", action="store", default="1")
+    for name, _, default in options:
+        parser.addoption(f"--{name}", action="store", default=default)
 
 
 def pytest_generate_tests(metafunc):
     # This is called for every test. Only get/set command line arguments
     # if the argument is specified in the list of test "fixturenames".
-    option_value = metafunc.config.getoption("repeats", 1)
-    if 'repeats' in metafunc.fixturenames:
-        metafunc.parametrize("repeats", [int(option_value)])
+    for name, typ, default in options:
+        option_value = metafunc.config.getoption(name)
+        if name in metafunc.fixturenames:
+            metafunc.parametrize(name, [typ(option_value)])
 
 
 # In this test package, we're using a real database, specified in the usual

@@ -1,13 +1,10 @@
 import datetime
 import math
+from statistics import mean, stdev
 import os
 import pprint
 import pytest
-from sdpb.api import (
-    crmp_network_geoserver,
-    histories,
-    stations,
-)
+from sdpb.api import crmp_network_geoserver, histories, stations
 from sdpb.timing import timing
 
 
@@ -79,14 +76,42 @@ def print_div():
     print("-" * 60)
 
 
-def print_history_timing_table(provinces, repeats=1):
+time_stat_formats = (
+    "time_total!s:>14",
+    "time_min!s:>14",
+    "time_mean!s:>14",
+    "time_max!s:>14",
+    # "time_std!s:>14",
+)
+
+
+time_stat_titles = dict(
+    time_total=f"tot time ({units})",
+    time_min=f"min time ({units})",
+    time_mean=f"mean time ({units})",
+    time_max=f"max time ({units})",
+    # time_std=f"std time",
+)
+
+
+def time_stat_values(timings):
+    times = [t["elapsed"] * multiplier for t in timings]
+    return dict(
+        time_total=round(sum(times)),
+        time_min=round(min(times)),
+        time_mean=round(mean(times)),
+        time_max=round(max(times)),
+        # time_std = round(stdev(times)),
+    )
+
+
+def print_history_timing_table(provinces, repeats=1, delay=10):
     formats = (
         "provinces!s:<5",
         "group_vars_in_database!s:<15",
         "compact!s:<8",
-        "total_time!s:>14",
-        "avg_time!s:>14",
-        "item_count!s:>10"
+        *time_stat_formats,
+        "item_count!s:>10",
     )
     print()
     print_div()
@@ -97,8 +122,7 @@ def print_history_timing_table(provinces, repeats=1):
         compact="compact",
         group_vars_in_database="grp vars in db",
         provinces="prov",
-        total_time=f"tot time ({units})",
-        avg_time=f"avg time ({units})",
+        **time_stat_titles,
         item_count="# items",
     )
     for group_vars_in_database in (True, False):
@@ -108,27 +132,24 @@ def print_history_timing_table(provinces, repeats=1):
                 group_vars_in_database=group_vars_in_database,
                 provinces=provinces,
             )
-            t = timing(histories.list, repeats=repeats, **args)
-            total_time = t['elapsed'] * multiplier
+            ts = timing(histories.list, repeats=repeats, delay=delay, **args)
             print_tabular(
                 formats,
                 **args,
-                total_time=round(total_time),
-                avg_time=round(total_time/repeats),
-                item_count=len(t["values"][0]),
+                **time_stat_values(ts),
+                item_count=len(ts[0]["value"]),
             )
     print_div()
 
 
-def print_station_timing_table(provinces, repeats=1):
+def print_station_timing_table(provinces, repeats=1, delay=10):
     formats = (
         "provinces!s:<5",
         "group_vars_in_database!s:<15",
         "compact!s:<8",
         "expand!s:<10",
-        "total_time!s:>14",
-        "avg_time!s:>14",
-        "item_count!s:>10"
+        *time_stat_formats,
+        "item_count!s:>10",
     )
     print()
     print_div()
@@ -139,57 +160,42 @@ def print_station_timing_table(provinces, repeats=1):
         group_vars_in_database="grp vars in db",
         provinces="prov",
         expand="expand",
-        total_time=f"tot time ({units})",
-        avg_time=f"avg time ({units})",
+        **time_stat_titles,
         item_count="# items",
     )
     for group_vars_in_database in (False, True):
         for compact in (False, True):
             for expand in ("histories", None):
-            # for expand in (None, "histories"):
+                # for expand in (None, "histories"):
                 args = dict(
                     compact=compact,
                     group_vars_in_database=group_vars_in_database,
                     provinces=provinces,
                     expand=expand,
                 )
-                t = timing(stations.list, repeats=repeats, **args)
-                total_time = t['elapsed'] * multiplier
+                ts = timing(stations.list, repeats=repeats, delay=delay, **args)
                 print_tabular(
                     formats,
                     **args,
-                    total_time=round(total_time),
-                    avg_time=round(total_time/repeats),
-                    item_count=len(t["values"][0]),
+                    **time_stat_values(ts),
+                    item_count=len(ts[0]["value"]),
                 )
     print_div()
 
 
-def print_cng_timing_table(repeats=1):
-    formats = (
-        "total_time!s:>14",
-        "avg_time!s:>14",
-        "item_count!s:>10"
-    )
+def print_cng_timing_table(repeats=1, delay=10):
+    formats = (*time_stat_formats, "item_count!s:>10")
     print()
     print_div()
     print("CNG")
     print()
-    print_tabular(
-        formats,
-        total_time=f"tot time ({units})",
-        avg_time=f"avg time ({units})",
-        item_count="# items",
-    )
+    print_tabular(formats, **time_stat_titles, item_count="# items")
     args = dict()
-    t = timing(crmp_network_geoserver.list, repeats=repeats, **args)
-    total_time = t['elapsed'] * multiplier
+    ts = timing(
+        crmp_network_geoserver.list, repeats=repeats, delay=delay, **args
+    )
     print_tabular(
-        formats,
-        **args,
-        total_time=round(total_time),
-        avg_time=round(total_time/repeats),
-        item_count=len(t["values"][0]),
+        formats, **args, **time_stat_values(ts), item_count=len(ts[0]["value"])
     )
     print_div()
 
@@ -198,8 +204,12 @@ def print_run_sep():
     print("=" * 60)
 
 
-# @pytest.mark.parametrize("repeats", (2,))
-def test_print_timing_tables(repeats):
+def test_print_timing_tables(items, repeats, delay):
+    items = items.split(",")
+
+    def is_item(what):
+        return "*" in items or what in items
+
     dsn = os.getenv("PCDS_DSN")
     db = "crmp" if "db3." in dsn else "metnorth"
     provinces = "BC" if db == "crmp" else None
@@ -207,15 +217,22 @@ def test_print_timing_tables(repeats):
     print_run_sep()
     print(
         f"{datetime.datetime.now()} "
-        f"Performance test against {db} database; "
-        f"repeats = {repeats}"
+        f"Performance test "
+        f"database = {db}, "
+        f"items = {items}, "
+        f"repeats = {repeats}, "
+        f"delay = {delay}, "
     )
     # The first use of a session appears to incur a kind of startup cost of
     # about 200 ms. In these tests, the session is created with package scope,
     # is so common to all here. The first print_cng_timing_table() is to absorb
     # the startup cost; the final one is more accurate.
     print_cng_timing_table(repeats=1)
-    print_history_timing_table(provinces, repeats=repeats)
-    print_station_timing_table(provinces, repeats=repeats)
-    print_cng_timing_table(repeats=repeats)
+
+    if is_item("history"):
+        print_history_timing_table(provinces, repeats=repeats, delay=delay)
+    if is_item("station"):
+        print_station_timing_table(provinces, repeats=repeats, delay=delay)
+    if is_item("cng"):
+        print_cng_timing_table(repeats=repeats, delay=delay)
     print_run_sep()

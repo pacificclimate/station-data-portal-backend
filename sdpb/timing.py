@@ -13,15 +13,21 @@ with timing("description/label", log=logger.debug):
 ```
 """
 from contextlib import contextmanager
-from time import perf_counter
+from time import perf_counter, sleep
 
 
-def timing(f, *args, repeats=1, **kwargs):
-    start = perf_counter()
-    values = tuple(f(*args, **kwargs) for r in range(repeats))
-    end = perf_counter()
-    elapsed = end - start
-    return {"start": start, "end": end, "elapsed": elapsed, "values": values}
+def timing(f, *args, repeats=1, delay=0, **kwargs):
+    result = []
+    for r in range(repeats):
+        start = perf_counter()
+        value = f(*args, **kwargs)
+        end = perf_counter()
+        elapsed = end - start
+        result.append(
+            {"start": start, "end": end, "elapsed": elapsed, "value": value}
+        )
+        sleep(delay)
+    return result
 
 
 @contextmanager
