@@ -31,9 +31,10 @@ RUN apt-get install -yq \
             python3-pip \
             postgresql-10 \
             postgresql-plpython-10 \
-            postgresql-10-postgis-2.4 \
+            postgresql-10-postgis-2.4
 # Must install earlier version of pipenv to avoid bug that prevents installing pycds.
-RUN pip3 install -U pip pipenv==2022.3.28
+RUN pip3 install -U pip && \
+    pip3 install pipenv==2022.3.28
 
 # Set up non-root user. We do this for two reasons:
 # - Postgres refuses to run as root for security reasons.
