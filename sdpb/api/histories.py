@@ -13,7 +13,6 @@ from sdpb.api import variables
 from sdpb.util.representation import date_rep, float_rep, obs_stats_rep
 from sdpb.util.query import (
     get_all_vars_by_hx,
-    set_logger_level_from_qp,
     add_station_network_publish_filter,
     get_all_histories_etc,
 )
@@ -23,14 +22,21 @@ from sdpb.timing import log_timing
 logger = logging.getLogger("sdpb")
 
 
-def uri(history):
+def id_(history):
+    """Sometimes we get a naked id, sometimes we get a database record"""
     if isinstance(history, int):
-        return url_for("sdpb_api_histories_get", id=history)
+        return history
     # Assume it is a History-like object
-    return url_for("sdpb_api_histories_get", id=history.id)
+    return history.id
 
 
-def single_item_rep(history_etc, vars=None, compact=False):
+def uri(history):
+    # TODO: Using url_for approx doubles the time to convert
+    #  *entire record* to rep
+    return url_for("sdpb_api_histories_get", id=id_(history))
+
+
+def single_item_rep(history_etc, vars=None, compact=False, include_uri=False):
     """
     Return a representation of a single history item.
 
@@ -45,14 +51,15 @@ def single_item_rep(history_etc, vars=None, compact=False):
     sos = history_etc.StationObservationStats
     rep = {
         "id": history.id,
-        "uri": uri(history),
+        **({"uri": uri(history)} if include_uri else {}),
         "station_name": history.station_name,
         "lon": float_rep(history.lon),
         "lat": float_rep(history.lat),
         "province": history.province,
         "freq": history.freq,
         **obs_stats_rep(sos),
-        "variable_uris": [variables.uri(variable) for variable in vars or []],
+        "variable_ids": [variables.id_(variable) for variable in vars or []],
+        # "variable_uris": [variables.uri(variable) for variable in vars or []],
     }
     if compact:
         return rep
@@ -82,7 +89,7 @@ def collection_item_rep(history_etc, **kwargs):
     return single_item_rep(history_etc, **kwargs)
 
 
-def collection_rep(histories_etc, all_vars_by_hx=None, compact=False):
+def collection_rep(histories_etc, all_vars_by_hx=None, compact=False, include_uri=False):
     """
     Return a representation of a histories collection.
 
@@ -118,6 +125,7 @@ def collection_rep(histories_etc, all_vars_by_hx=None, compact=False):
             history_etc,
             vars=variables_for(history_etc.History),
             compact=compact,
+            include_uri=include_uri,
         )
         for history_etc in histories_etc
     ]
@@ -152,10 +160,10 @@ def get(id=None, compact=False):
         .all()
     )
     logger.debug("data retrieved")
-    return single_item_rep(history_etc, variables, compact=compact)
+    return single_item_rep(history_etc, variables, compact=compact, include_uri=True)
 
 
-def list(provinces=None, compact=False, group_vars_in_database=True):
+def list(provinces=None, compact=False, group_vars_in_database=True, include_uri=False):
     """
     Get histories and associated variables from database, and return their 
     representation.
@@ -179,5 +187,5 @@ def list(provinces=None, compact=False, group_vars_in_database=True):
         )
         with log_timing("Convert histories etc to rep", log=logger.debug):
             return collection_rep(
-                histories_etc, all_vars_by_hx, compact=compact
+                histories_etc, all_vars_by_hx, compact=compact, include_uri=include_uri
             )
