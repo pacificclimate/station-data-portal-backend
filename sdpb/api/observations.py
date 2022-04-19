@@ -13,7 +13,6 @@ from sqlalchemy.sql.expression import cast
 from flask import url_for
 from pycds import ObsCountPerMonthHistory, ClimoObsCount, History
 from sdpb import app_db
-from sdpb.util.query import set_logger_level_from_qp
 
 
 logger = logging.getLogger("sdpb")
@@ -31,8 +30,6 @@ def observations_counts_uri(start_date=None, end_date=None, station_ids=None):
 
 
 def get_counts(start_date=None, end_date=None, station_ids=None):
-    set_logger_level_from_qp(logger)
-
     # Set up queries for total counts by station id
     obsCountQuery = (
         session.query(

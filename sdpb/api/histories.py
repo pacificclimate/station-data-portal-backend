@@ -43,7 +43,6 @@ def single_item_rep(history_etc, vars=None, compact=False):
     """
     history = history_etc.History
     sos = history_etc.StationObservationStats
-    set_logger_level_from_qp(logger)
     rep = {
         "id": history.id,
         "uri": uri(history),
@@ -80,7 +79,6 @@ def collection_item_rep(history_etc, **kwargs):
     :param compact: Boolean. Return compact or full representation.
     :return: dict
     """
-    set_logger_level_from_qp(logger)
     return single_item_rep(history_etc, **kwargs)
 
 
@@ -114,7 +112,6 @@ def collection_rep(histories_etc, all_vars_by_hx=None, compact=False):
             except KeyError as e:
                 return []
 
-    set_logger_level_from_qp(logger)
 
     return [
         collection_item_rep(
@@ -129,7 +126,6 @@ def collection_rep(histories_etc, all_vars_by_hx=None, compact=False):
 def get(id=None, compact=False):
     """Get a single history and associated variables from database,
     and return their representation."""
-    set_logger_level_from_qp(logger)
     assert id is not None
     logger.debug("get history")
     session = get_app_session()
@@ -175,7 +171,6 @@ def list(provinces=None, compact=False, group_vars_in_database=True):
         history id in database or in code? In db is faster.
     :return: dict
     """
-    set_logger_level_from_qp(logger)
     session = get_app_session()
     with log_timing("List all histories", log=logger.debug):
         histories_etc = get_all_histories_etc(session, provinces=provinces)

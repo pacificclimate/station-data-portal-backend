@@ -51,7 +51,6 @@ def single_item_rep(
     :return: dict
     """
     """"""
-    set_logger_level_from_qp(logger)
     expand_histories = is_expanded("histories", expand)
 
     station = getattr(station_etc, "Station", station_etc)
@@ -103,7 +102,6 @@ def collection_item_rep(
     :param compact: Boolean. Return compact or full representation.
     :return: dict
     """
-    set_logger_level_from_qp(logger)
     return single_item_rep(
         station,
         station_histories_etc,
@@ -152,7 +150,6 @@ def collection_rep(
                 result = []
         return result
 
-    set_logger_level_from_qp(logger)
 
     return [
         collection_item_rep(
@@ -167,7 +164,6 @@ def collection_rep(
 
 
 def get(id=None, compact=True, expand="histories"):
-    set_logger_level_from_qp(logger)
     assert id is not None
     session = get_app_session()
     q = session.query(Station).select_from(Station).filter(Station.id == id)
@@ -219,7 +215,6 @@ def list(
     :param expand: Associated items to expand. Valid values: "histories".
     :return: list of dict
     """
-    set_logger_level_from_qp(logger)
     logger.debug(
         f"stations.list(stride={stride}, limit={limit}, offset={offset}, "
         f"compact={compact}, expand={expand})"
