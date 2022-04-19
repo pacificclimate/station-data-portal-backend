@@ -41,7 +41,7 @@ jobs:
 
     - name: Install pipenv
       run: |
-        pip install -U pipenv
+        pip install -U pipenv==2022.3.28
 
     - id: cache-pipenv
       uses: actions/cache@v2
