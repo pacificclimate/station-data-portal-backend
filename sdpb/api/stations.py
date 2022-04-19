@@ -16,7 +16,6 @@ from sdpb.util.representation import date_rep, is_expanded
 from sdpb.util.query import (
     get_all_histories_etc_by_station,
     get_all_vars_by_hx,
-    set_logger_level_from_qp,
     add_station_network_publish_filter,
     add_province_filter,
 )
@@ -50,7 +49,6 @@ def single_item_rep(
     :param compact: Boolean. Return compact or full representation.
     :return: dict
     """
-    """"""
     expand_histories = is_expanded("histories", expand)
 
     station = getattr(station_etc, "Station", station_etc)
@@ -60,10 +58,12 @@ def single_item_rep(
             station_histories_etc,
             all_vars_by_hx=all_vars_by_hx,
             compact=compact,
+            include_uri=False,
         )
     else:
         histories_rep = [
-            {"uri": histories.uri(hx_id)} for hx_id in station_etc.history_ids
+            {"id": hx_id} for hx_id in station_etc.history_ids
+            # {"uri": histories.uri(hx_id)} for hx_id in station_etc.history_ids
         ]
     rep = {
         "id": station.id,
@@ -150,7 +150,6 @@ def collection_rep(
                 result = []
         return result
 
-
     return [
         collection_item_rep(
             station,
@@ -217,7 +216,7 @@ def list(
     """
     logger.debug(
         f"stations.list(stride={stride}, limit={limit}, offset={offset}, "
-        f"compact={compact}, expand={expand})"
+        f"provinces={provinces}, compact={compact}, expand={expand})"
     )
     session = get_app_session()
     expand_histories = is_expanded("histories", expand)
