@@ -4,11 +4,16 @@ from sdpb import get_app_session
 from sdpb.api import networks
 
 
-def uri(variable):
+def id_(variable):
+    """Sometimes we get a naked id, sometimes we get a database record"""
     if isinstance(variable, int):
-        return url_for("sdpb_api_variables_get", id=variable)
+        return variable
     # Assuming a database object with attribute id (like ORM Variable).
-    return url_for("sdpb_api_variables_get", id=variable.id)
+    return variable.id
+
+
+def uri(variable):
+    return url_for("sdpb_api_variables_get", id=id_(variable))
 
 
 def single_item_rep(variable):
