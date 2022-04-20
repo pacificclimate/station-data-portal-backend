@@ -16,6 +16,7 @@ connexion = {version = "2.13.0", extras = ["swagger-ui"]}
 Flask = "==2.1.1"
 Flask-Cors = "==3.0.10"
 Flask-SQLAlchemy = "==2.5.1"
+flask-compress = "*"
 
 [dev-packages]
 pytest = "*"
