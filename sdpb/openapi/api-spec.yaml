@@ -28,6 +28,9 @@ tags:
       A variable defines a physical quantity that is reported by one or more
       stations in a network. A variable is a memeber of a network and has
       zero or more observations associated with it.
+  - name: Frequencies
+    description: |
+      A frequency is a nominal reporting interval for a history.
   - name: Histories
     description: |
       A history defines a period in the lifetime of a single station,
@@ -126,6 +129,23 @@ paths:
                 $ref: '#/components/schemas/Variable'
         404:
           $ref: '#/components/responses/404NotFound'
+
+  # Frequencies
+
+  /frequencies:
+    get:
+      summary: List all frequencies valid in this database.
+      description: Get a list of frequency values.
+      tags:
+        - Frequencies
+      operationId: sdpb.api.frequencies.collection
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FrequencyList'
 
   # Histories
 
@@ -439,6 +459,18 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Variable'
+
+    # Frequencies
+
+    Frequency:
+      description: Single frequency descriptor.
+      type: string
+
+    FrequencyList:
+      description: List of frequency descriptors.
+      type: array
+      items:
+        $ref: '#/components/schemas/Frequency'
 
     # Histories
 
