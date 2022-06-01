@@ -14,8 +14,10 @@ from the database are provided by an instance of the PDP backend.
 
 ## Documentation
 
-- [Installation](docs/installation.md)
 - [API Design](docs/api-design.md)
+- [Installation](docs/installation.md)
+- [Configuration](docs/configuration.md)
+- [Production](docs/development.md)
 - [Development](docs/development.md)
 - [Unit testing](docs/unit-testing.md)
 - [Performance testing](docs/performance-testing.md)
