@@ -55,6 +55,7 @@ def single_item_rep(history_etc, vars=None, compact=False, include_uri=False):
         "station_name": history.station_name,
         "lon": float_rep(history.lon),
         "lat": float_rep(history.lat),
+        "elevation": float_rep(history.elevation),
         "province": history.province,
         "freq": history.freq,
         **obs_stats_rep(sos),
@@ -65,7 +66,6 @@ def single_item_rep(history_etc, vars=None, compact=False, include_uri=False):
         return rep
     return {
         **rep,
-        "elevation": float_rep(history.elevation),
         "sdate": date_rep(history.sdate),
         "edate": date_rep(history.edate),
         "tz_offset": history.tz_offset,
