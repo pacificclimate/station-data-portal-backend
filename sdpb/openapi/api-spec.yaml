@@ -162,6 +162,13 @@ paths:
           description: Return compact representation
           schema:
             type: boolean
+        - name: provinces
+          in: query
+          description: |
+            Filter results by provinces. Value is a string containing
+            comma-separated province codes. E.g., "BC,AB".
+          schema:
+            type: string
       responses:
         200:
           description: Success
@@ -206,9 +213,24 @@ paths:
       parameters:
         - name: compact
           in: query
-          description: Return compact representation
+          description: |
+            Return compact representation of stations (and histories, 
+            if included).
           schema:
             type: boolean
+        - name: expand
+          in: query
+          description: |
+            Comma-separated of response items to expand in response. 
+            Presently limited to "histories".
+            Default: "histories" (expand histories).
+            If the value of this parameter is does not include "histories",
+            the values in the "histories" property are only history id's.
+            If it does, the values in the "histories" property are the 
+            representation that would be obtained from 
+            /histories/{id}&compact=<value> .
+          schema:
+            type: string
         - name: stride
           in: query
           description: Get every `stride`-th station
@@ -482,7 +504,11 @@ components:
           description: Unique internal id of history.
           type: string
         uri:
-          description: URI for this history resource.
+          description: |
+            URI for this history resource.
+            Note: Currently omitted because it is surprsingly slow to compute
+            (using Connexion uri tool). May be made optional with query param
+            in future.
           type: string
         station_name:
           description: Name of station during this history.
