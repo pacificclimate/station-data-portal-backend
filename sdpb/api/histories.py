@@ -52,6 +52,8 @@ def single_item_rep(history_etc, vars=None, compact=False, include_uri=False):
     rep = {
         "id": history.id,
         **({"uri": uri(history)} if include_uri else {}),
+        # TODO: Why does this not contain a (possibly optional) uri for
+        #   station?
         "station_name": history.station_name,
         "lon": float_rep(history.lon),
         "lat": float_rep(history.lat),
