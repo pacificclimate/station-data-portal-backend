@@ -52,7 +52,7 @@ ADD --chown=${USERNAME}:${GROUPNAME} . ${USER_DIR}
 WORKDIR ${USER_DIR}
 ENV PATH=${USER_DIR}/.local/bin:${PATH}
 
-RUN pip3 install -U pipenv --ignore-installed && \
+RUN pip3 install -U pipenv==2022.3.28 --ignore-installed && \
     pipenv install gunicorn # installs all the packages plus gunicorn
 
 EXPOSE 8000

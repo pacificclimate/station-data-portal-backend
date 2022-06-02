@@ -32,8 +32,9 @@ RUN apt-get install -yq \
             postgresql-10 \
             postgresql-plpython-10 \
             postgresql-10-postgis-2.4
-#            && \
-RUN pip3 install -U pip pipenv
+# Must install earlier version of pipenv to avoid bug that prevents installing pycds.
+RUN pip3 install -U pip && \
+    pip3 install pipenv==2022.3.28
 
 # Set up non-root user. We do this for two reasons:
 # - Postgres refuses to run as root for security reasons.
@@ -68,10 +69,18 @@ RUN if [ "$USERNAME" != "root" ]; \
         chown ${USERNAME}:${GROUPNAME} ${USER_DIR}; \
     fi
 
+# You must mount local codebase to this directory
+ENV CODEBASE_DIR=/codebase
+RUN mkdir ${CODEBASE_DIR}
+
+# This is where we do pipenv install. We don't want to overwrite Pipfile in ${CODEBASE_DIR},
+# so we copy Pipfile here, modify it to install the local codebase from ${CODEBASE_DIR},
+# and pipenv install in this directory.
+ENV INSTALL_DIR=/install
+RUN mkdir ${INSTALL_DIR} && chown ${USERNAME}:${GROUPNAME} ${INSTALL_DIR}
+WORKDIR ${INSTALL_DIR}
+
 USER ${USERNAME}
 
-# You must mount local codebase to this directory
-WORKDIR /codebase
-
 # Install the local codebase when the container starts.
-ENTRYPOINT ./docker/local-pytest/entrypoint.sh
+ENTRYPOINT ${CODEBASE_DIR}/docker/local-pytest/entrypoint.sh

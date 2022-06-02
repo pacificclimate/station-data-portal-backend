@@ -1,0 +1,31 @@
+version: 1
+
+formatters:
+  default:
+    format: '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    stream: ext://sys.stdout
+    formatter: default
+  file:
+    class: logging.FileHandler
+    level: DEBUG
+    filename: sdpb.log
+    formatter: default
+
+loggers:
+  console:
+#    level: DEBUG
+    handlers: [console]
+    propagate: no
+  file:
+#    level: DEBUG
+    handlers: [file]
+    propagate: no
+
+root:
+  level: DEBUG
+  handlers: [console,file]
