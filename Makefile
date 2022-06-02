@@ -1,9 +1,16 @@
-install:
+.PHONY: install-default
+install-default:
 	pipenv install --dev
 	pipenv install -e .
 
+
+.PHONY: local-pytest-image
 local-pytest-image:
-	docker build --no-cache -t pcic/sdpb-local-pytest -f docker/local-pytest/Dockerfile .
+	docker build \
+		--no-cache \
+		-t pcic/sdpb-local-pytest \
+		-f docker/local-pytest/Dockerfile \
+		.
 
 local-pytest-run:
 	py3clean .

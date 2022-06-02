@@ -1,6 +1,7 @@
 import os
 import connexion
 from flask_cors import CORS
+from flask_compress import Compress
 from flask_sqlalchemy import SQLAlchemy
 
 # This is a nasty way to do this.
@@ -20,6 +21,9 @@ flask_app = None
 app_db = None
 
 
+compress = Compress()
+
+
 def create_app(config_override={}):
     global connexion_app, flask_app, app_db
     connexion_app = connexion.FlaskApp(__name__, specification_dir="openapi/")
@@ -32,8 +36,10 @@ def create_app(config_override={}):
         ),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         SQLALCHEMY_ECHO=False,
+        COMPRESS_ALGORITHM="gzip",
     )
     flask_app.config.update(config_override)
+    compress.init_app(flask_app)
 
     app_db = SQLAlchemy(flask_app)
 

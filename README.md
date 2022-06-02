@@ -12,12 +12,31 @@ app, but it is not particularly tuned to this app.
 At present, this service provides only metadata. Actual data downloads
 from the database are provided by an instance of the PDP backend.
 
+## Important note
+
+In [PR #33](https://github.com/pacificclimate/station-data-portal-backend/pull/33),
+we pinned PyCDS to version 3.3.0 to make the backend compatible with the 
+current state of the target databases (CRMP, metnorth), which have not been 
+migrated to the revision required for the latest version, 4.0.0. 
+
+The backend works correctly, but several unit tests fail because the ORM is 
+still incorrectly defined in 3.3.0 (fixed in 4.0.0). The tests could 
+perhaps be rejigged to work with the faulty ORM declarations, but why ... 
+things will move past it and the "fix" undone. Better to have some failing 
+tests.
+
+The failing tests are marked xfail (actually, the failing fixture calls
+`pytest.xfail`).
+
 ## Documentation
 
-- [Installation](docs/installation.md)
 - [API Design](docs/api-design.md)
+- [Installation](docs/installation.md)
+- [Configuration](docs/configuration.md)
+- [Production](docs/development.md)
 - [Development](docs/development.md)
 - [Unit testing](docs/unit-testing.md)
+- [Performance testing](docs/performance-testing.md)
 - [Supporting CRMP while it is behind PyCDS head revision](docs/supporting-crmp.md)
 - [Release history](NEWS.md)
 
