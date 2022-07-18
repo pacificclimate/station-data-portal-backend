@@ -60,7 +60,7 @@ To create a versioned release:
   `Pipfile.lock` to branch `crmp`.
 2. Release on `crmp`:
    1. Check out `crmp`.
-   2. Increment `__version__` in `setup.py` (version >=1, < 3).
+   2. Increment `__version__` in `setup.py` (version >=1, < 10).
    3. Add, commit, and tag, and push these changes:
       ```
       git add setup.py
@@ -70,7 +70,7 @@ To create a versioned release:
       ```
 3. Release on `master`:
    1. Check out `master`.
-   2. Increment `__version__` in `setup.py` (version >= 3).
+   2. Increment `__version__` in `setup.py` (version >= 10).
    3. Summarize the changes *for both
       branches* from the last releases in `NEWS.md`.
    4. Add, commit, and tag, and push these changes:

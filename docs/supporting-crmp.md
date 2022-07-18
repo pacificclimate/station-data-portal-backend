@@ -32,12 +32,16 @@ Releases and lifecycle:
 - Before creating a new release:
   - Merge `master` into `crmp`.
   - Adjust the version of PyCDS in branch `crmp` as necessary to
-    remain at a compatible release. (This usually means ensuring it is still 
-    at its old value, which at the time of writing is 3.2.0.)
+    remain at a compatible release. (This usually means ensuring it is
+    still at its old value)
 - Release numbering:
-   - Branch `master`: Versions numbered >= 3.
-   - Branch `crmp`: Versions numbered >= 1, < 3. This will give us a little
-     flexibility in version numbering. God forbid we need more than 2.x.
+   - Branch `master`: Versions numbered >= 10.
+   - Branch `crmp`: Versions numbered >= 1, < 10. This will give us a little
+     flexibility in version numbering. God forbid we need more than 9.x.
+   - IMPORTANT: Previously, the maximum major version number for `crmp` was 
+     2 (not 9). This was overly optimistic. We now have `master` versions 
+     numbered 3.x, which is a problem I hope to gloss over, hide, or leave 
+     behind, mainly by skipping major version number 3 in future `crmp` releases.
 - Branch `crmp` will be terminated when CRMP has been moved to a modern
   server and migrated to the head revision of PyCDS. Thereafter only
   `master` branch will be used for releases.

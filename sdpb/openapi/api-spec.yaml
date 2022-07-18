@@ -211,6 +211,13 @@ paths:
         - Stations
       operationId: sdpb.api.stations.list
       parameters:
+        - name: provinces
+          in: query
+          description: |
+            Filter results by provinces. Value is a string containing
+            comma-separated province codes. E.g., "BC,AB".
+          schema:
+            type: string
         - name: compact
           in: query
           description: |
