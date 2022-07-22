@@ -1,5 +1,13 @@
 # News / Release Notes
 
+## 2.2.0 (crmp) / 10.2.0 (master)
+
+*Release date: 2022-Jul-22*
+
+Changes:
+
+- [Add station count to /networks response ](https://github.com/pacificclimate/station-data-portal-backend/pull/38)
+
 ## 2.1.0 (crmp) / 10.1.0 (master)
 
 *Release date: 2022-Jul-18*

@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-__version__ = (10, 1, 0)
+__version__ = (10, 2, 0)
 
 setup(
     name="sdpb",
