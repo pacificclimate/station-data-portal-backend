@@ -1,5 +1,13 @@
 # News / Release Notes
 
+## 2.1.0 (crmp) / 10.1.0 (master)
+
+*Release date: 2022-Jul-18*
+
+Changes:
+
+- [Add provinces qp to /stations](https://github.com/pacificclimate/station-data-portal-backend/pull/37)
+
 ## 2.0.0 (crmp) / 10.0.0 (master)
 
 *Release date: 2022-Jun-02*
