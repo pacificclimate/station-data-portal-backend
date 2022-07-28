@@ -230,7 +230,6 @@ def list(
                 q = (
                     session.query(Station)
                     .select_from(Station)
-                    .join(History, History.station_id == Station.id)
                     .distinct()
                 )
             else:
@@ -239,9 +238,9 @@ def list(
                         Station, func.array_agg(History.id).label("history_ids")
                     )
                     .select_from(Station)
-                    .join(History, History.station_id == Station.id)
                     .group_by(Station.id)
                 )
+            q = q.join(History, History.station_id == Station.id)
             q = add_station_network_publish_filter(q)
             q = add_province_filter(q, provinces)
             q = q.order_by(Station.id.asc())
