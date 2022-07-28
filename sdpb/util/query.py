@@ -1,6 +1,7 @@
 import logging
 from flask import request
 from sqlalchemy import func
+from sqlalchemy.sql import visitors
 from itertools import groupby
 from pycds import (
     Network,
@@ -22,6 +23,18 @@ def set_logger_level_from_qp(a_logger):
             a_logger.setLevel(logging.DEBUG)
     except:
         pass
+
+
+def get_tables(query):
+    """
+    Return list of tables used in query.
+    See https://stackoverflow.com/questions/35829083/can-i-inspect-a-sqlalchemy-query-object-to-find-the-already-joined-tables
+    """
+    return [
+        v.entity_namespace
+        for v in visitors.iterate(query.statement)
+        if v.__visit_name__ == "table"
+    ]
 
 
 def get_all_histories_etc(session, provinces=None):
