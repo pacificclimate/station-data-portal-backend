@@ -62,7 +62,8 @@ def single_item_rep(
         )
     else:
         histories_rep = [
-            {"id": hx_id} for hx_id in station_etc.history_ids
+            {"id": hx_id}
+            for hx_id in station_etc.history_ids
             # {"uri": histories.uri(hx_id)} for hx_id in station_etc.history_ids
         ]
     rep = {
@@ -227,41 +228,38 @@ def list(
             # Note: Station is always joined with History, and stations with
             # no associated history records are not returned.
             if expand_histories:
-                q = (
-                    session.query(Station)
-                    .select_from(Station)
-                    .distinct()
+                stations_query = (
+                    session.query(Station).select_from(Station).distinct()
+                )
+                all_histories_etc_by_station = get_all_histories_etc_by_station(
+                    session, provinces=provinces
+                )
+                all_vars_by_hx = get_all_vars_by_hx(
+                    session, group_in_database=group_vars_in_database
                 )
             else:
-                q = (
+                stations_query = (
                     session.query(
                         Station, func.array_agg(History.id).label("history_ids")
                     )
                     .select_from(Station)
                     .group_by(Station.id)
                 )
-            q = q.join(History, History.station_id == Station.id)
-            q = add_station_network_publish_filter(q)
-            q = add_province_filter(q, provinces)
-            q = q.order_by(Station.id.asc())
+                all_histories_etc_by_station = None
+                all_vars_by_hx = None
+            stations_query = stations_query.join(
+                History, History.station_id == Station.id
+            )
+            stations_query = add_station_network_publish_filter(stations_query)
+            stations_query = add_province_filter(stations_query, provinces)
+            stations_query = stations_query.order_by(Station.id.asc())
             if stride:
-                q = q.filter(Station.id % stride == 0)
+                stations_query = stations_query.filter(Station.id % stride == 0)
             if limit:
-                q = q.limit(limit)
+                stations_query = stations_query.limit(limit)
             if offset:
-                q = q.offset(offset)
-            stations = q.all()
-
-        if expand_histories:
-            all_histories_etc_by_station = get_all_histories_etc_by_station(
-                session, provinces=provinces
-            )
-            all_vars_by_hx = get_all_vars_by_hx(
-                session, group_in_database=group_vars_in_database
-            )
-        else:
-            all_histories_etc_by_station = None
-            all_vars_by_hx = None
+                stations_query = stations_query.offset(offset)
+            stations = stations_query.all()
 
         with log_timing("Convert stations to rep", log=logger.debug):
             return collection_rep(
