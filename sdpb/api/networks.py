@@ -1,7 +1,9 @@
 from flask import url_for
+from sqlalchemy import distinct
 from sqlalchemy.sql import func
-from pycds import Network, Station
+from pycds import Network, Station, History
 from sdpb import get_app_session
+from sdpb.util.query import add_province_filter
 
 
 def uri(network):
@@ -37,28 +39,26 @@ def collection_rep(networks_etc):
 
 def base_query(session):
     return (
-        session
-        .query(Network, func.count(Station.id).label("station_count"))
+        session.query(
+            Network, func.count(distinct(Station.id)).label("station_count")
+        )
         .select_from(Network)
         .join(Station, Station.network_id == Network.id)
+        .join(History, History.station_id == Station.id)
         .group_by(Network.id)
         .filter(Network.publish == True)
     )
 
 
-def list():
-    networks_etc = (
-        base_query(get_app_session())
-        .order_by(Network.id.asc())
-        .all()
-    )
+def list(provinces=None):
+    q = base_query(get_app_session())
+    q = add_province_filter(q, provinces)
+    q = q.order_by(Network.name.asc())
+    # q = q.order_by(Network.id.asc())
+    networks_etc = q.all()
     return collection_rep(networks_etc)
 
 
 def get(id):
-    network_etc = (
-        base_query(get_app_session())
-        .filter(Network.id == id)
-        .one()
-    )
+    network_etc = base_query(get_app_session()).filter(Network.id == id).one()
     return single_item_rep(network_etc)
