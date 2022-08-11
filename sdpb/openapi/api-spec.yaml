@@ -342,6 +342,13 @@ paths:
         - Observations
       operationId: sdpb.api.observations.get_counts
       parameters:
+        - name: provinces
+          in: query
+          description: |
+            Filter results by provinces. Value is a string containing
+            comma-separated province codes. E.g., "BC,AB".
+          schema:
+            type: string
         - name: start_date
           in: query
           schema:
@@ -721,6 +728,10 @@ components:
       description: Counts of observations and climatologies, by station, in a specified date range.
       type: object
       properties:
+        provinces:
+          description: |
+            Province filter; comma-separated province codes; e.g., "BC,AB".
+          type: string
         start_date:
           description: Earliest date (inclusive) of observations counted.
           type: string
