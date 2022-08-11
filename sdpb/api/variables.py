@@ -1,7 +1,9 @@
 from flask import url_for
-from pycds import Network, Variable
+from sqlalchemy import distinct
+from pycds import Network, Variable, Station, History
 from sdpb import get_app_session
 from sdpb.api import networks
+from sdpb.util.query import add_province_filter
 
 
 def id_(variable):
@@ -56,15 +58,27 @@ def collection_rep(variables):
     return [collection_item_rep(variable) for variable in variables]
 
 
-def list():
+def list(provinces=None):
     """Get variables from database, and return their representation."""
-    variables = (
-        get_app_session()
-        .query(Variable)
-        .select_from(Variable)
-        .join(Network, Variable.network_id == Network.id)
-        .filter(Network.publish == True)
+    session = get_app_session()
+    if provinces is None:
+        network_ids = (
+            session.query(Network.id.label("network_id")).select_from(Network)
+        )
+    else:
+        network_ids = (
+            session.query(distinct(Network.id).label("network_id"))
+            .select_from(Network)
+            .join(Station, Station.network_id == Network.id)
+            .join(History, History.station_id == Station.id)
+        )
+        network_ids = add_province_filter(network_ids, provinces)
+    network_ids = network_ids.filter(Network.publish == True)
+    network_ids = network_ids.cte(name="network_ids")
+    q = (
+        session.query(Variable)
+        .join(network_ids, Variable.network_id == network_ids.c.network_id)
         .order_by(Variable.id.asc())
-        .all()
     )
+    variables = q.all()
     return collection_rep(variables)
