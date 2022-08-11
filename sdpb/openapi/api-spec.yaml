@@ -57,6 +57,14 @@ paths:
       tags:
         - Networks
       operationId: sdpb.api.networks.list
+      parameters:
+        - name: provinces
+          in: query
+          description: |
+            Filter results by provinces. Value is a string containing
+            comma-separated province codes. E.g., "BC,AB".
+          schema:
+            type: string
       responses:
         200:
           description: Success
@@ -98,6 +106,14 @@ paths:
       tags:
         - Variables
       operationId: sdpb.api.variables.list
+      parameters:
+        - name: provinces
+          in: query
+          description: |
+            Filter results by provinces. Value is a string containing
+            comma-separated province codes. E.g., "BC,AB".
+          schema:
+            type: string
       responses:
         200:
           description: Success
@@ -139,6 +155,14 @@ paths:
       tags:
         - Frequencies
       operationId: sdpb.api.frequencies.collection
+      parameters:
+        - name: provinces
+          in: query
+          description: |
+            Filter results by provinces. Value is a string containing
+            comma-separated province codes. E.g., "BC,AB".
+          schema:
+            type: string
       responses:
         200:
           description: Success
