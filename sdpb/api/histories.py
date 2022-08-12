@@ -61,7 +61,11 @@ def single_item_rep(history_etc, vars=None, compact=False, include_uri=False):
         "province": history.province,
         "freq": history.freq,
         **obs_stats_rep(sos),
-        "variable_ids": [variables.id_(variable) for variable in vars or []],
+        "variable_ids": [
+            variables.id_(variable)
+            for variable in vars or []
+            if variable is not None
+        ],
         # "variable_uris": [variables.uri(variable) for variable in vars or []],
     }
     if compact:
@@ -91,7 +95,9 @@ def collection_item_rep(history_etc, **kwargs):
     return single_item_rep(history_etc, **kwargs)
 
 
-def collection_rep(histories_etc, all_vars_by_hx=None, compact=False, include_uri=False):
+def collection_rep(
+    histories_etc, all_vars_by_hx=None, compact=False, include_uri=False
+):
     """
     Return a representation of a histories collection.
 
@@ -120,7 +126,6 @@ def collection_rep(histories_etc, all_vars_by_hx=None, compact=False, include_ur
                 return result
             except KeyError as e:
                 return []
-
 
     return [
         collection_item_rep(
@@ -162,10 +167,17 @@ def get(id=None, compact=False):
         .all()
     )
     logger.debug("data retrieved")
-    return single_item_rep(history_etc, variables, compact=compact, include_uri=True)
+    return single_item_rep(
+        history_etc, variables, compact=compact, include_uri=True
+    )
 
 
-def list(provinces=None, compact=False, group_vars_in_database=True, include_uri=False):
+def list(
+    provinces=None,
+    compact=False,
+    group_vars_in_database=True,
+    include_uri=False,
+):
     """
     Get histories and associated variables from database, and return their 
     representation.
@@ -189,5 +201,8 @@ def list(provinces=None, compact=False, group_vars_in_database=True, include_uri
         )
         with log_timing("Convert histories etc to rep", log=logger.debug):
             return collection_rep(
-                histories_etc, all_vars_by_hx, compact=compact, include_uri=include_uri
+                histories_etc,
+                all_vars_by_hx,
+                compact=compact,
+                include_uri=include_uri,
             )

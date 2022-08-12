@@ -42,7 +42,7 @@ def get_all_histories_etc(session, provinces=None):
         q = (
             session.query(History, StationObservationStats)
             .select_from(History)
-            .join(
+            .outerjoin(
                 StationObservationStats,
                 StationObservationStats.history_id == History.id,
             )
@@ -85,12 +85,16 @@ def get_all_vars_by_hx(session, group_in_database=True):
         with log_timing("Query and group all vars by hx", log=logger.debug):
             rows = (
                 session.query(
-                    VarsPerHistory.history_id.label("history_id"),
+                    History.id.label("history_id"),
                     func.array_agg(VarsPerHistory.vars_id).label(
                         "variable_ids"
                     ),
                 )
-                .group_by(VarsPerHistory.history_id)
+                .select_from(History)
+                .outerjoin(
+                    VarsPerHistory, VarsPerHistory.history_id == History.id
+                )
+                .group_by(History.id)
                 .all()
             )
             return {row.history_id: row.variable_ids for row in rows}
