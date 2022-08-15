@@ -46,6 +46,8 @@ def get_all_histories_etc(session, provinces=None):
                 StationObservationStats,
                 StationObservationStats.history_id == History.id,
             )
+            # NB: Must order by station_id for groupby to work
+            .order_by(History.station_id, History.id)
         )
         # This reduces the number of rows returned, but it's not yet clear it
         # actually reduces the query time.
@@ -57,6 +59,11 @@ def get_all_histories_etc(session, provinces=None):
 
 
 def get_all_histories_etc_by_station(session, provinces=None):
+    """
+    Return all histories + additional info (etc) grouped by station.
+    Note that histories must be ordered by station_id in order for groupby
+    to return correct results.
+    """
     all_histories_etc = get_all_histories_etc(session, provinces=provinces)
     with log_timing("Group all histories by station", log=logger.debug):
         return {
@@ -102,10 +109,12 @@ def get_all_vars_by_hx(session, group_in_database=True):
     # TODO: If this case is ever used, need to do outer joins as above.
     raise NotImplementedError
     with log_timing("Query all vars by hx", log=logger.debug):
+        # NB: Variables must be ordered by key (history_id) for groupby to work
+        # correctly.
         all_variables = session.query(
             VarsPerHistory.history_id.label("history_id"),
             VarsPerHistory.vars_id.label("id"),
-        ).all()
+        ).order_by(VarsPerHistory.history_id).all()
     with log_timing("Group all vars by hx", log=logger.debug):
         result = {
             history_id: list({v.id for v in variables})
