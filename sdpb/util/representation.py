@@ -34,8 +34,8 @@ def parse_date(s):
 
 def obs_stats_rep(obs_stats):
     return {
-        "min_obs_time": date_rep(obs_stats.min_obs_time),
-        "max_obs_time": date_rep(obs_stats.max_obs_time),
+        "min_obs_time": obs_stats and date_rep(obs_stats.min_obs_time),
+        "max_obs_time": obs_stats and date_rep(obs_stats.max_obs_time),
         # "obs_count": int(obs_stats.obs_count),
     }
 
