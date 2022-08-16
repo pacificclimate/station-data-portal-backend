@@ -1,6 +1,7 @@
 import logging
 from flask import request
 from sqlalchemy import func
+from sqlalchemy.sql import visitors
 from itertools import groupby
 from pycds import (
     Network,
@@ -24,15 +25,29 @@ def set_logger_level_from_qp(a_logger):
         pass
 
 
+def get_tables(query):
+    """
+    Return list of tables used in query.
+    See https://stackoverflow.com/questions/35829083/can-i-inspect-a-sqlalchemy-query-object-to-find-the-already-joined-tables
+    """
+    return [
+        v.entity_namespace
+        for v in visitors.iterate(query.statement)
+        if v.__visit_name__ == "table"
+    ]
+
+
 def get_all_histories_etc(session, provinces=None):
     with log_timing("Query all histories by station", log=logger.debug):
         q = (
             session.query(History, StationObservationStats)
             .select_from(History)
-            .join(
+            .outerjoin(
                 StationObservationStats,
                 StationObservationStats.history_id == History.id,
             )
+            # NB: Must order by station_id for groupby to work
+            .order_by(History.station_id, History.id)
         )
         # This reduces the number of rows returned, but it's not yet clear it
         # actually reduces the query time.
@@ -44,6 +59,11 @@ def get_all_histories_etc(session, provinces=None):
 
 
 def get_all_histories_etc_by_station(session, provinces=None):
+    """
+    Return all histories + additional info (etc) grouped by station.
+    Note that histories must be ordered by station_id in order for groupby
+    to return correct results.
+    """
     all_histories_etc = get_all_histories_etc(session, provinces=provinces)
     with log_timing("Group all histories by station", log=logger.debug):
         return {
@@ -72,21 +92,29 @@ def get_all_vars_by_hx(session, group_in_database=True):
         with log_timing("Query and group all vars by hx", log=logger.debug):
             rows = (
                 session.query(
-                    VarsPerHistory.history_id.label("history_id"),
+                    History.id.label("history_id"),
                     func.array_agg(VarsPerHistory.vars_id).label(
                         "variable_ids"
                     ),
                 )
-                .group_by(VarsPerHistory.history_id)
+                .select_from(History)
+                .outerjoin(
+                    VarsPerHistory, VarsPerHistory.history_id == History.id
+                )
+                .group_by(History.id)
                 .all()
             )
             return {row.history_id: row.variable_ids for row in rows}
 
+    # TODO: If this case is ever used, need to do outer joins as above.
+    raise NotImplementedError
     with log_timing("Query all vars by hx", log=logger.debug):
+        # NB: Variables must be ordered by key (history_id) for groupby to work
+        # correctly.
         all_variables = session.query(
             VarsPerHistory.history_id.label("history_id"),
             VarsPerHistory.vars_id.label("id"),
-        ).all()
+        ).order_by(VarsPerHistory.history_id).all()
     with log_timing("Group all vars by hx", log=logger.debug):
         result = {
             history_id: list({v.id for v in variables})

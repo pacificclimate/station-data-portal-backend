@@ -13,7 +13,7 @@ from sqlalchemy.sql.expression import cast
 from flask import url_for
 from pycds import ObsCountPerMonthHistory, ClimoObsCount, History
 from sdpb import app_db
-
+from sdpb.util.query import add_province_filter
 
 logger = logging.getLogger("sdpb")
 
@@ -29,7 +29,9 @@ def observations_counts_uri(start_date=None, end_date=None, station_ids=None):
     )
 
 
-def get_counts(start_date=None, end_date=None, station_ids=None):
+def get_counts(
+    start_date=None, end_date=None, station_ids=None, provinces=None
+):
     # Set up queries for total counts by station id
     obsCountQuery = (
         session.query(
@@ -70,6 +72,9 @@ def get_counts(start_date=None, end_date=None, station_ids=None):
         climoCountQuery = climoCountQuery.filter(
             History.station_id.in_(station_ids)
         )
+    if provinces is not None:
+        obsCountQuery = add_province_filter(obsCountQuery, provinces)
+        climoCountQuery = add_province_filter(climoCountQuery, provinces)
 
     # Run the queries
     obsCounts = obsCountQuery.all()
@@ -79,6 +84,7 @@ def get_counts(start_date=None, end_date=None, station_ids=None):
         "uri": observations_counts_uri(
             start_date=start_date, end_date=end_date, station_ids=station_ids
         ),
+        "provinces": provinces,
         "start_date": start_date,
         "end_date": end_date,
         "station_ids": station_ids,
