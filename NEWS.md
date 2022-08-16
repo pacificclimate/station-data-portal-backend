@@ -1,5 +1,13 @@
 # News / Release Notes
 
+## 2.3.0 (crmp) / 10.3.0 (master)
+
+*Release date: 2022-Aug-16*
+
+Changes:
+- [Handle histories without observations; fix station histories](https://github.com/pacificclimate/station-data-portal-backend/pull/42)
+- [Accept provinces query parameter in /variables, /networks, /frequencies, /observations/counts as well](https://github.com/pacificclimate/station-data-portal-backend/pull/40)
+
 ## 2.2.0 (crmp) / 10.2.0 (master)
 
 *Release date: 2022-Jul-22*
