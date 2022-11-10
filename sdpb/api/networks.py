@@ -1,3 +1,23 @@
+"""
+/networks API implementation
+
+Network item rep always contains the following keys:
+- id
+- uri
+- name
+- long_name
+- virtual
+- publish
+- color
+- station_count
+
+Networks returned are always filtered by:
+- Published (publish == True)
+- Has at least one Station which has at least one History (History enables
+filtering Networks by province(s))
+- Matches province filter (for collection)
+"""
+
 from flask import url_for
 from sqlalchemy import distinct
 from sqlalchemy.sql import func
@@ -44,6 +64,8 @@ def base_query(session):
         )
         .select_from(Network)
         .join(Station, Station.network_id == Network.id)
+        # History join allows filtering on province
+        # TODO: maybe this shouldn't be in the base query
         .join(History, History.station_id == Station.id)
         .group_by(Network.id)
         .filter(Network.publish == True)

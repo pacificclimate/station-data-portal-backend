@@ -1,9 +1,25 @@
 """
-stations API
+/stations API implementation
 
 A station can have a compact or full representation. A compact representation
 omits some rarely-used attributes in both station proper and its associated
 history items (q.v.).
+
+The compact representation always contains the following keys:
+- id
+- uri
+- native_id
+- network_uri
+- histories
+
+The full representation includes the compact representation plus the following:
+- min_obs_time
+- max_obs_time
+
+Stations returned are always filtered by:
+- Its associated Network is published
+- Has an associated History with an associated StationObsStats
+- Matches province filter (collection)
 """
 import logging
 from flask import url_for

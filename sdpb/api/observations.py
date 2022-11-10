@@ -1,4 +1,7 @@
-"""This module provides approximate counts of observations per station
+"""
+/observations API implementation
+
+This module provides approximate counts of observations per station
 in a specified time period.
 
 Counts are accurate to one-month periods; no finer time resolution is available.
@@ -18,6 +21,10 @@ from sdpb.util.query import add_province_filter
 logger = logging.getLogger("sdpb")
 
 session = app_db.session
+
+####
+# /observations/counts
+####
 
 
 def observations_counts_uri(start_date=None, end_date=None, station_ids=None):

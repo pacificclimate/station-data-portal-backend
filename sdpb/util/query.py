@@ -106,6 +106,7 @@ def get_all_vars_by_hx(session, group_in_database=True):
             )
             return {row.history_id: row.variable_ids for row in rows}
 
+    # group_in_database == False
     # TODO: If this case is ever used, need to do outer joins as above.
     raise NotImplementedError
     with log_timing("Query all vars by hx", log=logger.debug):

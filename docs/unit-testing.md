@@ -1,7 +1,7 @@
 # Unit testing
 
 Unit tests are entirely self-contained: they set up a transient test database,
-populates it, and run tests against it. They needs no connection to external
+populate it, and run tests against it. They need no connection to external
 databases (unlike performance testing).
 
 Therefore, unit tests are suitable for CI or other cloud-based execution.

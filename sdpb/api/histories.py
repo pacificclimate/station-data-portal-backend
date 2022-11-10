@@ -1,9 +1,35 @@
 """
-histories API
+/histories API implementation
 
 A history can have a compact or full representation. A compact representation
 omits some rarely-used attributes. Both representations always contain the
 `variable_uris` attribute.
+
+The compact representation always contains the following keys:
+- id
+- station_name
+- lon
+- lat
+- elevation
+- province
+- freq
+- min_obs_time
+- max_obs_time
+- variable_ids
+
+The compact representation optionally contains the following keys:
+- uri (if include_uri)
+
+The full representation includes the compact representation plus the following:
+- sdate
+- edate
+- tz_offset
+- country
+
+Histories returned are always filtered by:
+- Associated Network is published
+- Has at least one associated Station / StationObservationStats
+- Matches province filter (for collection)
 """
 import logging
 from flask import url_for
