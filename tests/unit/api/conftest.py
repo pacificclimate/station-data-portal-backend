@@ -21,6 +21,7 @@ import pytest
 import testing.postgresql
 
 from sqlalchemy.schema import CreateSchema
+from sqlalchemy.exc import NoResultFound
 
 from alembic.config import Config
 from alembic import command
@@ -40,6 +41,7 @@ from pycds import (
     Obs,
 )
 import pycds.alembic
+from sdpb.api import networks
 
 
 @pytest.fixture(scope="package")
@@ -297,7 +299,7 @@ def make_tst_stn_obs_stat(
 
 @pytest.fixture(scope="package")
 def tst_stn_obs_stats(tst_histories):
-    pytest.xfail(reason="Cannot work until PyCDS is at version >=4.0.0")
+    # pytest.xfail(reason="Cannot work until PyCDS is at version >=4.0.0")
     return [make_tst_stn_obs_stat(history) for history in tst_histories]
 
 
@@ -354,3 +356,54 @@ def everything_session(
     session.execute(VarsPerHistory.refresh())
     session.flush()
     yield session
+
+
+# Expected results
+#
+# These fixtures return the expected results of test cases run against the test
+# database as defined above. (Actually, the fixtures return functions that
+# return the expected results; this allows parametrizing with less fuss than
+# doing it directly through the fixture.
+#
+# These results (should) conform to the specification (or at least the
+# abstracted behaviour) of the API.
+
+
+# Expected /networks results
+#
+# See docstring in sdpb/api/networks.py for definition behaviour.
+#
+# Published networks are labelled A and B.
+# Stations attached to published networks are S1 and S2, both to nw A.
+# Histories attached to those are P and Q, attached to S1.
+# Therefore, network A is the only one that will be returned, and it has a
+# station count of 1.
+
+@pytest.fixture(scope="package")
+def expected_networks_collection(tst_networks):
+    def f():
+        return [
+            {
+                "id": nw.id,
+                "name": nw.name,
+                "long_name": nw.long_name,
+                "virtual": nw.virtual,
+                "publish": nw.publish,
+                "color": nw.color,
+                "uri": networks.uri(nw),
+                "station_count": station_count,
+            }
+            for nw, station_count in [(tst_networks[0], 1)]
+        ]
+
+    return f
+
+
+@pytest.fixture(scope="package")
+def expected_network_item_exception(tst_networks):
+    def f(id_):
+        if id_ == tst_networks[0].id:
+            return None
+        return NoResultFound
+
+    return f
