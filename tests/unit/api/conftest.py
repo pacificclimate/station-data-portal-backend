@@ -14,7 +14,7 @@ lacking the required relationship attributes) is not on the immediate path
 forward. So in the meantime we do this. Ick.
 """
 
-from itertools import count,groupby
+from itertools import count, groupby
 import datetime
 
 import pytest
@@ -41,7 +41,10 @@ from pycds import (
     Obs,
 )
 import pycds.alembic
-from sdpb.api import networks
+from sdpb.api import networks, stations
+from sdpb.util.representation import date_rep
+from helpers import groupby_dict
+from test_histories import expected_history_rep
 
 
 @pytest.fixture(scope="package")
@@ -379,6 +382,7 @@ def everything_session(
 # Therefore, network A is the only one that will be returned, and it has a
 # station count of 1.
 
+
 @pytest.fixture(scope="package")
 def expected_networks_collection(tst_networks):
     def f():
@@ -405,5 +409,64 @@ def expected_network_item_exception(tst_networks):
         if id_ == tst_networks[0].id:
             return None
         return NoResultFound
+
+    return f
+
+
+# Expected /stations results
+#
+# See docstring in sdpb/api/stations.py for definition behaviour.
+#
+# Published networks are labelled A and B.
+# Stations associated to published networks are S1 and S2.
+# Histories associated to those are P and Q, associated to S1.
+# StationObservationStats are associated to every history
+# Therefore only station S1 should be returned.
+
+
+@pytest.fixture(scope="package")
+def expected_station_rep(tst_histories, tst_stn_obs_stats, tst_vars_by_hx):
+    def f(station, compact=False, expand=None):
+        hxs_by_station_id = groupby_dict(
+            tst_histories, key=lambda h: h.station_id
+        )
+        try:
+            stn_histories = hxs_by_station_id[station.id]
+        except KeyError:
+            stn_histories = []
+
+        histories_rep = [
+            expected_history_rep(
+                hx, tst_stn_obs_stats, tst_vars_by_hx, compact=compact
+            )
+            for hx in stn_histories
+        ]
+        if "histories" not in (expand or "").split(","):
+            histories_rep = [{"id": hr["id"]} for hr in histories_rep]
+        rep = {
+            "id": station.id,
+            "uri": stations.uri(station),
+            "native_id": station.native_id,
+            "network_uri": networks.uri(station.network),
+            "histories": histories_rep,
+        }
+        if compact:
+            return rep
+        return {
+            **rep,
+            "min_obs_time": date_rep(station.min_obs_time),
+            "max_obs_time": date_rep(station.max_obs_time),
+        }
+
+    return f
+
+
+@pytest.fixture(scope="package")
+def expected_stations_collection(tst_stations, expected_station_rep):
+    def f(compact, expand):
+        return [
+            expected_station_rep(station, compact=compact, expand=expand)
+            for station in [tst_stations[0]]
+        ]
 
     return f

@@ -1,8 +1,8 @@
 import pytest
 from pycds import History
-from sdpb.api import histories, variables
+from sdpb.api import histories
 from sdpb.util.representation import date_rep, float_rep
-from helpers import find, omit
+from helpers import find
 
 
 def test_uri(flask_app):
@@ -22,10 +22,11 @@ def expected_history_rep(history, all_stn_obs_stats, vars_by_hx, compact=False):
 
     rep = {
         "id": history.id,
-        "uri": histories.uri(history),
+        # "uri": histories.uri(history),
         "station_name": history.station_name,
         "lon": float_rep(history.lon),
         "lat": float_rep(history.lat),
+        "elevation": float_rep(history.elevation),
         "province": history.province,
         "freq": history.freq,
         # Station obs stats
@@ -35,13 +36,13 @@ def expected_history_rep(history, all_stn_obs_stats, vars_by_hx, compact=False):
         "min_obs_time": date_rep(
             find(all_stn_obs_stats, history_id_match).min_obs_time
         ),
-        "variable_uris": [variables.uri(v) for v in vars_for(history.id)],
+        "variable_ids": set(vars_for(history.id)),
+        # "variable_uris": [variables.uri(v) for v in vars_for(history.id)],
     }
     if compact:
         return rep
     return {
         **rep,
-        "elevation": float_rep(history.elevation),
         "sdate": date_rep(history.sdate),
         "edate": date_rep(history.edate),
         "tz_offset": history.tz_offset,
@@ -50,7 +51,7 @@ def expected_history_rep(history, all_stn_obs_stats, vars_by_hx, compact=False):
 
 
 @pytest.mark.parametrize("compact", [False, True])
-@pytest.mark.parametrize("group_vars_in_database", [False, True])
+@pytest.mark.parametrize("group_vars_in_database", [True])
 def test_collection(
     everything_session,
     tst_networks,
@@ -71,6 +72,8 @@ def test_collection(
         ),
         key=lambda r: r["id"],
     )
+    for hx in result:
+        hx["variable_ids"] = set(hx["variable_ids"])
     expected = [
         expected_history_rep(
             test_hx, tst_stn_obs_stats, tst_vars_by_hx, compact=compact
