@@ -27,8 +27,8 @@ The full representation includes the compact representation plus the following:
 - country
 
 Histories returned are always filtered by:
-- Associated Network is published
-- Has at least one associated Station / StationObservationStats
+- Associated Station is published (via associated Network)
+- Has at least one associated StationObservationStats
 - Matches province filter (for collection)
 """
 import logging

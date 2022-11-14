@@ -42,9 +42,8 @@ from pycds import (
 )
 import pycds.alembic
 from sdpb.api import networks, stations
-from sdpb.util.representation import date_rep
-from helpers import groupby_dict
-from test_histories import expected_history_rep
+from sdpb.util.representation import date_rep, float_rep
+from helpers import groupby_dict, find
 
 
 @pytest.fixture(scope="package")
@@ -425,7 +424,9 @@ def expected_network_item_exception(tst_networks):
 
 
 @pytest.fixture(scope="package")
-def expected_station_rep(tst_histories, tst_stn_obs_stats, tst_vars_by_hx):
+def expected_station_rep(
+    tst_histories, tst_stn_obs_stats, tst_vars_by_hx, expected_history_rep
+):
     def f(station, compact=False, expand=None):
         hxs_by_station_id = groupby_dict(
             tst_histories, key=lambda h: h.station_id
@@ -436,10 +437,7 @@ def expected_station_rep(tst_histories, tst_stn_obs_stats, tst_vars_by_hx):
             stn_histories = []
 
         histories_rep = [
-            expected_history_rep(
-                hx, tst_stn_obs_stats, tst_vars_by_hx, compact=compact
-            )
-            for hx in stn_histories
+            expected_history_rep(hx, compact=compact) for hx in stn_histories
         ]
         if "histories" not in (expand or "").split(","):
             histories_rep = [{"id": hr["id"]} for hr in histories_rep]
@@ -467,6 +465,72 @@ def expected_stations_collection(tst_stations, expected_station_rep):
         return [
             expected_station_rep(station, compact=compact, expand=expand)
             for station in [tst_stations[0]]
+        ]
+
+    return f
+
+
+# Expected /stations results
+#
+# See docstring in sdpb/api/histories.py for definition behaviour.
+#
+# Published networks are labelled A and B.
+# Stations associated to published networks are S1 and S2.
+# Histories associated to published stations (S1) are P and Q
+# All histories have associated StationObservationStats
+# Returned histories are therefore P and Q
+
+
+@pytest.fixture(scope="package")
+def expected_history_rep(tst_stn_obs_stats, tst_vars_by_hx):
+    def f(history, compact=False):
+        def history_id_match(r):
+            return r.history_id == history.id
+
+        def vars_for(history_id):
+            try:
+                return tst_vars_by_hx[history_id]
+            except KeyError:
+                return []
+
+        rep = {
+            "id": history.id,
+            # "uri": histories.uri(history),
+            "station_name": history.station_name,
+            "lon": float_rep(history.lon),
+            "lat": float_rep(history.lat),
+            "elevation": float_rep(history.elevation),
+            "province": history.province,
+            "freq": history.freq,
+            # Station obs stats
+            "max_obs_time": date_rep(
+                find(tst_stn_obs_stats, history_id_match).max_obs_time
+            ),
+            "min_obs_time": date_rep(
+                find(tst_stn_obs_stats, history_id_match).min_obs_time
+            ),
+            "variable_ids": set(vars_for(history.id)),
+            # "variable_uris": [variables.uri(v) for v in vars_for(history.id)],
+        }
+        if compact:
+            return rep
+        return {
+            **rep,
+            "sdate": date_rep(history.sdate),
+            "edate": date_rep(history.edate),
+            "tz_offset": history.tz_offset,
+            "country": history.country,
+        }
+
+    return f
+
+
+@pytest.fixture(scope="package")
+def expected_history_collection(tst_histories, expected_history_rep):
+    def f(compact):
+        return [
+            expected_history_rep(hx, compact=compact)
+            for hx in [tst_histories[0], tst_histories[1]]
         ]
 
     return f
