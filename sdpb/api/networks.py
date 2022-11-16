@@ -27,7 +27,7 @@ from sdpb.util.query import add_province_filter
 
 
 def uri(network):
-    return url_for("sdpb_api_networks_get", id=network.id)
+    return url_for("sdpb_api_networks_single", id=network.id)
 
 
 def single_item_rep(network_etc):
@@ -72,7 +72,7 @@ def base_query(session):
     )
 
 
-def list(provinces=None):
+def collection(provinces=None):
     q = base_query(get_app_session())
     q = add_province_filter(q, provinces)
     q = q.order_by(Network.name.asc())
@@ -81,6 +81,6 @@ def list(provinces=None):
     return collection_rep(networks_etc)
 
 
-def get(id):
+def single(id):
     network_etc = base_query(get_app_session()).filter(Network.id == id).one()
     return single_item_rep(network_etc)

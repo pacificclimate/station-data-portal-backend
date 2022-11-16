@@ -58,7 +58,7 @@ def id_(history):
 def uri(history):
     # TODO: Using url_for approx doubles the time to convert
     #  *entire record* to rep
-    return url_for("sdpb_api_histories_get", id=id_(history))
+    return url_for("sdpb_api_histories_single", id=id_(history))
 
 
 def single_item_rep(history_etc, vars=None, compact=False, include_uri=False):
@@ -163,7 +163,7 @@ def collection_rep(
     ]
 
 
-def get(id=None, compact=False):
+def single(id=None, compact=False):
     """Get a single history and associated variables from database,
     and return their representation."""
     assert id is not None
@@ -189,7 +189,7 @@ def get(id=None, compact=False):
     )
 
 
-def list(
+def collection(
     provinces=None,
     compact=False,
     group_vars_in_database=True,

@@ -56,7 +56,7 @@ paths:
       description: Get a list of short-form descriptions of all published networks.
       tags:
         - Networks
-      operationId: sdpb.api.networks.list
+      operationId: sdpb.api.networks.collection
       parameters:
         - name: provinces
           in: query
@@ -79,7 +79,7 @@ paths:
       description: Get long-form description of a network
       tags:
         - Networks
-      operationId: sdpb.api.networks.get
+      operationId: sdpb.api.networks.single
       parameters:
         - name: id
           in: path
@@ -105,7 +105,7 @@ paths:
       description: Get a list of short-form descriptions of all variables.
       tags:
         - Variables
-      operationId: sdpb.api.variables.list
+      operationId: sdpb.api.variables.collection
       parameters:
         - name: provinces
           in: query
@@ -128,7 +128,7 @@ paths:
       description: Get long-form description of a variable.
       tags:
         - Variables
-      operationId: sdpb.api.variables.get
+      operationId: sdpb.api.variables.single
       parameters:
         - name: id
           in: path
@@ -179,7 +179,7 @@ paths:
       description: Get a list of short-form descriptions of all histories.
       tags:
         - Histories
-      operationId: sdpb.api.histories.list
+      operationId: sdpb.api.histories.collection
       parameters:
         - name: compact
           in: query
@@ -207,7 +207,7 @@ paths:
       description: Get long-form description of a history
       tags:
         - Histories
-      operationId: sdpb.api.histories.get
+      operationId: sdpb.api.histories.single
       parameters:
         - name: id
           in: path
@@ -233,7 +233,7 @@ paths:
       description: Get a list of short-form descriptions of all stations.
       tags:
         - Stations
-      operationId: sdpb.api.stations.list
+      operationId: sdpb.api.stations.collection
       parameters:
         - name: provinces
           in: query
@@ -292,7 +292,7 @@ paths:
       description: Get long-form description of a station
       tags:
         - Stations
-      operationId: sdpb.api.stations.get
+      operationId: sdpb.api.stations.single
       parameters:
         - name: id
           in: path
@@ -315,7 +315,7 @@ paths:
       summary: Results from crmp_network_geoserver view.
       tags:
         - Stations
-      operationId: sdpb.api.crmp_network_geoserver.list
+      operationId: sdpb.api.crmp_network_geoserver.collection
       responses:
         200:
           description: Success

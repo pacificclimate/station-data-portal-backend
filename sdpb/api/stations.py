@@ -43,7 +43,7 @@ logger = logging.getLogger("sdpb")
 
 def uri(station):
     """Return uri for a station"""
-    return url_for("sdpb_api_stations_get", id=station.id)
+    return url_for("sdpb_api_stations_single", id=station.id)
 
 
 def single_item_rep(
@@ -179,7 +179,7 @@ def collection_rep(
     ]
 
 
-def get(id=None, compact=True, expand="histories"):
+def single(id=None, compact=True, expand="histories"):
     assert id is not None
     session = get_app_session()
     q = session.query(Station).select_from(Station).filter(Station.id == id)
@@ -206,7 +206,7 @@ def get(id=None, compact=True, expand="histories"):
     )
 
 
-def list(
+def collection(
     stride=None,
     limit=None,
     offset=None,

@@ -1,5 +1,4 @@
 import logging
-from flask import url_for
 from pycds import CrmpNetworkGeoserver
 from sdpb import get_app_session
 from sdpb.timing import log_timing
@@ -53,7 +52,7 @@ def collection_rep(items):
     return [collection_item_rep(item) for item in items]
 
 
-def list():
+def collection():
     with log_timing("List all CNG items", log=logger.debug):
         with log_timing("Query all CNG items", log=logger.debug):
             items = (
