@@ -21,7 +21,7 @@ def test_collection(
     published stations.
     """
     result = sorted(
-        histories.list(
+        histories.collection(
             compact=compact, group_vars_in_database=group_vars_in_database
         ),
         key=lambda r: r["id"],

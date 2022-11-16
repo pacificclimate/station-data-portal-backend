@@ -23,7 +23,8 @@ def test_station_collection(
     expand,
 ):
     received = sorted(
-        stations.list(compact=compact, expand=expand), key=lambda r: r["id"]
+        stations.collection(compact=compact, expand=expand),
+        key=lambda r: r["id"],
     )
     expected = sorted(
         expected_stations_collection(compact=compact, expand=expand),

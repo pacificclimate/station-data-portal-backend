@@ -12,7 +12,7 @@ def test_network_collection(
     everything_session,
     expected_networks_collection,
 ):
-    nws = sorted(networks.list(), key=lambda r: r["name"])
+    nws = sorted(networks.collection(), key=lambda r: r["name"])
     expected = expected_networks_collection()
     assert nws == expected
 
@@ -24,7 +24,7 @@ def test_network_item(
         exception = expected_network_item_exception(nw.id)
         if exception:
             with pytest.raises(exception):
-                networks.get(nw.id)
+                networks.single(nw.id)
         else:
             # No exception should be raised
-            networks.get(nw.id)
+            networks.single(nw.id)
