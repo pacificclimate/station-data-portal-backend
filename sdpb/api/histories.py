@@ -33,14 +33,13 @@ Histories returned are always filtered by:
 """
 import logging
 from flask import url_for
-from pycds import History, VarsPerHistory, Station, StationObservationStats
+from pycds import History, VarsPerHistory
 from sdpb import get_app_session
 from sdpb.api import variables
 from sdpb.util.representation import date_rep, float_rep, obs_stats_rep
 from sdpb.util.query import (
-    get_all_vars_by_hx,
-    add_station_network_publish_filter,
-    get_all_histories_etc,
+    get_all_vars_by_hx, add_station_network_publish_filter,
+    get_all_histories_etc, base_history_query,
 )
 from sdpb.timing import log_timing
 
@@ -170,20 +169,12 @@ def get(id=None, compact=False):
     assert id is not None
     logger.debug("get history")
     session = get_app_session()
-    q = (
-        session.query(History, StationObservationStats)
-        .select_from(History)
-        .join(Station, History.station_id == Station.id)
-        .join(
-            StationObservationStats,
-            StationObservationStats.history_id == History.id,
-        )
-        .filter(History.id == id)
-    )
+    q = base_history_query(session)
+    q = q.filter(History.id == id)
     q = add_station_network_publish_filter(q)
     history_etc = q.one()
     logger.debug("get vars")
-    variables = (
+    hx_vars = (
         session.query(
             VarsPerHistory.history_id.label("history_id"),
             VarsPerHistory.vars_id.label("id"),
@@ -194,7 +185,7 @@ def get(id=None, compact=False):
     )
     logger.debug("data retrieved")
     return single_item_rep(
-        history_etc, variables, compact=compact, include_uri=True
+        history_etc, hx_vars, compact=compact, include_uri=True
     )
 
 
