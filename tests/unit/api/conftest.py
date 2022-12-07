@@ -419,7 +419,6 @@ def expected_network_item_exception(tst_networks):
 # Published networks are labelled A and B.
 # Stations associated to published networks are S1 and S2.
 # Histories associated to those are P and Q, associated to S1.
-# StationObservationStats are associated to every history
 # Therefore only station S1 should be returned.
 
 
