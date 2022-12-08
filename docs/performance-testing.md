@@ -16,13 +16,7 @@ common helper functions and `conftest.py` in `tests/`.
 Performance tests are run against a specific production database. That 
 database is specified by the environment variable `PCDS_DSN`. 
 
-Performance tests, unlike the unit tests, do not require a special Docker
-image. They do, however, require a version of PyCDS compatible with the 
-target database to be installed. At the time of writing, that version is
-3.3.0 for both CRMP and metnorth databases.
-
-When you have set `PCDS_DSN` to the target database and installed a suitable 
-version of PyCDS in your local Pipenv virtual env, run:
+When you have set `PCDS_DSN` to the target database, run:
 
 ```
 pipenv run pytest tests/performance
@@ -30,8 +24,8 @@ pipenv run pytest tests/performance
 
 ## Test output
 
-At the time of writing, the performance test output against the CRMP database
-is as shown below.
+An example (somewhat outdated) of performance test output against the 
+CRMP database is as shown below.
 
 Notes:
 - All tests (including CNG = crmp_network_geoserver) filter on province == BC.
