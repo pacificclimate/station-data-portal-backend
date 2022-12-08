@@ -1,11 +1,27 @@
 # News / Release Notes
 
-## Important: crmp releases retired
+## 11.0.1
+
+*Release date: 2022-Aug-16*
+
+Previous release did not include updates to `NEWS.md` and `setup.py`.
+
+## 11.0.0
+
+*Release date: 2022-Aug-16*
+
+The major change in this release is updating to PyCDS 4.0.0. 
+
+- [Retire crmp branch](https://github.com/pacificclimate/station-data-portal-backend/pull/50)
+- [Update documentation](https://github.com/pacificclimate/station-data-portal-backend/pull/48)
+- [Update PyCDS to ver 4.0.0](https://github.com/pacificclimate/station-data-portal-backend/pull/45)
+
+### Important: Special crmp releases retired
 
 The CRMP/PCDS database has been moved to a new platform running PG 10. 
 Therefore there is no need to maintain the special CRMP-compatible branch and 
 the releases it contains. From this point onward, there will be only main
-releases.
+releases numbered 11 and higher.
 
 ## 2.3.0 (crmp) / 10.3.0 (master)
 
