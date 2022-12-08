@@ -301,7 +301,6 @@ def make_tst_stn_obs_stat(
 
 @pytest.fixture(scope="package")
 def tst_stn_obs_stats(tst_histories):
-    # pytest.xfail(reason="Cannot work until PyCDS is at version >=4.0.0")
     return [make_tst_stn_obs_stat(history) for history in tst_histories]
 
 
