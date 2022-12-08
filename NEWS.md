@@ -1,5 +1,12 @@
 # News / Release Notes
 
+## Important: crmp releases retired
+
+The CRMP/PCDS database has been moved to a new platform running PG 10. 
+Therefore there is no need to maintain the special CRMP-compatible branch and 
+the releases it contains. From this point onward, there will be only main
+releases.
+
 ## 2.3.0 (crmp) / 10.3.0 (master)
 
 *Release date: 2022-Aug-16*

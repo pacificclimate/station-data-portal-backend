@@ -1,4 +1,14 @@
-# Supporting CRMP while it is behind PyCDS head revision
+# Supporting CRMP while it is behind PyCDS head revision (deprecated)
+
+## Deprecation notice
+
+The CRMP/PCDS database has been moved to a new platform running PG 10.
+Therefore there is no need for the special CRMP-compatible branch and the
+releases it contains. From this point onward, there will be only main
+releases.
+
+This documentation is retained only for historical purposes (e.g, it is
+referenced in NEWS.md).
 
 ## Key points
 

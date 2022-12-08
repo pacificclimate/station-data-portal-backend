@@ -57,6 +57,5 @@ jobs:
         pipenv install --deploy --dev
 
     - name: Test with pytest
-      if: github.ref != 'refs/heads/crmp'
       run: |
         pipenv run pytest -m "not online and not slow" -v tests/unit
