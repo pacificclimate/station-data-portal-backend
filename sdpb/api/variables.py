@@ -15,7 +15,7 @@ def id_(variable):
 
 
 def uri(variable):
-    return url_for("sdpb_api_variables_get", id=id_(variable))
+    return url_for("sdpb_api_variables_single", id=id_(variable))
 
 
 def single_item_rep(variable):
@@ -34,7 +34,7 @@ def single_item_rep(variable):
     }
 
 
-def get(id=None):
+def single(id=None):
     assert id is not None
     variable = (
         get_app_session()
@@ -58,7 +58,7 @@ def collection_rep(variables):
     return [collection_item_rep(variable) for variable in variables]
 
 
-def list(provinces=None):
+def collection(provinces=None):
     """Get variables from database, and return their representation."""
     session = get_app_session()
     if provinces is None:

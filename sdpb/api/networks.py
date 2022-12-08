@@ -1,3 +1,23 @@
+"""
+/networks API implementation
+
+Network item rep always contains the following keys:
+- id
+- uri
+- name
+- long_name
+- virtual
+- publish
+- color
+- station_count
+
+Networks returned are always filtered by:
+- Published (publish == True)
+- Has at least one Station which has at least one History (History enables
+filtering Networks by province(s))
+- Matches province filter (for collection)
+"""
+
 from flask import url_for
 from sqlalchemy import distinct
 from sqlalchemy.sql import func
@@ -7,7 +27,7 @@ from sdpb.util.query import add_province_filter
 
 
 def uri(network):
-    return url_for("sdpb_api_networks_get", id=network.id)
+    return url_for("sdpb_api_networks_single", id=network.id)
 
 
 def single_item_rep(network_etc):
@@ -44,13 +64,15 @@ def base_query(session):
         )
         .select_from(Network)
         .join(Station, Station.network_id == Network.id)
+        # History join allows filtering on province
+        # TODO: maybe this shouldn't be in the base query
         .join(History, History.station_id == Station.id)
         .group_by(Network.id)
         .filter(Network.publish == True)
     )
 
 
-def list(provinces=None):
+def collection(provinces=None):
     q = base_query(get_app_session())
     q = add_province_filter(q, provinces)
     q = q.order_by(Network.name.asc())
@@ -59,6 +81,6 @@ def list(provinces=None):
     return collection_rep(networks_etc)
 
 
-def get(id):
+def single(id):
     network_etc = base_query(get_app_session()).filter(Network.id == id).one()
     return single_item_rep(network_etc)

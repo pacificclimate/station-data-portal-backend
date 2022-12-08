@@ -17,7 +17,7 @@ def test_variables_uri(flask_app, variable, expected):
 
 
 def test_variable_collection(everything_session, tst_networks, tst_variables):
-    vars = sorted(variables.list(), key=lambda r: r["id"])
+    vars = sorted(variables.collection(), key=lambda r: r["id"])
     assert vars == [
         {
             "id": var.id,
@@ -39,7 +39,7 @@ def test_variable_collection(everything_session, tst_networks, tst_variables):
 def test_variable_item(everything_session, tst_networks, tst_variables):
     for var in tst_variables:
         if var.network == tst_networks[0]:
-            result = variables.get(var.id)
+            result = variables.single(var.id)
             assert result == {
                 "id": var.id,
                 "uri": variables.uri(var),

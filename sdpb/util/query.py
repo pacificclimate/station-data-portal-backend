@@ -37,23 +37,24 @@ def get_tables(query):
     ]
 
 
+def base_history_query(session):
+    return (
+        session.query(History, StationObservationStats)
+        .select_from(History)
+        .join(Station, History.station_id == Station.id)
+        .outerjoin(
+            StationObservationStats,
+            StationObservationStats.history_id == History.id,
+        )
+    )
+
+
 def get_all_histories_etc(session, provinces=None):
     with log_timing("Query all histories by station", log=logger.debug):
-        q = (
-            session.query(History, StationObservationStats)
-            .select_from(History)
-            .outerjoin(
-                StationObservationStats,
-                StationObservationStats.history_id == History.id,
-            )
-            # NB: Must order by station_id for groupby to work
-            .order_by(History.station_id, History.id)
-        )
-        # This reduces the number of rows returned, but it's not yet clear it
-        # actually reduces the query time.
-        q = add_station_network_publish_filter(
-            q.join(Station, History.station_id == Station.id)
-        )
+        q = base_history_query(session)
+        # NB: Must order by station_id for groupby to work
+        q = q.order_by(History.station_id, History.id)
+        q = add_station_network_publish_filter(q)
         q = add_province_filter(q, provinces)
         return q.all()
 
@@ -106,15 +107,20 @@ def get_all_vars_by_hx(session, group_in_database=True):
             )
             return {row.history_id: row.variable_ids for row in rows}
 
+    # group_in_database == False
     # TODO: If this case is ever used, need to do outer joins as above.
     raise NotImplementedError
     with log_timing("Query all vars by hx", log=logger.debug):
         # NB: Variables must be ordered by key (history_id) for groupby to work
         # correctly.
-        all_variables = session.query(
-            VarsPerHistory.history_id.label("history_id"),
-            VarsPerHistory.vars_id.label("id"),
-        ).order_by(VarsPerHistory.history_id).all()
+        all_variables = (
+            session.query(
+                VarsPerHistory.history_id.label("history_id"),
+                VarsPerHistory.vars_id.label("id"),
+            )
+            .order_by(VarsPerHistory.history_id)
+            .all()
+        )
     with log_timing("Group all vars by hx", log=logger.debug):
         result = {
             history_id: list({v.id for v in variables})

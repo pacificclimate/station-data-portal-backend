@@ -1,20 +1,45 @@
 """
-histories API
+/histories API implementation
 
 A history can have a compact or full representation. A compact representation
 omits some rarely-used attributes. Both representations always contain the
 `variable_uris` attribute.
+
+The compact representation always contains the following keys:
+- id
+- station_name
+- lon
+- lat
+- elevation
+- province
+- freq
+- min_obs_time
+- max_obs_time
+- variable_ids
+
+The compact representation optionally contains the following keys:
+- uri (if include_uri)
+
+The full representation includes the compact representation plus the following:
+- sdate
+- edate
+- tz_offset
+- country
+
+Histories returned are always filtered by:
+- Associated Station is published (via associated Network)
+- Has at least one associated StationObservationStats
+- Matches province filter (for collection)
 """
 import logging
 from flask import url_for
-from pycds import History, VarsPerHistory, Station, StationObservationStats
+from pycds import History, VarsPerHistory
 from sdpb import get_app_session
 from sdpb.api import variables
 from sdpb.util.representation import date_rep, float_rep, obs_stats_rep
 from sdpb.util.query import (
-    get_all_vars_by_hx,
-    add_station_network_publish_filter,
-    get_all_histories_etc,
+    get_all_vars_by_hx, add_station_network_publish_filter,
+    get_all_histories_etc, base_history_query,
 )
 from sdpb.timing import log_timing
 
@@ -33,7 +58,7 @@ def id_(history):
 def uri(history):
     # TODO: Using url_for approx doubles the time to convert
     #  *entire record* to rep
-    return url_for("sdpb_api_histories_get", id=id_(history))
+    return url_for("sdpb_api_histories_single", id=id_(history))
 
 
 def single_item_rep(history_etc, vars=None, compact=False, include_uri=False):
@@ -138,26 +163,18 @@ def collection_rep(
     ]
 
 
-def get(id=None, compact=False):
+def single(id=None, compact=False):
     """Get a single history and associated variables from database,
     and return their representation."""
     assert id is not None
     logger.debug("get history")
     session = get_app_session()
-    q = (
-        session.query(History, StationObservationStats)
-        .select_from(History)
-        .join(Station, History.station_id == Station.id)
-        .join(
-            StationObservationStats,
-            StationObservationStats.history_id == History.id,
-        )
-        .filter(History.id == id)
-    )
+    q = base_history_query(session)
+    q = q.filter(History.id == id)
     q = add_station_network_publish_filter(q)
     history_etc = q.one()
     logger.debug("get vars")
-    variables = (
+    hx_vars = (
         session.query(
             VarsPerHistory.history_id.label("history_id"),
             VarsPerHistory.vars_id.label("id"),
@@ -168,11 +185,11 @@ def get(id=None, compact=False):
     )
     logger.debug("data retrieved")
     return single_item_rep(
-        history_etc, variables, compact=compact, include_uri=True
+        history_etc, hx_vars, compact=compact, include_uri=True
     )
 
 
-def list(
+def collection(
     provinces=None,
     compact=False,
     group_vars_in_database=True,
