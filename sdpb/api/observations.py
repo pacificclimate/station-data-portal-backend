@@ -40,6 +40,8 @@ def get_counts(
     start_date=None, end_date=None, station_ids=None, provinces=None
 ):
     # Set up queries for total counts by station id
+
+    # Observation counts
     obsCountQuery = (
         session.query(
             cast(
@@ -50,6 +52,8 @@ def get_counts(
         .join(History)
         .group_by(History.station_id)
     )
+
+    # Climatology counts
     climoCountQuery = (
         session.query(
             cast(func.sum(ClimoObsCount.count), sqlalchemy.Integer).label(
@@ -61,9 +65,11 @@ def get_counts(
         .group_by(History.station_id)
     )
 
-    # Add query filters for start date, end date, station id list.
-    # Note that climo count table does not discriminate on time, therefore
-    # no filters for start and end dates on that query.
+    # Add query filters for start date, end date.
+    # IMPORTANT: Observation counts are summed from start_date and end_date.
+    # Climatology counts are NOT affected by start_date and end_date; they are instead a
+    # sum over all dates. This is a function of how the corresponding materialized views
+    # in the database are defined; it cannot be changed in this code.
     if start_date:
         obsCountQuery = obsCountQuery.filter(
             ObsCountPerMonthHistory.date_trunc >= start_date
@@ -72,6 +78,8 @@ def get_counts(
         obsCountQuery = obsCountQuery.filter(
             ObsCountPerMonthHistory.date_trunc <= end_date
         )
+
+    # Add query filters for station ids
     if station_ids:
         obsCountQuery = obsCountQuery.filter(
             History.station_id.in_(station_ids)
@@ -79,6 +87,8 @@ def get_counts(
         climoCountQuery = climoCountQuery.filter(
             History.station_id.in_(station_ids)
         )
+
+    # Add query filters for province(s).
     if provinces is not None:
         obsCountQuery = add_province_filter(obsCountQuery, provinces)
         climoCountQuery = add_province_filter(climoCountQuery, provinces)
