@@ -335,7 +335,7 @@ paths:
         Response includes counts for
         * normal observations: point-in-time or short-term statistic (e.g.,
         daily mean temperature)
-        * climatologies: long-term statisitics, e.g., 30-year mean of temperature
+        * climatologies: long-term statistics, e.g., 30-year mean of temperature
         #
         Counts are returned as a hash (dict) keyed by station id.
       tags:
@@ -491,6 +491,12 @@ components:
         network_uri:
           description: URI of network to which this variable belongs
           type: string
+        tags:
+          description: |
+            Tags classifying this variable (e.g., "observation", "climatology")
+          type: array
+          items:
+            type: string
       required:
         - id
         - uri
@@ -502,6 +508,7 @@ components:
         - unit
         - precision
         - network_uri
+        - tags
       example:
         cell_method: 'time: point'
         display_name: Surface Snow Depth (Point)
@@ -513,6 +520,7 @@ components:
         standard_name: surface_snow_thickness
         unit: cm
         uri: "/variables/450"
+        tags: ["climatology"]
 
     VariableList:
       description: List of variables.

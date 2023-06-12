@@ -1,3 +1,5 @@
+import re
+
 from flask import url_for
 from sqlalchemy import distinct
 from pycds import Network, Variable, Station, History
@@ -18,8 +20,15 @@ def uri(variable):
     return url_for("sdpb_api_variables_single", id=id_(variable))
 
 
+# Regex for detecting climatology variables from display_name value.
+climatology_re = re.compile("Climatology")
+
+
 def single_item_rep(variable):
     """Return representation of a single variable item."""
+    tags = [
+        "climatology" if climatology_re.search(variable.display_name) else "observation"
+    ]
     return {
         "id": variable.id,
         "uri": uri(variable),
@@ -31,6 +40,7 @@ def single_item_rep(variable):
         "unit": variable.unit,
         "precision": variable.precision,
         "network_uri": networks.uri(variable.network),
+        "tags": tags,
     }
 
 
@@ -62,9 +72,7 @@ def collection(provinces=None):
     """Get variables from database, and return their representation."""
     session = get_app_session()
     if provinces is None:
-        network_ids = (
-            session.query(Network.id.label("network_id")).select_from(Network)
-        )
+        network_ids = session.query(Network.id.label("network_id")).select_from(Network)
     else:
         network_ids = (
             session.query(distinct(Network.id).label("network_id"))
