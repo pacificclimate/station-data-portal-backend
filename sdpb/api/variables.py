@@ -21,6 +21,9 @@ def uri(variable):
 
 
 # Regex for detecting climatology variables from display_name value.
+# Ideally the categorization of a variable as a climatology would be maintained in the
+# database proper, so that there is a single source of truth, but that requires
+# significant work and a migration (PyCDS). Not happening yet.
 climatology_re = re.compile("Climatology")
 
 
