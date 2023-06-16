@@ -15,16 +15,91 @@ from sqlalchemy.sql import func
 from sqlalchemy.sql.expression import cast
 from flask import url_for
 from pycds import ObsCountPerMonthHistory, ClimoObsCount, History
-from sdpb import app_db
+from sdpb import get_app_session
 from sdpb.util.query import add_province_filter
 
 logger = logging.getLogger("sdpb")
 
-session = app_db.session
-
 ####
 # /observations/counts
 ####
+
+
+def obs_counts_by_station_query(
+    session, start_date=None, end_date=None, station_ids=None, provinces=None
+):
+    """
+    Return a query for observation counts by station. The query can include filters
+    for start and end date, stations of interest, and province(s) of interest.
+
+    :param session: SQLAlchemy db session
+    :param start_date: (datetime) Start date for observation counts.
+    :param end_date: (datetime) End date for observation counts.
+    :param station_ids: (iterable) Collection of station ids of interest.
+    :param provinces: (iterable) Collection of provinces of interest.
+    :return: SQLAchemy query object
+    """
+
+    # Fundamental query: Sum observation counts by month and history id over history
+    # id's for each station, yielding counts per station.
+    q = (
+        session.query(
+            cast(func.sum(ObsCountPerMonthHistory.count), sqlalchemy.Integer).label(
+                "total"
+            ),
+            History.station_id.label("station_id"),
+        )
+        .join(History)
+        .group_by(History.station_id)
+    )
+
+    if start_date:
+        q = q.filter(ObsCountPerMonthHistory.date_trunc >= start_date)
+    if end_date:
+        q = q.filter(ObsCountPerMonthHistory.date_trunc <= end_date)
+
+    if station_ids:
+        q = q.filter(History.station_id.in_(station_ids))
+
+    if provinces is not None:
+        q = add_province_filter(q, provinces)
+
+    return q
+
+
+def climo_counts_by_station_query(session, station_ids=None, provinces=None):
+    """
+    Return a query for climatology counts by station. The query can include filters
+    for stations of interest and province(s) of interest.
+
+    :param session: SQLAlchemy db session
+    :param station_ids: (iterable) Collection of station ids of interest.
+    :param provinces: (iterable) Collection of provinces of interest.
+    :return: SQLAchemy query object
+
+    Climatology counts cannot be filtered by start_date and end_date; they are instead a
+    sum over all dates. This is a function of how the corresponding materialized views
+    in the database are defined; it cannot be changed in this code.
+    """
+
+    # Fundamental query: Sum climatology counts by history id over history
+    # id's for each station, yielding counts per station.
+    q = (
+        session.query(
+            cast(func.sum(ClimoObsCount.count), sqlalchemy.Integer).label("total"),
+            History.station_id.label("station_id"),
+        )
+        .join(History)
+        .group_by(History.station_id)
+    )
+
+    if station_ids:
+        q = q.filter(History.station_id.in_(station_ids))
+
+    if provinces is not None:
+        q = add_province_filter(q, provinces)
+
+    return q
 
 
 def observations_counts_uri(start_date=None, end_date=None, station_ids=None):
@@ -36,66 +111,20 @@ def observations_counts_uri(start_date=None, end_date=None, station_ids=None):
     )
 
 
-def get_counts(
-    start_date=None, end_date=None, station_ids=None, provinces=None
-):
-    # Set up queries for total counts by station id
+def get_counts(start_date=None, end_date=None, station_ids=None, provinces=None):
+    session = get_app_session()
 
-    # Observation counts
-    obsCountQuery = (
-        session.query(
-            cast(
-                func.sum(ObsCountPerMonthHistory.count), sqlalchemy.Integer
-            ).label("total"),
-            History.station_id.label("station_id"),
-        )
-        .join(History)
-        .group_by(History.station_id)
-    )
+    obs_counts_by_station = obs_counts_by_station_query(
+        session,
+        start_date=start_date,
+        end_date=end_date,
+        station_ids=station_ids,
+        provinces=provinces,
+    ).all()
 
-    # Climatology counts
-    climoCountQuery = (
-        session.query(
-            cast(func.sum(ClimoObsCount.count), sqlalchemy.Integer).label(
-                "total"
-            ),
-            History.station_id.label("station_id"),
-        )
-        .join(History)
-        .group_by(History.station_id)
-    )
-
-    # Add query filters for start date, end date.
-    # IMPORTANT: Observation counts are summed from start_date and end_date.
-    # Climatology counts are NOT affected by start_date and end_date; they are instead a
-    # sum over all dates. This is a function of how the corresponding materialized views
-    # in the database are defined; it cannot be changed in this code.
-    if start_date:
-        obsCountQuery = obsCountQuery.filter(
-            ObsCountPerMonthHistory.date_trunc >= start_date
-        )
-    if end_date:
-        obsCountQuery = obsCountQuery.filter(
-            ObsCountPerMonthHistory.date_trunc <= end_date
-        )
-
-    # Add query filters for station ids
-    if station_ids:
-        obsCountQuery = obsCountQuery.filter(
-            History.station_id.in_(station_ids)
-        )
-        climoCountQuery = climoCountQuery.filter(
-            History.station_id.in_(station_ids)
-        )
-
-    # Add query filters for province(s).
-    if provinces is not None:
-        obsCountQuery = add_province_filter(obsCountQuery, provinces)
-        climoCountQuery = add_province_filter(climoCountQuery, provinces)
-
-    # Run the queries
-    obsCounts = obsCountQuery.all()
-    climoCounts = climoCountQuery.all()
+    climo_counts_by_station = climo_counts_by_station_query(
+        session, station_ids=station_ids, provinces=provinces
+    ).all()
 
     return {
         "uri": observations_counts_uri(
@@ -105,6 +134,6 @@ def get_counts(
         "start_date": start_date,
         "end_date": end_date,
         "station_ids": station_ids,
-        "observationCounts": {r.station_id: r.total for r in obsCounts},
-        "climatologyCounts": {r.station_id: r.total for r in climoCounts},
+        "observationCounts": {r.station_id: r.total for r in obs_counts_by_station},
+        "climatologyCounts": {r.station_id: r.total for r in climo_counts_by_station},
     }
