@@ -5,12 +5,12 @@ on: push
 jobs:
   test:
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         python-version:
-          - 3.7
-          - 3.8
+          - "3.8"
+          - "3.9"
 
     steps:
     - uses: actions/checkout@v2
@@ -23,19 +23,22 @@ jobs:
     - name: Install system-level dependencies
       env:
         PIP_INDEX_URL: https://pypi.pacificclimate.org/simple
+      # Ubuntu 20.04 has following postgres packages by default:
+      # postgresql-14/now 14.8-1.pgdg20.04+1 amd64 [installed,local]
+      # postgresql-client-14/now 14.8-1.pgdg20.04+1 amd64 [installed,local]
+      # postgresql-client-common/now 250.pgdg20.04+1 all [installed,local]
+      # postgresql-common/now 250.pgdg20.04+1 all [installed,local]
+      #
+      # Ubuntu 22.04 has following postgres packages by default:
+      # postgresql-14/now 14.8-1.pgdg22.04+1 amd64 [installed,local]
+      # postgresql-client-14/now 14.8-1.pgdg22.04+1 amd64 [installed,local]
+      # postgresql-client-common/now 250.pgdg22.04+1 all [installed,local]
+      # postgresql-common/now 250.pgdg22.04+1 all [installed,local]
       run: |
+        sudo apt list --installed | grep postgres
         sudo apt-get update
-        sudo apt-get install -y curl ca-certificates gnupg
-        curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-        sudo su -c "echo deb http://apt.postgresql.org/pub/repos/apt `lsb_release -cs`-pgdg main >/etc/apt/sources.list.d/pgdg.list"
-        sudo apt-get update
-        sudo apt purge postgresql-client-14 postgresql-server-dev-all
-        sudo apt-get install -yq \
-          libpq-dev \
-          python3-pip \
-          postgresql-10 \
-          postgresql-plpython-10 \
-          postgresql-10-postgis-2.4
+        sudo apt-get install -yq postgresql-14-postgis-3
+        sudo apt-get install -yq postgresql-plpython3-14=14.8-1.pgdg22.04+1 \
         python --version
         pip --version
 
