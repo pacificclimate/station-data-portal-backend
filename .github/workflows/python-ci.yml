@@ -37,11 +37,12 @@ jobs:
       run: |
         sudo apt list --installed | grep postgres
         sudo apt-get update
+        echo "downgrading postgresql-14"
+        sudo apt-get install -yq --allow-downgrades postgresql-14=14.8-0ubuntu0.22.04.1
+        echo "installing postgresql-14-postgis-3"
         sudo apt-get install -yq postgresql-14-postgis-3
+        echo "installing postgresql-plpython3-14"
         sudo apt-get install -yq postgresql-plpython3-14
-        # sudo apt-get install -yq postgresql-plpython3-14=14.8-0ubuntu0.22.04.1
-        python --version
-        pip --version
 
     - name: Install pipenv
       run: |
