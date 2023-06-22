@@ -90,7 +90,7 @@ def initialize_database(engine, schema_name):
     )
     # Add extensions required by PyCDS.
     engine.execute("CREATE EXTENSION postgis")
-    engine.execute("CREATE EXTENSION plpythonu")
+    engine.execute("CREATE EXTENSION plpython3u")
     engine.execute("CREATE EXTENSION IF NOT EXISTS citext")
     # Add schema.
     engine.execute(CreateSchema(schema_name))
