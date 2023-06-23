@@ -39,7 +39,7 @@ Flask-Cors = "3.0.10"
 Flask-SQLAlchemy = "2.5.1"
 flask-compress = "*"
 sqlalchemy = "~=1.4.35"
-pycds = { version = "4.0.0", source = "pcic" }
+pycds = { version = "4.3.0.dev1", source = "pcic" }
 connexion = { version = "2.13.0", extras = ["swagger-ui"] }
 
 [tool.poetry.group.dev.dependencies]

@@ -2,25 +2,21 @@
 
 [[package]]
 name = "alembic"
-version = "1.11.1"
+version = "1.5.8"
 description = "A database migration tool for SQLAlchemy."
 category = "main"
 optional = false
-python-versions = ">=3.7"
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,>=2.7"
 files = [
-    {file = "alembic-1.11.1-py3-none-any.whl", hash = "sha256:dc871798a601fab38332e38d6ddb38d5e734f60034baeb8e2db5b642fccd8ab8"},
-    {file = "alembic-1.11.1.tar.gz", hash = "sha256:6a810a6b012c88b33458fceb869aef09ac75d6ace5291915ba7fae44de372c01"},
+    {file = "alembic-1.5.8-py2.py3-none-any.whl", hash = "sha256:8a259f0a4c8b350b03579d77ce9e810b19c65bf0af05f84efb69af13ad50801e"},
+    {file = "alembic-1.5.8.tar.gz", hash = "sha256:e27fd67732c97a1c370c33169ef4578cf96436fa0e7dcfaeeef4a917d0737d56"},
 ]
 
 [package.dependencies]
-importlib-metadata = {version = "*", markers = "python_version < \"3.9\""}
-importlib-resources = {version = "*", markers = "python_version < \"3.9\""}
 Mako = "*"
+python-dateutil = "*"
+python-editor = ">=0.3"
 SQLAlchemy = ">=1.3.0"
-typing-extensions = ">=4"
-
-[package.extras]
-tz = ["python-dateutil"]
 
 [[package]]
 name = "asn1crypto"
@@ -870,23 +866,22 @@ files = [
 
 [[package]]
 name = "pycds"
-version = "4.0.0"
+version = "4.3.0.dev1"
 description = "An ORM representation of the PCDS and CRMP database"
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3.8,<4.0"
 files = [
-    {file = "PyCDS-4.0.0-py3-none-any.whl", hash = "sha256:9d74ddc9b532c131ac85618d401610849cc72ccbbdec5650ad80b132219d4365"},
-    {file = "PyCDS-4.0.0.tar.gz", hash = "sha256:1d6eca5c7e3994b36f3e62ac456bdfd3c6ada2bd8c50be2c5cf107dd85261781"},
-    {file = "pycds-4.0.0.tar.gz", hash = "md5:722f34d28ff2a5e767ecc4d44fcc6be2"},
+    {file = "pycds-4.3.0.dev1-py3-none-any.whl", hash = "sha256:76226b8c8d64c5405d1da60b634782ad8bda9bc59402ff2f275884fe0e5bde12"},
+    {file = "pycds-4.3.0.dev1.tar.gz", hash = "sha256:a801cd6aaa8dbb60a6e3c2dee5b7d7d04ac04c0d1fdffe53e94493364a37b841"},
 ]
 
 [package.dependencies]
-alembic = "*"
+alembic = ">=1.5.2,<1.6"
 black = "*"
 geoalchemy2 = "*"
 psycopg2 = "*"
-SQLAlchemy = "*"
+SQLAlchemy = ">=1.4.15,<2.0"
 sqlalchemy-citext = "*"
 
 [package.source]
@@ -968,6 +963,19 @@ files = [
 
 [package.dependencies]
 six = ">=1.5"
+
+[[package]]
+name = "python-editor"
+version = "1.0.4"
+description = "Programmatically open an editor, capture the result."
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "python-editor-1.0.4.tar.gz", hash = "sha256:51fda6bcc5ddbbb7063b2af7509e43bd84bfc32a4ff71349ec7847713882327b"},
+    {file = "python_editor-1.0.4-py2-none-any.whl", hash = "sha256:5f98b069316ea1c2ed3f67e7f5df6c0d8f10b689964a4a811ff64f0106819ec8"},
+    {file = "python_editor-1.0.4-py3-none-any.whl", hash = "sha256:1bf6e860a8ad52a14c3ee1252d5dc25b2030618ed80c022598f00176adc8367d"},
+]
 
 [[package]]
 name = "pyyaml"
@@ -1285,4 +1293,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "ef63c2c4231c49df0eaa360c11fee521c8ca430d7f6d96ccc7a003ea4923c4bb"
+content-hash = "7dc8d664cfb6814d5c5c1a1ff52702710f7ee54488a11910d0cc597fa716ec06"
