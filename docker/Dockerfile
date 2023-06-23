@@ -52,8 +52,16 @@ ADD --chown=${USERNAME}:${GROUPNAME} . ${USER_DIR}
 WORKDIR ${USER_DIR}
 ENV PATH=${USER_DIR}/.local/bin:${PATH}
 
-RUN pip3 install -U pipenv==2022.3.28 --ignore-installed && \
-    pipenv install gunicorn # installs all the packages plus gunicorn
+RUN \
+    # Install Poetry \
+    echo ">> Install Poetry" \
+    curl -sSL https://install.python-poetry.org | python3 - \
+    # Add Gunicorn \
+    echo ">> Add Gunicorn" \
+    poetry add gunicorn \
+    # Install the project \
+    echo ">> Install the project" \
+    poetry install
 
 EXPOSE 8000
 
