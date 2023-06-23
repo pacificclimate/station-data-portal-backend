@@ -878,6 +878,7 @@ python-versions = "*"
 files = [
     {file = "PyCDS-4.0.0-py3-none-any.whl", hash = "sha256:9d74ddc9b532c131ac85618d401610849cc72ccbbdec5650ad80b132219d4365"},
     {file = "PyCDS-4.0.0.tar.gz", hash = "sha256:1d6eca5c7e3994b36f3e62ac456bdfd3c6ada2bd8c50be2c5cf107dd85261781"},
+    {file = "pycds-4.0.0.tar.gz", hash = "md5:722f34d28ff2a5e767ecc4d44fcc6be2"},
 ]
 
 [package.dependencies]
