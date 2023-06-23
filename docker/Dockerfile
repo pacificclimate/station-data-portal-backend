@@ -12,6 +12,7 @@ ENV LANG=C.UTF-8
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get -yq install \
+        curl \
         libpq-dev \
         python3 \
         python3-dev \
