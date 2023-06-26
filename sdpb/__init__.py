@@ -32,7 +32,7 @@ def create_app(config_override={}):
     CORS(flask_app)
     flask_app.config.from_mapping(
         SQLALCHEMY_DATABASE_URI=os.getenv(
-            "PCDS_DSN", "postgresql://httpd@db3.pcic.uvic.ca/crmp"
+            "PCDS_DSN", "postgresql://httpd@db.pcic.uvic.ca/crmp"
         ),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         SQLALCHEMY_ECHO=False,

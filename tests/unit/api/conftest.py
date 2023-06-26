@@ -28,8 +28,6 @@ from alembic import command
 import alembic.config
 import alembic.command
 
-import importlib_resources
-
 import pycds
 from pycds import (
     Network,
@@ -58,7 +56,13 @@ def alembic_script_location():
     The filepath is typically like
     `/usr/local/lib/python3.6/dist-packages/pycds/alembic`.
     """
-    source = importlib_resources.files(pycds.alembic)
+    try:
+        import importlib_resources
+        source = importlib_resources.files(pycds.alembic)
+    except ModuleNotFoundError:
+        import importlib.resources
+        source = importlib.resources.files(pycds.alembic)
+
     yield str(source)
 
 
@@ -86,7 +90,7 @@ def initialize_database(engine, schema_name):
     )
     # Add extensions required by PyCDS.
     engine.execute("CREATE EXTENSION postgis")
-    engine.execute("CREATE EXTENSION plpythonu")
+    engine.execute("CREATE EXTENSION plpython3u")
     engine.execute("CREATE EXTENSION IF NOT EXISTS citext")
     # Add schema.
     engine.execute(CreateSchema(schema_name))
