@@ -17,10 +17,12 @@ from the database are provided by an instance of the PDP backend.
 - [API Design](docs/api-design.md)
 - [Installation](docs/installation.md)
 - [Configuration](docs/configuration.md)
-- [Production](docs/development.md)
-- [Development](docs/development.md)
-- [Unit testing](docs/unit-testing.md)
-- [Performance testing](docs/performance-testing.md)
+- [Production](docs/production.md)
+- Development
+  - [Caveats](docs/development/caveats.md)
+  - [Running locally](docs/development/running-locally.md)
+  - [Unit testing](docs/development/unit-testing.md)
+  - [Performance testing](docs/development/performance-testing.md)
 - [Release history](NEWS.md)
 
 ## Releasing

@@ -1,4 +1,4 @@
-# Development
+# Running locally
 
 To run a development server locally:
 
