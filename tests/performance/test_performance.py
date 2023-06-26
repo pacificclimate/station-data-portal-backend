@@ -160,7 +160,7 @@ def print_history_timing_table(provinces, repeats=1, delay=10):
         ("include_uri", boolean),
     ):
         args = {**nv, "provinces": provinces}
-        ts = timing(histories.list, repeats=repeats, delay=delay, **args)
+        ts = timing(histories.collection, repeats=repeats, delay=delay, **args)
         print_tabular(
             formats,
             **args,
@@ -198,7 +198,7 @@ def print_station_timing_table(provinces, repeats=1, delay=10):
         ("expand", ("histories", None)),
     ):
         args = {**nv, "provinces": provinces}
-        ts = timing(stations.list, repeats=repeats, delay=delay, **args)
+        ts = timing(stations.collection, repeats=repeats, delay=delay, **args)
         print_tabular(
             formats,
             **args,
