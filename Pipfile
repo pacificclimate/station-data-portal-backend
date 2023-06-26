@@ -11,13 +11,13 @@ name = "pcic"
 [packages]
 pyyaml = "*"
 python-dateutil = "==2.8.2"
-pycds = {version = "==4.0.0", index = "pcic" }
+pycds = {version = "==4.3.0", index = "pcic" }
 connexion = {version = "2.13.0", extras = ["swagger-ui"]}
 Flask = "==2.1.1"
 Flask-Cors = "==3.0.10"
 Flask-SQLAlchemy = "==2.5.1"
 flask-compress = "*"
-sqlalchemy = "~=1.4.35"
+sqlalchemy = ">=1.4.15,<2.0"
 
 [dev-packages]
 pytest = "*"
@@ -25,5 +25,8 @@ pytest = "*"
 black = "*"
 sdpb = {editable = true, path = "."}
 
-[pipenv]
-allow_prereleases = true
+# Not sure why this was here, but it causes great trouble, namely it seems to ignore
+# package version specs for connexion and other packages. A mystery not at present
+# worth investigating.
+#[pipenv]
+#allow_prereleases = true
