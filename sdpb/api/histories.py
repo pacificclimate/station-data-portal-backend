@@ -37,8 +37,10 @@ from sdpb import get_app_session
 from sdpb.api import variables
 from sdpb.util.representation import date_rep, float_rep, obs_stats_rep
 from sdpb.util.query import (
-    get_all_vars_by_hx, add_station_network_publish_filter,
-    get_all_histories_etc, base_history_query,
+    get_all_vars_by_hx,
+    add_station_network_publish_filter,
+    get_all_histories_etc,
+    base_history_query,
 )
 from sdpb.timing import log_timing
 
@@ -86,9 +88,7 @@ def single_item_rep(history_etc, vars=None, compact=False, include_uri=False):
         "freq": history.freq,
         **obs_stats_rep(sos),
         "variable_ids": [
-            variables.id_(variable)
-            for variable in vars or []
-            if variable is not None
+            variables.id_(variable) for variable in vars or [] if variable is not None
         ],
         # "variable_uris": [variables.uri(variable) for variable in vars or []],
     }
@@ -183,9 +183,7 @@ def single(id=None, compact=False):
         .all()
     )
     logger.debug("data retrieved")
-    return single_item_rep(
-        history_etc, hx_vars, compact=compact, include_uri=True
-    )
+    return single_item_rep(history_etc, hx_vars, compact=compact, include_uri=True)
 
 
 def collection(
@@ -195,9 +193,9 @@ def collection(
     include_uri=False,
 ):
     """
-    Get histories and associated variables from database, and return their 
+    Get histories and associated variables from database, and return their
     representation.
-        
+
     :param provinces: String, in form of comma-separated list, no spaces.
         If present, return only histories whose `province` attribute match
         this value. Match means value is None or attribute occurs in list.

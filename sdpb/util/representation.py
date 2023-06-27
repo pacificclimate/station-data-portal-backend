@@ -38,5 +38,3 @@ def obs_stats_rep(obs_stats):
         "max_obs_time": obs_stats and date_rep(obs_stats.max_obs_time),
         # "obs_count": int(obs_stats.obs_count),
     }
-
-

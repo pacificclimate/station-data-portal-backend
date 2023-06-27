@@ -1,6 +1,7 @@
 # Enable helper functions to be imported
 import sys
 import os
+
 sys.path.append(os.path.join(os.path.dirname(__file__), "helpers"))
 sys.path.append(os.path.join(os.path.dirname(__file__), "unit/api"))
 
@@ -72,5 +73,3 @@ def app_db(app_parts):
     # print('@pytest.fixture app_db: drop_all')
     # pycds.Base.metadata.drop_all(bind=app_db.engine)
     # pycds.weather_anomaly.Base.metadata.drop_all(bind=app_db.engine)
-
-

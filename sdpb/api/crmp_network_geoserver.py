@@ -34,10 +34,7 @@ item_keys = (
 
 def single_item_rep(item):
     """Return representation of a single network item."""
-    return {
-        key: getattr(item, key)
-        for key in item_keys
-    }
+    return {key: getattr(item, key) for key in item_keys}
 
 
 def collection_item_rep(item):

@@ -59,9 +59,7 @@ def collection_rep(networks_etc):
 
 def base_query(session):
     return (
-        session.query(
-            Network, func.count(distinct(Station.id)).label("station_count")
-        )
+        session.query(Network, func.count(distinct(Station.id)).label("station_count"))
         .select_from(Network)
         .join(Station, Station.network_id == Network.id)
         # History join allows filtering on province
