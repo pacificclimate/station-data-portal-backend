@@ -46,23 +46,14 @@ jobs:
         echo "installing postgresql-plpython3-14"
         sudo apt-get install -yq postgresql-plpython3-14
 
-    - name: Install pipenv
+    - name: Install Poetry
       run: |
-        pip install -U pipenv==2022.3.28
+        curl -sSL https://install.python-poetry.org | python3 -
 
-    - id: cache-pipenv
-      uses: actions/cache@v2
-      with:
-        path: ~/.local/share/virtualenvs
-        key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-
-    - name: Install Python dependencies if changed
-      if: steps.cache-pipenv.outputs.cache-hit != 'true'
-      env:
-        PIP_INDEX_URL: https://pypi.pacificclimate.org/simple
+    - name: Install dependencies
       run: |
-        pipenv install --deploy --dev
+        poetry install
 
     - name: Test with pytest
       run: |
-        pipenv run pytest -m "not online and not slow" -v tests/unit
+        poetry run pytest -m "not online and not slow" -v tests/unit
