@@ -54,11 +54,9 @@ WORKDIR ${USER_DIR}
 ENV PATH=${USER_DIR}/.local/bin:${PATH}
 
 RUN \
-    echo ">> Install Poetry" && \
+    # Install Poetry && \
     curl -sSL https://install.python-poetry.org | python3 - && \
-    echo ">> Add Gunicorn" && \
-    poetry add gunicorn && \
-    echo ">> Install the project" && \
+    # Install the project && \
     poetry install
 
 EXPOSE 8000

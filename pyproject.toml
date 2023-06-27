@@ -49,6 +49,9 @@ testing-postgresql = "^1.3.0"
 # only if you are prepared to re-run Black on entire codebase; best left to a separate PR.
 black = "23.3.0"
 
+[tool.poetry.group.deploy.dependencies]
+gunicorn = "^20.1.0"
+
 
 [build-system]
 requires = ["poetry-core"]
