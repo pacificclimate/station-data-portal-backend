@@ -1,5 +1,3 @@
-import pprint
-
 import pytest
 from pycds import Station
 from sdpb.api import stations
@@ -49,6 +47,5 @@ def test_station_collection(
         assert {len(h) for h in exp_hxs} == {len(h) for h in rec_hxs}
         # Check they agree on expanded
         assert all(
-            (len(rh) > 1) if expand_histories else (len(rh) == 1)
-            for rh in rec_hxs
+            (len(rh) > 1) if expand_histories else (len(rh) == 1) for rh in rec_hxs
         )

@@ -13,6 +13,7 @@ options = (
     ("delay", int, "0"),
 )
 
+
 def pytest_addoption(parser):
     for name, _, default in options:
         parser.addoption(f"--{name}", action="store", default=default)

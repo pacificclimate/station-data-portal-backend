@@ -94,14 +94,10 @@ def get_all_vars_by_hx(session, group_in_database=True):
             rows = (
                 session.query(
                     History.id.label("history_id"),
-                    func.array_agg(VarsPerHistory.vars_id).label(
-                        "variable_ids"
-                    ),
+                    func.array_agg(VarsPerHistory.vars_id).label("variable_ids"),
                 )
                 .select_from(History)
-                .outerjoin(
-                    VarsPerHistory, VarsPerHistory.history_id == History.id
-                )
+                .outerjoin(VarsPerHistory, VarsPerHistory.history_id == History.id)
                 .group_by(History.id)
                 .all()
             )
@@ -124,9 +120,7 @@ def get_all_vars_by_hx(session, group_in_database=True):
     with log_timing("Group all vars by hx", log=logger.debug):
         result = {
             history_id: list({v.id for v in variables})
-            for history_id, variables in groupby(
-                all_variables, lambda v: v.history_id
-            )
+            for history_id, variables in groupby(all_variables, lambda v: v.history_id)
         }
     return result
 

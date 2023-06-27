@@ -23,9 +23,7 @@ def timing(f, *args, repeats=1, delay=0, **kwargs):
         value = f(*args, **kwargs)
         end = perf_counter()
         elapsed = end - start
-        result.append(
-            {"start": start, "end": end, "elapsed": elapsed, "value": value}
-        )
+        result.append({"start": start, "end": end, "elapsed": elapsed, "value": value})
         sleep(delay)
     return result
 

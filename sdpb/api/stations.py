@@ -244,9 +244,7 @@ def collection(
             # Note: Station is always joined with History, and stations with
             # no associated history records are not returned.
             if expand_histories:
-                stations_query = (
-                    session.query(Station).select_from(Station).distinct()
-                )
+                stations_query = session.query(Station).select_from(Station).distinct()
                 all_histories_etc_by_station = get_all_histories_etc_by_station(
                     session, provinces=provinces
                 )

@@ -82,10 +82,7 @@ def dict_iter(*spec):
     names = tuple(item[0] for item in spec)
     iterables = tuple(item[1] for item in spec)
     prod = product(*iterables)
-    return (
-        {name: value for name, value in zip(names, values)}
-        for values in prod
-    )
+    return ({name: value for name, value in zip(names, values)} for values in prod)
 
 
 def print_tabular(formats, sep=" | ", **values):
@@ -100,7 +97,7 @@ def print_div():
 def print_example(ts):
     print("example")
     examples = ts[0]["value"]
-    pprint.pprint(examples[math.floor(len(examples)/2)])
+    pprint.pprint(examples[math.floor(len(examples) / 2)])
 
 
 time_stat_formats = (
@@ -216,9 +213,7 @@ def print_cng_timing_table(repeats=1, delay=10):
     print()
     print_tabular(formats, **time_stat_titles, item_count="# items")
     args = dict()
-    ts = timing(
-        crmp_network_geoserver.collection, repeats=repeats, delay=delay, **args
-    )
+    ts = timing(crmp_network_geoserver.collection, repeats=repeats, delay=delay, **args)
     print_tabular(
         formats, **args, **time_stat_values(ts), item_count=len(ts[0]["value"])
     )

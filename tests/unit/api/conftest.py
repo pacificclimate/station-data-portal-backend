@@ -58,9 +58,11 @@ def alembic_script_location():
     """
     try:
         import importlib_resources
+
         source = importlib_resources.files(pycds.alembic)
     except ModuleNotFoundError:
         import importlib.resources
+
         source = importlib.resources.files(pycds.alembic)
 
     yield str(source)
@@ -85,9 +87,7 @@ def config_override(database_uri):
 def initialize_database(engine, schema_name):
     """Initialize an empty database"""
     # Add role required by PyCDS migrations for privileged operations.
-    engine.execute(
-        f"CREATE ROLE {pycds.get_su_role_name()} WITH SUPERUSER NOINHERIT;"
-    )
+    engine.execute(f"CREATE ROLE {pycds.get_su_role_name()} WITH SUPERUSER NOINHERIT;")
     # Add extensions required by PyCDS.
     engine.execute("CREATE EXTENSION postgis")
     engine.execute("CREATE EXTENSION plpython3u")
@@ -315,9 +315,7 @@ def tst_stn_obs_stats(tst_histories):
 def tst_vars_by_hx(tst_observations):
     return {
         hx_id: sorted(list({obs.vars_id for obs in observations}))
-        for hx_id, observations in groupby(
-            tst_observations, lambda obs: obs.history_id
-        )
+        for hx_id, observations in groupby(tst_observations, lambda obs: obs.history_id)
     }
 
 
@@ -430,9 +428,7 @@ def expected_station_rep(
     tst_histories, tst_stn_obs_stats, tst_vars_by_hx, expected_history_rep
 ):
     def f(station, compact=False, expand=None):
-        hxs_by_station_id = groupby_dict(
-            tst_histories, key=lambda h: h.station_id
-        )
+        hxs_by_station_id = groupby_dict(tst_histories, key=lambda h: h.station_id)
         try:
             stn_histories = hxs_by_station_id[station.id]
         except KeyError:
