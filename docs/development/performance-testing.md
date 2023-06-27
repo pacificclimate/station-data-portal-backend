@@ -19,7 +19,7 @@ database is specified by the environment variable `PCDS_DSN`.
 When you have set `PCDS_DSN` to the target database, run:
 
 ```
-pipenv run pytest tests/performance
+poetry run pytest tests/performance
 ```
 
 ## Test output

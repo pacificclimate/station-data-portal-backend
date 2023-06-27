@@ -15,11 +15,11 @@ from the database are provided by an instance of the PDP backend.
 ## Documentation
 
 - [API Design](docs/api-design.md)
-- [Installation](docs/installation.md)
 - [Configuration](docs/configuration.md)
 - [Production](docs/production.md)
 - Development
   - [Caveats](docs/development/caveats.md)
+  - [Installation](docs/development/installation.md)
   - [Running locally](docs/development/running-locally.md)
   - [Unit testing](docs/development/unit-testing.md)
   - [Performance testing](docs/development/performance-testing.md)
