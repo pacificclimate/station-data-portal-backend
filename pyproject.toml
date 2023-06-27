@@ -35,7 +35,7 @@ PyYAML = "^6.0"
 python-dateutil = "^2.8.2"
 sqlalchemy = "~=1.4.35"
 pycds = { version = "4.3.0.dev1", source = "pcic" }
-connexion = { version = "2.13.0", extras = ["swagger-ui"] }
+connexion = { version = "^2.14.2", extras = ["swagger-ui"] }
 flask = ">=1.0.4,<2.3"  # Versions required by connexion
 flask-cors = "^4.0.0"
 flask-sqlalchemy = "^3.0.5"
