@@ -894,6 +894,7 @@ python-versions = ">=3.8,<4.0"
 files = [
     {file = "pycds-4.3.0.dev1-py3-none-any.whl", hash = "sha256:76226b8c8d64c5405d1da60b634782ad8bda9bc59402ff2f275884fe0e5bde12"},
     {file = "pycds-4.3.0.dev1.tar.gz", hash = "sha256:a801cd6aaa8dbb60a6e3c2dee5b7d7d04ac04c0d1fdffe53e94493364a37b841"},
+    {file = "pycds-4.3.0.dev1.tar.gz", hash = "md5:f80fea9c825a68f5ad258a7776b918e7"},
 ]
 
 [package.dependencies]
