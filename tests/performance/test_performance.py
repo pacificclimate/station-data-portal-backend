@@ -160,7 +160,7 @@ def print_history_timing_table(provinces, repeats=1, delay=10):
         ("include_uri", boolean),
     ):
         args = {**nv, "provinces": provinces}
-        ts = timing(histories.list, repeats=repeats, delay=delay, **args)
+        ts = timing(histories.collection, repeats=repeats, delay=delay, **args)
         print_tabular(
             formats,
             **args,
@@ -198,7 +198,7 @@ def print_station_timing_table(provinces, repeats=1, delay=10):
         ("expand", ("histories", None)),
     ):
         args = {**nv, "provinces": provinces}
-        ts = timing(stations.list, repeats=repeats, delay=delay, **args)
+        ts = timing(stations.collection, repeats=repeats, delay=delay, **args)
         print_tabular(
             formats,
             **args,
@@ -217,7 +217,7 @@ def print_cng_timing_table(repeats=1, delay=10):
     print_tabular(formats, **time_stat_titles, item_count="# items")
     args = dict()
     ts = timing(
-        crmp_network_geoserver.list, repeats=repeats, delay=delay, **args
+        crmp_network_geoserver.collection, repeats=repeats, delay=delay, **args
     )
     print_tabular(
         formats, **args, **time_stat_values(ts), item_count=len(ts[0]["value"])
@@ -236,7 +236,7 @@ def test_print_timing_tables(items, repeats, delay):
         return "*" in items or what in items
 
     dsn = os.getenv("PCDS_DSN")
-    db = "crmp" if "db3." in dsn else "metnorth"
+    db = "crmp" if "crmp" in dsn else "metnorth"
     provinces = "BC" if db == "crmp" else None
     print()
     print_run_sep()

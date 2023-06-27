@@ -12,6 +12,7 @@ ENV LANG=C.UTF-8
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get -yq install \
+        curl \
         libpq-dev \
         python3 \
         python3-dev \
@@ -52,8 +53,11 @@ ADD --chown=${USERNAME}:${GROUPNAME} . ${USER_DIR}
 WORKDIR ${USER_DIR}
 ENV PATH=${USER_DIR}/.local/bin:${PATH}
 
-RUN pip3 install -U pipenv==2022.3.28 --ignore-installed && \
-    pipenv install gunicorn # installs all the packages plus gunicorn
+RUN \
+    # Install Poetry && \
+    curl -sSL https://install.python-poetry.org | python3 - && \
+    # Install the project && \
+    poetry install
 
 EXPOSE 8000
 

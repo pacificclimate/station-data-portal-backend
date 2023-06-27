@@ -1,7 +1,7 @@
 .PHONY: install-default
 install-default:
-	pipenv install --dev
-	pipenv install -e .
+	poetry install --dev
+	poetry install -e .
 
 
 .PHONY: local-pytest-image
