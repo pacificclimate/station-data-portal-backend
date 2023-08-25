@@ -1,5 +1,19 @@
 # News / Release Notes
 
+## 11.2.0
+
+*Release date: 2023-Aug-25*
+
+Major change: Added attribute "tags" to /variables response that uses a single source of truth in the database to classify variables (including by climatology/observation).
+User-facing changes:
+- [Add attribute to /variables distinguishing observation from climatology variables](https://github.com/pacificclimate/station-data-portal-backend/pull/52)
+
+Internal changes:
+- [Loosen dependency version constraints](https://github.com/pacificclimate/station-data-portal-backend/pull/62)
+- [Clean up (remove) superseded docker local test infrastructure](https://github.com/pacificclimate/station-data-portal-backend/pull/60)
+- [Apply Black](https://github.com/pacificclimate/station-data-portal-backend/pull/59)
+- [Convert to Poetry](https://github.com/pacificclimate/station-data-portal-backend/pull/54)
+
 ## 11.0.1
 
 *Release date: 2022-Aug-16*
