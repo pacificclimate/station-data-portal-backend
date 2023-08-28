@@ -1,5 +1,15 @@
 # News / Release Notes
 
+## 11.2.1
+
+*Release date: 2023-Aug-28*
+
+Minor changes that affect only development and deployment.
+
+Changes:
+- [Fix CMD in Dockerfile](https://github.com/pacificclimate/station-data-portal-backend/pull/68)
+- [Fix Python CI](https://github.com/pacificclimate/station-data-portal-backend/pull/67)
+
 ## 11.2.0
 
 *Release date: 2023-Aug-25*
