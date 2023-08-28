@@ -63,4 +63,4 @@ EXPOSE 8000
 
 # gunicorn.conf is set up so that Gunicorn settings are set by environment variables.
 # Gunicorn setting [setting] is set by env var GUNICORN_[setting].
-CMD pipenv run gunicorn --config gunicorn.conf --log-config logging.conf -b ":8000" sdpb.wsgi:flask_app
+CMD poetry run gunicorn --config gunicorn.conf --log-config logging.conf -b ":8000" sdpb.wsgi:flask_app
