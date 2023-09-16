@@ -10,6 +10,7 @@ Results may be restricted to a subset of stations by specifying `station_ids`.
 """
 
 import logging
+import datetime
 import sqlalchemy
 from sqlalchemy.sql import func
 from sqlalchemy.sql.expression import cast
@@ -54,9 +55,15 @@ def obs_counts_by_station_query(
     )
 
     if start_date:
-        q = q.filter(ObsCountPerMonthHistory.date_trunc >= start_date)
+        q = q.filter(
+            ObsCountPerMonthHistory.date_trunc
+            >= func.date_trunc("month", datetime.datetime.fromisoformat(start_date))
+        )
     if end_date:
-        q = q.filter(ObsCountPerMonthHistory.date_trunc <= end_date)
+        q = q.filter(
+            ObsCountPerMonthHistory.date_trunc
+            <= func.date_trunc("month", datetime.datetime.fromisoformat(end_date))
+        )
 
     if station_ids:
         q = q.filter(History.station_id.in_(station_ids))
