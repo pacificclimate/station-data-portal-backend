@@ -29,7 +29,7 @@ from the database are provided by an instance of the PDP backend.
 
 To create a versioned release:
 
-1. Increment `__version__` in `setup.py` (version >= 10).
+1. Increment `version` in `pyproject.toml`.
 2. Summarize the changes from the last release in `NEWS.md`.
 3. Add, commit, and tag, and push these changes:
    ```

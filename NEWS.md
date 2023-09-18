@@ -1,5 +1,12 @@
 # News / Release Notes
 
+## 11.2.2
+
+*Release date: 2023-Sep-18*
+
+Changes:
+- [Normalize date inputs to /observations/counts](https://github.com/pacificclimate/station-data-portal-backend/pull/70)
+
 ## 11.2.1
 
 *Release date: 2023-Aug-28*
