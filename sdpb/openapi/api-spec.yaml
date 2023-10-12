@@ -419,45 +419,46 @@ paths:
 
   # TODO: Change `weather` to `ongoing` or something. This will require an
   #   update to client app (WAV).
-#  /station-weather/monthly/weather/{variable};{year}-{month}:
-#    get:
-#      summary: Get ongoing monthly station weather averages.
-#      description: |
-#        Get ongoing station weather averages for a given variable, year and
-#        month, for all stations having such data.
-#      tags:
-#        - Station Weather
-#      operationId: sdpb.api.station_weather.monthly.weather.xxx
-#      parameters:
-#        - name: variable
-#          in: path
-#          required: true
-#          schema:
-#            type: string
-##            enum:
-##              - precip
-##              - tmin
-##              - tmax
-#        - name: year
-#          in: path
-#          required: true
-#          schema:
-#            type: integer
-#            minimum: 1850
-#            maximum: 2100
-##        - name: month
-##          in: path
-##          schema:
-##            type: integer
-##            minimum: 1
-##            maximum: 12
-#      responses:
-#        200:
-#          description: Success
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/StationWeatherMonthlyOngoingList'
+  /station-weather/monthly/weather/{variable};{year}-{month}:
+    get:
+      summary: Get ongoing monthly station weather averages.
+      description: |
+        Get ongoing station weather averages for a given variable, year and
+        month, for all stations having such data.
+      tags:
+        - Station Weather
+      operationId: sdpb.api.station_weather.monthly.weather.collection
+      parameters:
+        - name: variable
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - precip
+              - tmin
+              - tmax
+        - name: year
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1850
+            maximum: 2100
+        - name: month
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StationWeatherMonthlyOngoingList'
 
 components:
   responses:
