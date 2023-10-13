@@ -906,13 +906,6 @@ components:
         datum:
           description: Baseline value for variable within this history.
           type: number
-        variable_id:
-          description: Identifier of variable
-          type: string
-          enum:
-            - precip
-            - tmin
-            - tmax
       required:
         - network_name
         - station_db_id
