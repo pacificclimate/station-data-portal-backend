@@ -45,9 +45,9 @@ tags:
     description: |
       An observation is a single datum reported by a station for a particular
       variable.
-  - name: Station Weather
+  - name: Weather
     description: |
-      Station weather data is obtained from the station weather views and 
+      Weather data is obtained from the weather views and 
       matviews that support the Weather Anomaly Viewer.
 
 paths:
@@ -381,17 +381,17 @@ paths:
               schema:
                 $ref: '#/components/schemas/ObservationCounts'
 
-# Station weather
+# Weather
 
-  /station-weather/monthly/baseline/{variable};{month}:
+  /weather/monthly/baseline/{variable};{month}:
     get:
-      summary: Get baseline monthly station weather averages.
+      summary: Get baseline monthly weather averages.
       description: |
-        Get baseline monthly station weather averages for a given variable 
+        Get baseline monthly weather averages for a given variable 
         and month, for all stations having such data.
       tags:
-        - Station Weather
-      operationId: sdpb.api.station_weather.monthly.baseline.collection
+        - Weather
+      operationId: sdpb.api.weather.monthly.baseline.collection
       parameters:
         - name: variable
           in: path
@@ -415,19 +415,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StationWeatherMonthlyBaselineList'
+                $ref: '#/components/schemas/WeatherMonthlyBaselineList'
 
   # TODO: Change `weather` to `ongoing` or something. This will require an
   #   update to client app (WAV).
-  /station-weather/monthly/weather/{variable};{year}-{month}:
+  /weather/monthly/weather/{variable};{year}-{month}:
     get:
-      summary: Get ongoing monthly station weather averages.
+      summary: Get ongoing monthly weather averages.
       description: |
-        Get ongoing station weather averages for a given variable, year and
+        Get ongoing weather averages for a given variable, year and
         month, for all stations having such data.
       tags:
-        - Station Weather
-      operationId: sdpb.api.station_weather.monthly.weather.collection
+        - Weather
+      operationId: sdpb.api.weather.monthly.weather.collection
       parameters:
         - name: variable
           in: path
@@ -458,7 +458,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StationWeatherMonthlyOngoingList'
+                $ref: '#/components/schemas/WeatherMonthlyOngoingList'
 
 components:
   responses:
@@ -867,13 +867,14 @@ components:
           '4': 8040
           '5': 9330
 
-    # Station weather
+    # Weather
     # Note these are legacy endpoints which do not conform to the pattern of
     # the other endpoints in this API. To be updated. 
     
-    StationWeatherMonthlyBaseline:
+    WeatherMonthlyBaseline:
       description: |
-        Representation of a weather baseline resource for a single station.
+        Representation of a weather monthly baseline resource for a single 
+        station.
       type: object
       properties:
         network_name:
@@ -923,15 +924,16 @@ components:
         - elevation
         - datum
 
-    StationWeatherMonthlyBaselineList:
-      description: List of station weather baseline items.
+    WeatherMonthlyBaselineList:
+      description: List of monthly weather baseline items.
       type: array
       items:
-        $ref: '#/components/schemas/StationWeatherMonthlyBaseline'
+        $ref: '#/components/schemas/WeatherMonthlyBaseline'
 
-    StationWeatherMonthlyOngoing:
+    WeatherMonthlyOngoing:
       description: |
-        Representation of a station weather ongoing resource for a single station.
+        Representation of a monthly weather "ongoing" resource for a single 
+        station.
       type: object
       properties:
         network_name:
@@ -981,9 +983,9 @@ components:
           minimum: 0
           maximum: 1
 
-    StationWeatherMonthlyOngoingList:
-      description: List of station weather ongoing items.
+    WeatherMonthlyOngoingList:
+      description: List of weather ongoing items.
       type: array
       items:
-        $ref: '#/components/schemas/StationWeatherMonthlyOngoing'
+        $ref: '#/components/schemas/WeatherMonthlyOngoing'
 
