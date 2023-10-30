@@ -1,15 +1,8 @@
 import pytest
 from sdpb.api.weather.monthly.baseline import collection
+from helpers import hashabledictrep
 
 pytestmark = pytest.mark.usefixtures("flask_app", "everything_session")
-
-
-def hashable(d: dict):
-    """
-    Return a hashable, unique representation of a dict.
-    Useful for comparing collections of dicts.
-    """
-    return tuple(sorted(d.items()))
 
 
 @pytest.mark.parametrize(
@@ -36,4 +29,6 @@ def test_collection(tst_histories, variable, month):
         }
         for history in tst_histories
     ]
-    assert {hashable(r) for r in result} == {hashable(e) for e in expected}
+    assert {hashabledictrep(r) for r in result} == {
+        hashabledictrep(e) for e in expected
+    }
