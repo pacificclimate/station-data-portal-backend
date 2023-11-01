@@ -38,6 +38,11 @@ from pycds import (
     VarsPerHistory,
     Obs,
     DerivedValue,
+    DailyMaxTemperature,
+    DailyMinTemperature,
+    MonthlyAverageOfDailyMaxTemperature,
+    MonthlyAverageOfDailyMinTemperature,
+    MonthlyTotalPrecipitation,
 )
 import pycds.alembic
 from pycds.climate_baseline_helpers import pcic_climate_variable_network_name
@@ -387,29 +392,75 @@ def tst_histories(dummy_histories, wx_histories):
 observation_id = count()
 
 
-def make_tst_observation(history, variable):
-    return Obs(
+def make_tst_observation(history, variable, **overrides):
+    defaults = dict(
         id=next(observation_id),
         datum=99,
         history_id=history.id,
         vars_id=variable.id,
     )
+    return Obs(**{**defaults, **overrides})
 
 
 @pytest.fixture(scope="package")
-def tst_observations(tst_histories, tst_variables):
+def dummy_observations(dummy_histories, dummy_variables):
     """Observations"""
     num_obs = 2
     return [
         make_tst_observation(hx, var)
         for hx, var in (
-            (tst_histories[0], tst_variables[0]),
-            (tst_histories[0], tst_variables[1]),
-            (tst_histories[2], tst_variables[2]),
-            (tst_histories[2], tst_variables[3]),
+            (dummy_histories[0], dummy_variables[0]),
+            (dummy_histories[0], dummy_variables[1]),
+            (dummy_histories[2], dummy_variables[2]),
+            (dummy_histories[2], dummy_variables[3]),
         )
         for i in range(num_obs)
     ]
+
+
+@pytest.fixture(scope="package")
+def wx_temp_observations(air_temp_variables, wx_histories):
+    """
+    Observations for the temperature variable for each weather station for each hour
+    of each day of the month of Jan 2000
+    """
+    return [
+        make_tst_observation(
+            variable=variable,
+            history=history,
+            time=datetime.datetime(year, month, day, hour),
+            datum=float(hour),
+        )
+        for variable in air_temp_variables
+        for history in wx_histories
+        for day in days
+        for hour in hours
+    ]
+
+
+@pytest.fixture(scope="package")
+def wx_precip_observations(precip_variables, wx_histories):
+    """
+    Observations for the precipitation variables for each weather station for
+    each hour of each day of the month of Jan 2000
+    """
+    return [
+        make_tst_observation(
+            variable=variable,
+            history=history,
+            time=datetime.datetime(year, month, day, hour),
+            datum=1.0,
+        )
+        for variable in precip_variables
+        for history in wx_histories
+        for day in days
+        for hour in hours
+    ]
+
+
+@pytest.fixture(scope="package")
+def tst_observations(dummy_observations, wx_temp_observations, wx_precip_observations):
+    return dummy_observations + wx_temp_observations + wx_precip_observations
 
 
 # Climate Variable values
@@ -495,22 +546,27 @@ def everything_session(
     tst_observations,
     cv_values,
 ):
-    session.add_all(tst_networks)
-    session.flush()
-    session.add_all(tst_variables)
-    session.flush()
-    session.add_all(tst_stations)
-    session.flush()
-    session.add_all(tst_histories)
-    session.flush()
-    session.add_all(tst_stn_obs_stats)
-    session.flush()
-    session.add_all(tst_observations)
-    session.flush()
-    session.add_all(cv_values)
-    session.flush()
-    session.execute(VarsPerHistory.refresh())
-    session.flush()
+    for items in [
+        tst_networks,
+        tst_variables,
+        tst_stations,
+        tst_histories,
+        tst_stn_obs_stats,
+        tst_observations,
+        cv_values,
+    ]:
+        session.add_all(items)
+        session.flush()
+
+    for view in [
+        VarsPerHistory,
+        DailyMaxTemperature,
+        DailyMinTemperature,
+        MonthlyAverageOfDailyMaxTemperature,
+        MonthlyAverageOfDailyMinTemperature,
+        MonthlyTotalPrecipitation,
+    ]:
+        session.execute(view.refresh())
     yield session
 
 
