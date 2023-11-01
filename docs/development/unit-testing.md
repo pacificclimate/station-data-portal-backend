@@ -7,7 +7,7 @@ databases (unlike performance testing).
 Therefore, unit tests are suitable for CI or other cloud-based execution.
 
 Unit test code is mainly in `tests/unit/`; it also makes use of common helper
-functions and `conftest.py` in `tests/`.
+functions and `conftest.py` located at the top level in `tests/`.
 
 ## PyCDS database migration in testing
 

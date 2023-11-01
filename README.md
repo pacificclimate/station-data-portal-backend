@@ -9,8 +9,7 @@ The nominal client is the
 [Station Data Portal](https://github.com/pacificclimate/station-data-portal) 
 app, but it is not particularly tuned to this app.
 
-At present, this service provides only metadata. Actual data downloads
-from the database are provided by an instance of the PDP backend.
+At present, this service provides only metadata. _Data_ download services are provided by an instance of the PDP backend.
 
 ## Documentation
 

@@ -14,12 +14,9 @@ Note: The Docker image runs Gunicorn as the HTTP server container.
 
 See [Configuration](configuration.md).
 
-Note: Production deployments also configure Gunicorn and application logging. 
+Note: Production deployments of this app also typically configure Gunicorn and application logging. 
 
 ## Deployment
 
 See the contents of the [`docker`](../docker) directory for an example of how
-to run the Docker image. 
-This directory also includes template Gunicorn and logging configuration 
-files.
-
+to run the Docker image. This directory also includes template Gunicorn and logging configuration files.
