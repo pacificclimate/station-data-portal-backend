@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sdpb"
-version = "11.2.2"
+version = "11.3.0"
 description = "PCIC microservice for station data"
 authors = ["rod-glover <rglover@uvic.ca>"]
 license = "GNU General Public License v3 (GPLv3)"

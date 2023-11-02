@@ -1,5 +1,14 @@
 # News / Release Notes
 
+## 11.3.0
+
+*Release date: 2023-Nov-03*
+
+This version transfers the weather anomaly backend into this service.
+
+Changes:
+- [Transfer endpoints of Weather Anomaly Data Service to this service](https://github.com/pacificclimate/station-data-portal-backend/pull/72)
+
 ## 11.2.2
 
 *Release date: 2023-Sep-18*
