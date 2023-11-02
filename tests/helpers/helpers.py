@@ -22,3 +22,12 @@ def find(items, cond, default=None):
 
 def groupby_dict(items, key):
     return {k: list(g) for k, g in groupby(sorted(items, key=key), key=key)}
+
+
+def hashabledictrep(d: dict):
+    """
+    Return a hashable, unique representation of a dict.
+    This only goes one level deep; member dicts are not represented this way.
+    Useful for comparing collections of dicts using sets.
+    """
+    return tuple(sorted(d.items()))

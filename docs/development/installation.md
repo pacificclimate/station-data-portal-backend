@@ -6,16 +6,9 @@
 $ git clone https://github.com/pacificclimate/station-data-portal-backend
 ```
 
-It is best practice to install using a virtual environment.
-We use [`pipenv`](https://pipenv.pypa.io/en/latest/)
-to manage dependencies and create a virtual environment.
-
 ### Install Poetry package manager
 
-We use [Poetry](https://python-poetry.org/) to manage package dependencies
-and installation.
-To install Poetry, we recommend using the
-[official installer](https://python-poetry.org/docs/#installation):
+It is best practice to install using a virtual environment. We use [Poetry](https://python-poetry.org/) to manage package dependencies and installation. To install Poetry, we recommend using the [official installer](https://python-poetry.org/docs/#installation):
 
 ```text
 curl -sSL https://install.python-poetry.org | python3 -

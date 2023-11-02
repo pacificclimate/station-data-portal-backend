@@ -4,38 +4,43 @@
 
 We follow RESTful design principles in this microservice.
 
-We us the very common collection pattern in its
-RESTful expression, e.g., for the `/stations` endpoint.
+We use the very common collection pattern in its RESTful expression. The collection pattern is used when the underlying data can be naturally modelled as a list of individual objects. The list (collection) is a resource, and each individual network is a resource. Each has its own URI. 
 
-Overall design of API mainly reflects four core tables:
+Almost resources in CRMP fall naturally into the collection pattern, including the following 4 central resources.   
 
-* Network (`/networks`)
-* Variable (`/variables`)
-* Station (`/stations`)
-* History (`/histories`, also included in `/stations` responses)
+The API mainly reflects four core tables:
 
-Following recommended practice for data stores (see, e.g., Redux),
-data is represented in normalized form.
+- Network (`/networks`)
+- Variable (`/variables`)
+- Station (`/stations`)
+- History (`/histories`, also included in `/stations` responses)
 
-* For example, a station has a network associated with it. The network is
+There are several additional endpoints for more specialized purposes. See the full API design in `sdpb/openapi/api-spec.yaml`.
+
+Following recommended practice for data stores, data in responses is represented in normalized form, which means that any given datum is represented fully only once, and is elsewhere referred to by a unique key.
+
+- For example, each station has a network associated with it. The network is
   referred to by a single key in the station representation.
   Information about the network must be obtained by using the key to
   find the related data from the networks collection.
-
-* Relational keys are the `uri` value for the related object.
+- Relational keys are the `uri` value for the related object.
   This policy is subject to review. It could be changed to
-  `id` to improve "join" speed.
+  `id` to improve "join" speed and (slightly) reduce the size of responses.
+
+In some endpoints, as a convenience, some associated items can be expanded -- that is, a larger amount of information than just the key for the associated item is provided. 
+
+- For example, the `/stations` endpoint response can include expanded information about associated history records if requested with the `expand` query parameter.
+- This is best done only for associated items that are uniquely associated to the main resource. In the case of stations, each history is associated to exactly one station, so each station has a unique collection of histories associated to it. No redundant representations of any single resource (history) are created by expanding such unique items in place. 
+- Conversely, it would be a less good idea to expand non-unique items, such as networks, in place.
 
 
 ## Full API
 
-The API is fully defined using [OpenAPI](https://openapis.org/)
-(formerly known as [Swagger](http://swagger.io/)).
+The API is fully defined using [OpenAPI](https://openapis.org/) (formerly known as [Swagger](http://swagger.io/)).
 
-The definition in `sdpb/openapi/api-spec.yaml`.
+This project's OpenAIP definition is in `sdpb/openapi/api-spec.yaml`.
 
-We use the package [Connexion](https://pypi.org/project/connexion/)
-to wire up the API definition to code entry points.
+We use the package [Connexion](https://pypi.org/project/connexion/) to wire up the API definition to code entry points.
 
 Connexion also serves a Swagger UI Console that provides **human-friendly,
 interactive documentation** of the API.

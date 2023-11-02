@@ -45,6 +45,10 @@ tags:
     description: |
       An observation is a single datum reported by a station for a particular
       variable.
+  - name: Weather
+    description: |
+      Weather data is obtained from the weather views and 
+      matviews that support the Weather Anomaly Viewer.
 
 paths:
 
@@ -377,6 +381,84 @@ paths:
               schema:
                 $ref: '#/components/schemas/ObservationCounts'
 
+# Weather
+
+  /weather/monthly/baseline/{variable};{month}:
+    get:
+      summary: Get baseline monthly weather averages.
+      description: |
+        Get baseline monthly weather averages for a given variable 
+        and month, for all stations having such data.
+      tags:
+        - Weather
+      operationId: sdpb.api.weather.monthly.baseline.collection
+      parameters:
+        - name: variable
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - precip
+              - tmin
+              - tmax
+        - name: month
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeatherMonthlyBaselineList'
+
+  # TODO: Change `weather` to `ongoing` or something. This will require an
+  #   update to client app (WAV).
+  /weather/monthly/weather/{variable};{year}-{month}:
+    get:
+      summary: Get ongoing monthly weather averages.
+      description: |
+        Get ongoing weather averages for a given variable, year and
+        month, for all stations having such data.
+      tags:
+        - Weather
+      operationId: sdpb.api.weather.monthly.weather.collection
+      parameters:
+        - name: variable
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - precip
+              - tmin
+              - tmax
+        - name: year
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1850
+            maximum: 2100
+        - name: month
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeatherMonthlyOngoingList'
 
 components:
   responses:
@@ -784,3 +866,119 @@ components:
           '3': 13544
           '4': 8040
           '5': 9330
+
+    # Weather
+    # Note these are legacy endpoints which do not conform to the pattern of
+    # the other endpoints in this API. To be updated. 
+    
+    WeatherMonthlyBaseline:
+      description: |
+        Representation of a weather monthly baseline resource for a single 
+        station.
+      type: object
+      properties:
+        network_name:
+          description: Name of network station is member of.
+          type: string
+        station_db_id:
+          description: Unique internal id of station.
+          type: string
+        station_native_id:
+          description: Native ID. Unique identifier of station within network.
+          type: string
+        history_db_id:
+          description: |
+            Unique internal id of (station) history record
+            associated with this data.
+          type: string
+        station_name:
+          description: Station name in this history
+          type: string
+        lon:
+          description: Longitude of station in this history.
+          type: number
+        lat:
+          description: Latitude of station in this history.
+          type: number
+        elevation:
+          description: Elevation of station in this history.
+          type: number
+        datum:
+          description: Baseline value for variable within this history.
+          type: number
+      required:
+        - network_name
+        - station_db_id
+        - station_native_id
+        - history_db_id
+        - station_name
+        - lon
+        - lat
+        - elevation
+        - datum
+
+    WeatherMonthlyBaselineList:
+      description: List of monthly weather baseline items.
+      type: array
+      items:
+        $ref: '#/components/schemas/WeatherMonthlyBaseline'
+
+    WeatherMonthlyOngoing:
+      description: |
+        Representation of a monthly weather "ongoing" resource for a single 
+        station.
+      type: object
+      properties:
+        network_name:
+          description: Name of network station is member of.
+          type: string
+        station_db_id:
+          description: Unique internal id of station.
+          type: string
+        station_native_id:
+          description: Native ID. Unique identifier of station within network.
+          type: string
+        history_db_id:
+          description: |
+            Unique internal id of (station) history record
+            associated with this data.
+          type: string
+        station_name:
+          description: Station name in this history
+          type: string
+        lon:
+          description: Longitude of station in this history.
+          type: number
+        lat:
+          description: Latitude of station in this history.
+          type: number
+        elevation:
+          description: Elevation of station in this history.
+          type: number
+        network_variable_name:
+          description: |
+            Network variable name processed for this monthly average statistic.
+          type: string
+        cell_method:
+          description: |
+            Cell methods for this variable (prior to forming monthly average).
+          type: string
+        frequency:
+          description: Frequency of variable reporting in this history.
+          type: string
+        statistic:
+          description: Value of monthly average statistic.
+          type: number
+        data_coverage:
+          description: |
+            Coverage of data within month contributing to this statistic value.
+          type: number
+          minimum: 0
+          maximum: 1
+
+    WeatherMonthlyOngoingList:
+      description: List of weather ongoing items.
+      type: array
+      items:
+        $ref: '#/components/schemas/WeatherMonthlyOngoing'
+

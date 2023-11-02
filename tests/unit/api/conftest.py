@@ -37,8 +37,16 @@ from pycds import (
     Variable,
     VarsPerHistory,
     Obs,
+    DerivedValue,
+    DailyMaxTemperature,
+    DailyMinTemperature,
+    MonthlyAverageOfDailyMaxTemperature,
+    MonthlyAverageOfDailyMinTemperature,
+    MonthlyTotalPrecipitation,
 )
 import pycds.alembic
+from pycds.climate_baseline_helpers import pcic_climate_variable_network_name
+
 from sdpb.api import networks, stations
 from sdpb.util.representation import date_rep, float_rep
 from helpers import groupby_dict, find
@@ -121,6 +129,7 @@ def engine(app_db, schema_name, alembic_script_location, database_uri):
 # Summary:
 #   A, B: published
 #   C, D: not published
+#   PCIC Climate Variables - special network for climate variables
 
 network_id = count()
 
@@ -137,25 +146,44 @@ def make_tst_network(label, publish):
 
 
 @pytest.fixture(scope="package")
-def tst_networks():
-    """Networks"""
-    r = [make_tst_network(label, label < "C") for label in ["A", "B", "C", "D"]]
-    # print("\n### tst_networks")
-    # for x in r:
-    #     print(f"id={x.id} name={x.name}")
-    return r
+def dummy_networks():
+    """Dummy networks"""
+    return [make_tst_network(label, label < "C") for label in ["A", "B", "C", "D"]]
+
+
+@pytest.fixture(scope="package")
+def cv_network():
+    """Network for baseline climate variables; name is prescribed by pycds"""
+    return Network(
+        id=next(network_id),
+        name=pcic_climate_variable_network_name,
+        publish=False,
+    )
+
+
+@pytest.fixture(scope="package")
+def wx_networks():
+    """Networks for weather stations"""
+    return [Network(id=next(network_id), name="Weather Network")]
+
+
+@pytest.fixture(scope="package")
+def tst_networks(dummy_networks, cv_network, wx_networks):
+    """All networks"""
+    return dummy_networks + [cv_network] + wx_networks
 
 
 # Variables
 # Summary:
 #   W, X in network A (published)
 #   Y, Z in network C (unpublished)
+#   Tx_Climatology Tn_Climatology Precip_Climatology in network PCIC Climate Variables
 
 variable_id = count()
 
 
-def make_tst_variable(label, network):
-    return Variable(
+def make_tst_variable(label, network, **overrides):
+    defaults = dict(
         id=next(variable_id),
         name="Variable {}".format(label),
         unit="Variable {} unit".format(label),
@@ -167,16 +195,83 @@ def make_tst_variable(label, network):
         short_name="Variable {} short_name".format(label),
         network=network,
     )
+    return Variable(**{**defaults, **overrides})
 
 
 @pytest.fixture(scope="package")
-def tst_variables(tst_networks):
+def dummy_variables(tst_networks):
     """Variables"""
     network0 = tst_networks[0]  # published
     network3 = tst_networks[3]  # not published
     return [make_tst_variable(label, network0) for label in ["W", "X"]] + [
         make_tst_variable(label, network3) for label in ["Y", "Z"]
     ]
+
+
+@pytest.fixture(scope="package")
+def cv_variables(cv_network):
+    """Baseline climate variables in the climate network"""
+    return [
+        make_tst_variable("CV", cv_network, name=name)
+        for name in "Tx_Climatology Tn_Climatology Precip_Climatology".split()
+    ]
+
+
+@pytest.fixture(scope="package")
+def air_temp_variables(wx_networks):
+    """Variables for air temperature observations in the weather (station) networks"""
+    return [
+        make_tst_variable(
+            label="AT",
+            network=network,
+            name="{} air temp".format(network.name),
+            standard_name="air_temperature",
+            cell_method="time: point",
+        )
+        for network in wx_networks
+    ]
+
+
+@pytest.fixture(scope="package")
+def precip_variables(wx_networks):
+    """
+    Variables for precipitation observations in the weather (station) networks.
+    Returns two sets of variables per network: lwe precipitation and snowfall thickness.
+    Both types are processed by MonthlyTotalPrecipitation, but only lwe should be
+    returned by the weather API.
+    """
+    return [
+        make_tst_variable(
+            label="PR",
+            network=network,
+            name="{} lwe precip".format(network.name),
+            standard_name="lwe_thickness_of_precipitation_amount",
+            cell_method="time: sum",
+        )
+        for network in wx_networks
+    ] + [
+        make_tst_variable(
+            label="PR",
+            network=network,
+            name="{} snowfall".format(network.name),
+            standard_name="thickness_of_snowfall_amount",
+            cell_method="time: sum",
+        )
+        for network in wx_networks
+    ]
+
+
+# Constants for weather value fixtures
+year = 2000
+month = 1
+days = range(1, 32)
+hours = range(0, 24)
+
+
+@pytest.fixture(scope="package")
+def tst_variables(dummy_variables, cv_variables, air_temp_variables, precip_variables):
+    """All variables"""
+    return dummy_variables + cv_variables + air_temp_variables + precip_variables
 
 
 # Stations
@@ -187,8 +282,8 @@ def tst_variables(tst_networks):
 station_id = count()
 
 
-def make_tst_station(label, network):
-    return Station(
+def make_tst_station(label, network, **overrides):
+    defaults = dict(
         id=next(station_id),
         network_id=network.id,
         network=network,
@@ -196,20 +291,34 @@ def make_tst_station(label, network):
         min_obs_time=datetime.datetime(2000, 1, 2, 3, 4, 5),
         max_obs_time=datetime.datetime(2001, 1, 2, 3, 4, 5),
     )
+    return Station(**{**defaults, **overrides})
 
 
 @pytest.fixture(scope="package")
-def tst_stations(tst_networks):
-    """Stations"""
-    network0 = tst_networks[0]  # published
-    network3 = tst_networks[3]  # not published
+def dummy_stations(dummy_networks):
+    """Dummy stations"""
+    network0 = dummy_networks[0]  # published
+    network3 = dummy_networks[3]  # not published
     r = [make_tst_station(label, network0) for label in ["S1", "S2"]] + [
         make_tst_station(label, network3) for label in ["S3", "S4"]
     ]
-    # print("\n### tst_stations")
-    # for x in r:
-    #     print(f"id={x.id} network_id={x.network_id} native_id={x.native_id}")
     return r
+
+
+@pytest.fixture(scope="package")
+def wx_stations(wx_networks):
+    """Stations, 2 for each network"""
+    return [
+        make_tst_station(label="WX", native_id=str(j * 10 + i), network=nw)
+        for j, nw in enumerate(wx_networks)
+        for i in range(2)
+    ]
+
+
+@pytest.fixture(scope="package")
+def tst_stations(dummy_stations, wx_stations):
+    """Stations"""
+    return dummy_stations + wx_stations
 
 
 # Histories
@@ -220,10 +329,9 @@ def tst_stations(tst_networks):
 history_id = count()
 
 
-def make_tst_history(label, station):
-    return History(
+def make_tst_history(label, station, **overrides):
+    defaults = dict(
         id=next(history_id),
-        # station=station,
         station_id=station.id,
         station_name="Station Name for Hx {}".format(label),
         lon=-123.0,
@@ -236,17 +344,42 @@ def make_tst_history(label, station):
         comments="Comments Hx {}".format(label),
         freq="Freq Hx {}".format(label),
     )
+    return History(**{**defaults, **overrides})
 
 
 @pytest.fixture(scope="package")
-def tst_histories(tst_stations):
-    """Histories"""
+def dummy_histories(tst_stations):
+    """Dummy histories"""
     station0 = tst_stations[0]
     station3 = tst_stations[3]
     r = [make_tst_history(label, station0) for label in ["P", "Q"]] + [
         make_tst_history(label, station3) for label in ["R", "S"]
     ]
     return r
+
+
+@pytest.fixture(scope="package")
+def wx_histories(wx_stations):
+    """Wx Histories, one for each wx station"""
+    return [
+        make_tst_history(
+            label="WX",
+            station=station,
+            station_name="Station {name}".format(name=station.native_id),
+            lon=-123.0,
+            lat=48.5,
+            elevation=100.0 + i,
+            sdate=datetime.datetime(2000, 1, 1),
+            freq="1-hourly",
+        )
+        for i, station in enumerate(wx_stations)
+    ]
+
+
+@pytest.fixture(scope="package")
+def tst_histories(dummy_histories, wx_histories):
+    """All Histories"""
+    return dummy_histories + wx_histories
 
 
 # Observations
@@ -259,28 +392,96 @@ def tst_histories(tst_stations):
 observation_id = count()
 
 
-def make_tst_observation(history, variable):
-    return Obs(
+def make_tst_observation(history, variable, **overrides):
+    defaults = dict(
         id=next(observation_id),
         datum=99,
         history_id=history.id,
         vars_id=variable.id,
     )
+    return Obs(**{**defaults, **overrides})
 
 
 @pytest.fixture(scope="package")
-def tst_observations(tst_histories, tst_variables):
+def dummy_observations(dummy_histories, dummy_variables):
     """Observations"""
     num_obs = 2
     return [
         make_tst_observation(hx, var)
         for hx, var in (
-            (tst_histories[0], tst_variables[0]),
-            (tst_histories[0], tst_variables[1]),
-            (tst_histories[2], tst_variables[2]),
-            (tst_histories[2], tst_variables[3]),
+            (dummy_histories[0], dummy_variables[0]),
+            (dummy_histories[0], dummy_variables[1]),
+            (dummy_histories[2], dummy_variables[2]),
+            (dummy_histories[2], dummy_variables[3]),
         )
         for i in range(num_obs)
+    ]
+
+
+@pytest.fixture(scope="package")
+def wx_temp_observations(air_temp_variables, wx_histories):
+    """
+    Observations for the temperature variable for each weather station for each hour
+    of each day of the month of Jan 2000
+    """
+    return [
+        make_tst_observation(
+            variable=variable,
+            history=history,
+            time=datetime.datetime(year, month, day, hour),
+            datum=float(hour),
+        )
+        for variable in air_temp_variables
+        for history in wx_histories
+        for day in days
+        for hour in hours
+    ]
+
+
+@pytest.fixture(scope="package")
+def wx_precip_observations(precip_variables, wx_histories):
+    """
+    Observations for the precipitation variables for each weather station for
+    each hour of each day of the month of Jan 2000
+    """
+    return [
+        make_tst_observation(
+            variable=variable,
+            history=history,
+            time=datetime.datetime(year, month, day, hour),
+            datum=1.0,
+        )
+        for variable in precip_variables
+        for history in wx_histories
+        for day in days
+        for hour in hours
+    ]
+
+
+@pytest.fixture(scope="package")
+def tst_observations(dummy_observations, wx_temp_observations, wx_precip_observations):
+    return dummy_observations + wx_temp_observations + wx_precip_observations
+
+
+# Climate Variable values
+
+
+@pytest.fixture(scope="package")
+def cv_values(cv_variables, tst_histories):
+    """Values for each baseline climate variable for each station for each month"""
+    baseline_year = 2000
+    baseline_day = 15  # fudged, but should not matter
+    baseline_hour = 23
+    return [
+        DerivedValue(
+            time=datetime.datetime(baseline_year, month, baseline_day, baseline_hour),
+            datum=float(month),
+            variable=variable,
+            history=history,
+        )
+        for variable in cv_variables
+        for history in tst_histories
+        for month in range(1, 13)
     ]
 
 
@@ -343,21 +544,29 @@ def everything_session(
     tst_histories,
     tst_stn_obs_stats,
     tst_observations,
+    cv_values,
 ):
-    session.add_all(tst_networks)
-    session.flush()
-    session.add_all(tst_variables)
-    session.flush()
-    session.add_all(tst_stations)
-    session.flush()
-    session.add_all(tst_histories)
-    session.flush()
-    session.add_all(tst_stn_obs_stats)
-    session.flush()
-    session.add_all(tst_observations)
-    session.flush()
-    session.execute(VarsPerHistory.refresh())
-    session.flush()
+    for items in [
+        tst_networks,
+        tst_variables,
+        tst_stations,
+        tst_histories,
+        tst_stn_obs_stats,
+        tst_observations,
+        cv_values,
+    ]:
+        session.add_all(items)
+        session.flush()
+
+    for view in [
+        VarsPerHistory,
+        DailyMaxTemperature,
+        DailyMinTemperature,
+        MonthlyAverageOfDailyMaxTemperature,
+        MonthlyAverageOfDailyMinTemperature,
+        MonthlyTotalPrecipitation,
+    ]:
+        session.execute(view.refresh())
     yield session
 
 
