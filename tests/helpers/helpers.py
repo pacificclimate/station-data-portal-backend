@@ -31,5 +31,3 @@ def hashabledictrep(d: dict):
     Useful for comparing collections of dicts using sets.
     """
     return tuple(sorted(d.items()))
-
-
