@@ -6,7 +6,7 @@ We follow RESTful design principles in this microservice.
 
 We use the very common collection pattern in its RESTful expression. The collection pattern is used when the underlying data can be naturally modelled as a list of individual objects. The list (collection) is a resource, and each individual network is a resource. Each has its own URI. 
 
-For example, in CRMP, the most natural way to regard networks is as a collection of individual networks. It is hard to imagine a better way to represent these items. This is true for the majority of resources provided by this API. 
+Almost resources in CRMP fall naturally into the collection pattern, including the following 4 central resources.   
 
 The API mainly reflects four core tables:
 
@@ -27,7 +27,7 @@ Following recommended practice for data stores, data in responses is represented
   This policy is subject to review. It could be changed to
   `id` to improve "join" speed and (slightly) reduce the size of responses.
 
-In some endpoints, as a convenience, some associated items can be expanded -- that is, a larger amount of information than just the associated item key is provided. 
+In some endpoints, as a convenience, some associated items can be expanded -- that is, a larger amount of information than just the key for the associated item is provided. 
 
 - For example, the `/stations` endpoint response can include expanded information about associated history records if requested with the `expand` query parameter.
 - This is best done only for associated items that are uniquely associated to the main resource. In the case of stations, each history is associated to exactly one station, so each station has a unique collection of histories associated to it. No redundant representations of any single resource (history) are created by expanding such unique items in place. 
