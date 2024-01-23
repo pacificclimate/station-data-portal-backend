@@ -314,6 +314,53 @@ paths:
         404:
           $ref: '#/components/responses/404NotFound'
 
+  /stations/{station_id}/observations/{var_id}:
+    get:
+      summary: Get a set of observations for a station variable
+      description: Gets a span of observations 
+      tags:
+        - Stations
+        - Observations
+      operationId: sdpb.api.stations.get_observations
+      parameters:
+        - name: station_id
+          in: path
+          required: true
+          description: Station to query
+          schema:
+            type: integer
+        - name: var_id
+          in: path
+          required: true
+          description: Variable to query 
+          schema:
+            type: string
+        - name: start_date
+          in: query
+          description: |
+            Earliest date (inclusive) of observations returned.
+            Default: earliest available
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          description: |
+            Latest date (inclusive) of observations returned.
+            Default: latest available
+          schema:
+            type: string
+            format: date
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StationObservations'
+        404:
+          $ref: '#/components/responses/404NotFound'
+
   /crmp_network_geoserver:
     get:
       summary: Results from crmp_network_geoserver view.
@@ -811,6 +858,10 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Station'
+    
+    StationObservations:
+      description: List of Observations from a station's variable and its associated metadata
+      type: object
 
     # Observations
   

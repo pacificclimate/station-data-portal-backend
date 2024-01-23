@@ -2,6 +2,12 @@
 /build
 /sdpb.egg-info
 /venv
+.cache
+.venv
+__pycache__
 
 # IDEs
 /.idea
+# local 
+.env
+sdpb.log
