@@ -353,8 +353,8 @@ def get_observations(station_id, var_id, start_date=None, end_date=None):
     assert station_id is not None, "station_id must be specified"
     assert var_id is not None, "var_id must be specified"
 
-    start_date_obj = datetime.fromisoformat(start_date) if start_date else None
-    end_date_obj = datetime.fromisoformat(end_date) if end_date else None
+    start_date_obj = datetime.datetime.fromisoformat(start_date) if start_date else None
+    end_date_obj = datetime.datetime.fromisoformat(end_date) if end_date else None
 
     if end_date_obj is None:
         # TODO: this could be set to the last date that the station has data for
