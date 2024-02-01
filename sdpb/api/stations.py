@@ -29,6 +29,7 @@ from pycds import Station, History, StationObservationStats, Obs, Variable
 from sdpb import get_app_session
 from sdpb.api import networks
 from sdpb.api import histories
+from sdpb.api import variables
 from sdpb.util.representation import date_rep, is_expanded
 from sdpb.util.query import (
     get_all_histories_etc_by_station,
@@ -297,38 +298,6 @@ def collection(
 
 
 ####
-# /stations/{station_id}/variables/
-####
-
-
-def get_station_variables(station_id=None, compact=True, expand="histories"):
-    assert station_id is not None
-    session = get_app_session()
-    q = session.query(Station).select_from(Station).filter(Station.id == station_id)
-    q = add_station_network_publish_filter(q)
-    station = q.one()
-    station_histories_etc = (
-        session.query(History, StationObservationStats)
-        .select_from(History)
-        .join(
-            StationObservationStats,
-            StationObservationStats.history_id == History.id,
-        )
-        .filter_by(station_id=station_id)
-        .order_by(History.id)
-        .all()
-    )
-    all_vars_by_hx = get_all_vars_by_hx(session)
-    return single_item_rep(
-        station,
-        station_histories_etc,
-        all_vars_by_hx,
-        compact=compact,
-        expand=expand,
-    )
-
-
-####
 # /stations/{station_id}/variables/{var_id}
 ####
 
@@ -352,22 +321,64 @@ def station_variable_timespan_query(session, station_id, var_id):
         .join(Variable)
     )
 
-    print(q)
-
     return q
 
 
 def get_station_variable(station_id, var_id):
+    """
+    Metadata about a variable specifically in the context of a station.
+    Returns the usual variable information from the /variable/{id} endpoint,
+    plus start and end times for data for this variable for this station.
+    """
     assert station_id is not None, "station_id must be specified"
     assert var_id is not None, "var_id must be specified"
     session = get_app_session()
     timespan = station_variable_timespan_query(session, station_id, var_id).one()
 
+    var = variables.single(var_id)
+    var["min_obs_time"] = timespan.min_obs_time
+    var["max_obs_time"] = timespan.max_obs_time
+    return var
+
+
+####
+# /stations/{station_id}/variables/
+####
+
+
+def get_station_variables(station_id=None):
+    assert station_id is not None
+    session = get_app_session()
+    q = session.query(Station).select_from(Station).filter(Station.id == station_id)
+    q = add_station_network_publish_filter(q)
+    station = q.one()
+    station_histories_etc = (
+        session.query(History, StationObservationStats)
+        .select_from(History)
+        .join(
+            StationObservationStats,
+            StationObservationStats.history_id == History.id,
+        )
+        .filter_by(station_id=station_id)
+        .order_by(History.id)
+        .all()
+    )
+    all_vars_by_hx = get_all_vars_by_hx(session)
+
+    vars_by_history = single_item_rep(
+        station,
+        station_histories_etc,
+        all_vars_by_hx,
+        compact=True,
+        expand="histories",
+    )
+
+    variables = [h["variable_ids"] for h in vars_by_history["histories"]]
+    variables = set([v for h in variables for v in h])
+
     return {
         "station_id": station_id,
-        "variable_id": var_id,
-        "min_obs_time": timespan.min_obs_time,
-        "max_obs_time": timespan.max_obs_time,
+        "variables": [get_station_variable(station_id, v) for v in variables],
     }
 
 
