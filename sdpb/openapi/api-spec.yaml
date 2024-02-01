@@ -313,13 +313,72 @@ paths:
                 $ref: '#/components/schemas/Station'
         404:
           $ref: '#/components/responses/404NotFound'
+          
+  /stations/{station_id}/variables:
+    get:
+      summary: Get a list of station variables
+      description: Get the set of variables associated with a station
+      tags:
+        - Stations
+        - Variables
+      operationId: sdpb.api.stations.get_station_variables
+      parameters:
+        - name: station_id
+          in: path
+          required: true
+          description: Unique id of resource
+          schema:
+            type: integer
+      responses:
+        200:
+            description: Success
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/StationVariables'
+        404:
+          $ref: '#/components'
+          
+          
+  /stations/{station_id}/variables/{var_id}:
+    get:
+      summary: Get metadata about a station variable
+      description: Get metadata describing a single variables associated with a station
+      tags:
+        - Stations
+        - Variables
+      operationId: sdpb.api.stations.get_station_variable
+      parameters:
+        - name: station_id
+          in: path
+          required: true
+          description: Station to query
+          schema:
+            type: integer
+        - name: var_id
+          in: path
+          required: true
+          description: Variable to query
+          schema:
+            type: string
+      responses:
+        200:
+            description: Success
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/StationVariable'
+        404:
+          $ref: '#/components'
 
-  /stations/{station_id}/observations/{var_id}:
+
+  /stations/{station_id}/variables/{var_id}/observations/:
     get:
       summary: Get a set of observations for a station variable
       description: Gets a span of observations 
       tags:
         - Stations
+        - Variables
         - Observations
       operationId: sdpb.api.stations.get_observations
       parameters:
@@ -657,6 +716,7 @@ components:
       items:
         $ref: '#/components/schemas/Variable'
 
+
     # Frequencies
 
     Frequency:
@@ -858,6 +918,32 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Station'
+        
+    StationVariable:
+      description: Variable with start and stop dates for this station
+      type: object
+      properties:
+        station_id:
+          description: Unique internal id of station
+          type: string
+        variable_id:
+          description: Unique internal id of variable
+          type: string
+        min_obs_time:
+          description: Earliest time of observation for this variable
+          type: string
+          format: date-time
+        max_obs_time:
+          description: Latest time of observation for this variable
+          type: string
+          format: date-time  
+      
+    
+    StationVariables:
+      description: List of variables associated with a station
+      type: array
+      items:
+        $ref: '#/components/schemas/StationVariable'
     
     StationObservations:
       description: List of Observations from a station's variable and its associated metadata

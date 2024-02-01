@@ -180,6 +180,11 @@ def collection_rep(
     ]
 
 
+####
+# /stations/{station_id}
+####
+
+
 def single(id=None, compact=True, expand="histories"):
     assert id is not None
     session = get_app_session()
@@ -205,6 +210,11 @@ def single(id=None, compact=True, expand="histories"):
         compact=compact,
         expand=expand,
     )
+
+
+####
+# /stations/
+####
 
 
 def collection(
@@ -287,7 +297,82 @@ def collection(
 
 
 ####
-# /stations/{station_id}/observations/{var_id}
+# /stations/{station_id}/variables/
+####
+
+
+def get_station_variables(station_id=None, compact=True, expand="histories"):
+    assert station_id is not None
+    session = get_app_session()
+    q = session.query(Station).select_from(Station).filter(Station.id == station_id)
+    q = add_station_network_publish_filter(q)
+    station = q.one()
+    station_histories_etc = (
+        session.query(History, StationObservationStats)
+        .select_from(History)
+        .join(
+            StationObservationStats,
+            StationObservationStats.history_id == History.id,
+        )
+        .filter_by(station_id=station_id)
+        .order_by(History.id)
+        .all()
+    )
+    all_vars_by_hx = get_all_vars_by_hx(session)
+    return single_item_rep(
+        station,
+        station_histories_etc,
+        all_vars_by_hx,
+        compact=compact,
+        expand=expand,
+    )
+
+
+####
+# /stations/{station_id}/variables/{var_id}
+####
+
+
+def station_variable_timespan_query(session, station_id, var_id):
+    """
+    Returns a query with the minimum and maximum timestamps for
+    observations of this variable at this station. History-agnostic;
+    the minimum and maximum might correspond to different histories.
+    """
+
+    q = (
+        session.query(
+            func.min(Obs.time).label("min_obs_time"),
+            func.max(Obs.time).label("max_obs_time"),
+        )
+        .filter(Variable.id == var_id)
+        .filter(Station.id == station_id)
+        .join(History)
+        .join(Station)
+        .join(Variable)
+    )
+
+    print(q)
+
+    return q
+
+
+def get_station_variable(station_id, var_id):
+    assert station_id is not None, "station_id must be specified"
+    assert var_id is not None, "var_id must be specified"
+    session = get_app_session()
+    timespan = station_variable_timespan_query(session, station_id, var_id).one()
+
+    return {
+        "station_id": station_id,
+        "variable_id": var_id,
+        "min_obs_time": timespan.min_obs_time,
+        "max_obs_time": timespan.max_obs_time,
+    }
+
+
+####
+# /stations/{station_id}/variables/{var_id}/observations
 ####
 
 
