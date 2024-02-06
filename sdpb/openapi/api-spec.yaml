@@ -929,6 +929,9 @@ components:
               description: Latest time of observation for this variable
               type: string
               format: date-time
+            station_id:
+              description: Unique internal id of station
+              type: string
       required:
         - min_obs_time
         - max_obs_time
@@ -948,6 +951,7 @@ components:
         # station specific
         max_obs_time: "1996-11-30T00:00:00"
         min_obs_time: "1984-07-01T00:00:00"
+        station_id: 1
 
     StationVariables:
       description: List of variables associated with a station

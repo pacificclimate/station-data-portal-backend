@@ -338,6 +338,7 @@ def get_station_variable(station_id, var_id):
     var = variables.single(var_id)
     var["min_obs_time"] = timespan.min_obs_time
     var["max_obs_time"] = timespan.max_obs_time
+    var["station_id"] = station_id
     return var
 
 
