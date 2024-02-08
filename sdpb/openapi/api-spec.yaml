@@ -366,7 +366,7 @@ paths:
         404:
           $ref: "#/components"
 
-  /stations/{station_id}/variables/{var_id}/observations/:
+  /stations/{station_id}/variables/{var_id}/observations:
     get:
       summary: Get a set of observations for a station variable
       description: Gets a span of observations
