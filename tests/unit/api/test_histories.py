@@ -9,21 +9,17 @@ def test_uri(flask_app):
 
 
 @pytest.mark.parametrize("compact", [False, True])
-@pytest.mark.parametrize("group_vars_in_database", [True])
 def test_collection(
     everything_session,
     expected_history_collection,
     compact,
-    group_vars_in_database,
 ):
     """
     Test that the history collection includes exactly those histories for
     published stations.
     """
     result = sorted(
-        histories.collection(
-            compact=compact, group_vars_in_database=group_vars_in_database
-        ),
+        histories.collection(compact=compact),
         key=lambda r: r["id"],
     )
     for hx in result:
