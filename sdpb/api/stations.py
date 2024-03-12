@@ -26,6 +26,7 @@ import datetime
 from flask import url_for
 from sqlalchemy import func
 from pycds import Station, History, StationObservationStats, Obs, Variable
+from pycds.orm.native_matviews.version_3505750d3416 import VarsPerHistory
 from sdpb import get_app_session
 from sdpb.api import networks
 from sdpb.api import histories
@@ -306,22 +307,19 @@ def station_variable_timespan_query(session, station_id, var_id):
     """
     Returns a query with the minimum and maximum timestamps for
     observations of this variable at this station. History-agnostic;
-    the minimum and maximum might correspond to different histories.
+    the minimum and maximum might correspond to different histories
+    if multiple histories record the same variable at one station.
     """
 
-    q = (
+    return (
         session.query(
-            func.min(Obs.time).label("min_obs_time"),
-            func.max(Obs.time).label("max_obs_time"),
+            func.min(VarsPerHistory.start_time).label("min_obs_time"),
+            func.max(VarsPerHistory.end_time).label("max_obs_time"))
+            .select_from(History)
+            .join(VarsPerHistory, VarsPerHistory.history_id == History.id)
+            .filter(History.station_id == station_id)
+            .filter(VarsPerHistory.vars_id == var_id)
         )
-        .filter(Variable.id == var_id)
-        .filter(Station.id == station_id)
-        .join(History)
-        .join(Station)
-        .join(Variable)
-    )
-
-    return q
 
 
 def get_station_variable(station_id, var_id):
