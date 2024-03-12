@@ -189,7 +189,6 @@ def single(id=None, compact=False):
 def collection(
     provinces=None,
     compact=False,
-    group_vars_in_database=True,
     include_uri=False,
 ):
     """
@@ -203,16 +202,12 @@ def collection(
         representation is returned. A compact representation:
         - omits attributes elevation, sdate, edate, tz_offset, country
         - does not put information in attribute variables
-    :param group_vars_in_database: Boolean. Perform grouping of vars by
-        history id in database or in code? In db is faster.
     :return: dict
     """
     session = get_app_session()
     with log_timing("List all histories", log=logger.debug):
         histories_etc = get_all_histories_etc(session, provinces=provinces)
-        all_vars_by_hx = get_all_vars_by_hx(
-            session, group_in_database=group_vars_in_database
-        )
+        all_vars_by_hx = get_all_vars_by_hx(session)
         with log_timing("Convert histories etc to rep", log=logger.debug):
             return collection_rep(
                 histories_etc,

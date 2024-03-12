@@ -10,14 +10,12 @@ def test_stations_uri(flask_app):
 
 
 @pytest.mark.parametrize("compact", [False, True])
-@pytest.mark.parametrize("group_vars_in_database", [False, True])
 @pytest.mark.parametrize("expand", [None, "histories"])
 def test_station_collection(
     flask_app,
     everything_session,
     expected_stations_collection,
     compact,
-    group_vars_in_database,
     expand,
 ):
     received = sorted(

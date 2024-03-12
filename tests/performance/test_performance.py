@@ -32,30 +32,26 @@ def print_timing(f, label, print_example=False, **kwargs):
 
 
 # @pytest.mark.parametrize("compact", [False, True])
-# @pytest.mark.parametrize("group_vars_in_database", [False, True])
 # @pytest.mark.parametrize("provinces", ["BC"])
-# def test_histories_list(provinces, compact, group_vars_in_database):
+# def test_histories_list(provinces, compact):
 #     print_timing(
 #         histories.list,
 #         "histories",
 #         provinces=provinces,
 #         compact=compact,
-#         group_vars_in_database=group_vars_in_database,
 #     )
 #
 #
 # @pytest.mark.parametrize("compact", [False, True])
-# @pytest.mark.parametrize("group_vars_in_database", [False, True])
 # @pytest.mark.parametrize("provinces", ["BC"])
 # @pytest.mark.parametrize("expand", [None, "histories"])
-# def test_stations_list(provinces, compact, expand, group_vars_in_database):
+# def test_stations_list(provinces, compact, expand):
 #     print_timing(
 #         stations.list,
 #         "stations",
 #         # print_example=True,
 #         provinces=provinces,
 #         compact=compact,
-#         group_vars_in_database=group_vars_in_database,
 #         expand=expand,
 #     )
 #
@@ -132,7 +128,6 @@ def time_stat_values(timings):
 def print_history_timing_table(provinces, repeats=1, delay=10):
     formats = (
         "provinces!s:<5",
-        "group_vars_in_database!s:<15",
         "compact!s:<8",
         "include_uri!s:<8",
         *time_stat_formats,
@@ -145,14 +140,12 @@ def print_history_timing_table(provinces, repeats=1, delay=10):
     print_tabular(
         formats,
         compact="compact",
-        group_vars_in_database="grp vars in db",
         include_uri="incl uri",
         provinces="prov",
         **time_stat_titles,
         item_count="# items",
     )
     for nv in dict_iter(
-        ("group_vars_in_database", boolean),
         ("compact", boolean),
         ("include_uri", boolean),
     ):
@@ -171,7 +164,6 @@ def print_history_timing_table(provinces, repeats=1, delay=10):
 def print_station_timing_table(provinces, repeats=1, delay=10):
     formats = (
         "provinces!s:<5",
-        "group_vars_in_database!s:<15",
         "compact!s:<8",
         "expand!s:<10",
         *time_stat_formats,
@@ -183,14 +175,12 @@ def print_station_timing_table(provinces, repeats=1, delay=10):
     print_tabular(
         formats,
         compact="compact",
-        group_vars_in_database="grp vars in db",
         provinces="prov",
         expand="expand",
         **time_stat_titles,
         item_count="# items",
     )
     for nv in dict_iter(
-        ("group_vars_in_database", boolean),
         ("compact", boolean),
         ("expand", ("histories", None)),
     ):

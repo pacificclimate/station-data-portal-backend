@@ -225,7 +225,6 @@ def collection(
     offset=None,
     provinces=None,
     compact=True,
-    group_vars_in_database=True,
     expand="histories",
 ):
     """
@@ -239,8 +238,6 @@ def collection(
         attribute match this value. Match means value is None or attribute
         occurs in list.
     :param compact: Boolean. Return compact rep?
-    :param group_vars_in_database: Boolean. Group variables by history id in
-        database or in code?
     :param expand: Associated items to expand. Valid values: "histories".
     :return: list of dict
     """
@@ -261,9 +258,7 @@ def collection(
                 all_histories_etc_by_station = get_all_histories_etc_by_station(
                     session, provinces=provinces
                 )
-                all_vars_by_hx = get_all_vars_by_hx(
-                    session, group_in_database=group_vars_in_database
-                )
+                all_vars_by_hx = get_all_vars_by_hx(session)
             else:
                 stations_query = (
                     session.query(
