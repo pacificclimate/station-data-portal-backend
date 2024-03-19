@@ -88,7 +88,7 @@ def config_override(database_uri):
         "TESTING": True,
         "SQLALCHEMY_DATABASE_URI": database_uri,
         "SERVER_NAME": "test",
-        # "SQLALCHEMY_ECHO": True,
+#        "SQLALCHEMY_ECHO": True,
     }
 
 
@@ -96,6 +96,10 @@ def initialize_database(engine, schema_name):
     """Initialize an empty database"""
     # Add role required by PyCDS migrations for privileged operations.
     engine.execute(f"CREATE ROLE {pycds.get_su_role_name()} WITH SUPERUSER NOINHERIT;")
+    # pyCDS also uses these roles
+    engine.execute(f"CREATE ROLE inspector;")
+    engine.execute(f"CREATE ROLE viewer;")
+    engine.execute(f"CREATE ROLE steward;")
     # Add extensions required by PyCDS.
     engine.execute("CREATE EXTENSION postgis")
     engine.execute("CREATE EXTENSION plpython3u")
@@ -164,7 +168,7 @@ def cv_network():
 @pytest.fixture(scope="package")
 def wx_networks():
     """Networks for weather stations"""
-    return [Network(id=next(network_id), name="Weather Network")]
+    return [Network(id=next(network_id), name="Weather_Network")]
 
 
 @pytest.fixture(scope="package")
@@ -185,14 +189,14 @@ variable_id = count()
 def make_tst_variable(label, network, **overrides):
     defaults = dict(
         id=next(variable_id),
-        name="Variable {}".format(label),
-        unit="Variable {} unit".format(label),
+        name="Variable_{}".format(label),
+        unit="Variable_{} unit".format(label),
         precision=99,
-        standard_name="Variable {} standard_name".format(label),
-        cell_method="Variable {} cell_method".format(label),
-        description="Variable {} description".format(label),
-        display_name="Variable {} display_name".format(label),
-        short_name="Variable {} short_name".format(label),
+        standard_name="Variable_{}_standard_name".format(label),
+        cell_method="Variable_{}_cell_method".format(label),
+        description="Variable_{}_description".format(label),
+        display_name="Variable_{}_display_name".format(label),
+        short_name="Variable_{}_short_name".format(label),
         network=network,
     )
     return Variable(**{**defaults, **overrides})
@@ -224,7 +228,7 @@ def air_temp_variables(wx_networks):
         make_tst_variable(
             label="AT",
             network=network,
-            name="{} air temp".format(network.name),
+            name="{}_air_temp".format(network.name),
             standard_name="air_temperature",
             cell_method="time: point",
         )
@@ -244,7 +248,7 @@ def precip_variables(wx_networks):
         make_tst_variable(
             label="PR",
             network=network,
-            name="{} lwe precip".format(network.name),
+            name="{}_lwe_precip".format(network.name),
             standard_name="lwe_thickness_of_precipitation_amount",
             cell_method="time: sum",
         )
@@ -253,7 +257,7 @@ def precip_variables(wx_networks):
         make_tst_variable(
             label="PR",
             network=network,
-            name="{} snowfall".format(network.name),
+            name="{}_snowfall".format(network.name),
             standard_name="thickness_of_snowfall_amount",
             cell_method="time: sum",
         )
@@ -495,13 +499,21 @@ def make_tst_stn_obs_stat(
     max_obs_time=datetime.datetime(2005, 1, 2, 3, 4, 5),
     obs_count=999,
 ):
-    return StationObservationStats(
+    #code = random.randint(0, 1000)
+    #print("inside make_test_stn_obs_stat {}".format(code))
+
+    stat = StationObservationStats(
         station_id=history.station_id,
         history_id=history.id,
         min_obs_time=min_obs_time,
         max_obs_time=max_obs_time,
         obs_count=obs_count,
     )
+    
+    #print("{} {}".format(code,stat))
+    #print("returning stat")
+    
+    return stat
 
 
 @pytest.fixture(scope="package")
@@ -546,6 +558,11 @@ def everything_session(
     tst_observations,
     cv_values,
 ):
+    
+    #this command executes successfully, indicating that crmp.meta_history exists
+    # session.execute("SELECT * FROM crmp.meta_history;")
+
+    #count = 0
     for items in [
         tst_networks,
         tst_variables,
@@ -555,8 +572,11 @@ def everything_session(
         tst_observations,
         cv_values,
     ]:
+#        print("adding item #{}".format(count))
+#        print(items[0])
         session.add_all(items)
         session.flush()
+        #count = count + 1
 
     for view in [
         VarsPerHistory,
