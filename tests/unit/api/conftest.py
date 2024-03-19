@@ -43,6 +43,9 @@ from pycds import (
     MonthlyAverageOfDailyMaxTemperature,
     MonthlyAverageOfDailyMinTemperature,
     MonthlyTotalPrecipitation,
+    CollapsedVariables,
+    ClimoObsCount,
+    ObsCountPerMonthHistory,
 )
 import pycds.alembic
 from pycds.climate_baseline_helpers import pcic_climate_variable_network_name
@@ -554,7 +557,6 @@ def everything_session(
     tst_variables,
     tst_stations,
     tst_histories,
-    tst_stn_obs_stats,
     tst_observations,
     cv_values,
 ):
@@ -568,7 +570,6 @@ def everything_session(
         tst_variables,
         tst_stations,
         tst_histories,
-        tst_stn_obs_stats,
         tst_observations,
         cv_values,
     ]:
@@ -580,6 +581,10 @@ def everything_session(
 
     for view in [
         VarsPerHistory,
+        CollapsedVariables,
+        ClimoObsCount,
+        StationObservationStats,
+        ObsCountPerMonthHistory,
         DailyMaxTemperature,
         DailyMinTemperature,
         MonthlyAverageOfDailyMaxTemperature,
