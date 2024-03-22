@@ -18,7 +18,14 @@ import logging
 import datetime
 from flask import url_for
 from sqlalchemy import func
-from pycds import Station, History, StationObservationStats, Obs, Variable, VarsPerHistory
+from pycds import (
+    Station,
+    History,
+    StationObservationStats,
+    Obs,
+    Variable,
+    VarsPerHistory,
+)
 from sdpb import get_app_session
 from sdpb.api import networks
 from sdpb.api import histories
@@ -49,12 +56,13 @@ def station_variable_timespan_query(session, station_id, var_id):
     return (
         session.query(
             func.min(VarsPerHistory.start_time).label("min_obs_time"),
-            func.max(VarsPerHistory.end_time).label("max_obs_time"))
-            .select_from(History)
-            .join(VarsPerHistory, VarsPerHistory.history_id == History.id)
-            .filter(History.station_id == station_id)
-            .filter(VarsPerHistory.vars_id == var_id)
+            func.max(VarsPerHistory.end_time).label("max_obs_time"),
         )
+        .select_from(History)
+        .join(VarsPerHistory, VarsPerHistory.history_id == History.id)
+        .filter(History.station_id == station_id)
+        .filter(VarsPerHistory.vars_id == var_id)
+    )
 
 
 def get_station_variable(station_id, var_id):
@@ -231,4 +239,3 @@ def get_observations(station_id, var_id, start_date=None, end_date=None):
             {"value": o.datum, "time": o.time} for o in obs_vals_by_station
         ],  # list of observations
     }
-

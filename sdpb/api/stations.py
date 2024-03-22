@@ -25,7 +25,14 @@ import logging
 import datetime
 from flask import url_for
 from sqlalchemy import func
-from pycds import Station, History, StationObservationStats, Obs, Variable, VarsPerHistory
+from pycds import (
+    Station,
+    History,
+    StationObservationStats,
+    Obs,
+    Variable,
+    VarsPerHistory,
+)
 from sdpb import get_app_session
 from sdpb.api import networks
 from sdpb.api import histories
