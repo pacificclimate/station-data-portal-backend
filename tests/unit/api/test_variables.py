@@ -33,7 +33,7 @@ def test_variable_collection(everything_session, tst_networks, tst_variables):
             "unit": var.unit,
             "precision": var.precision,
             "network_uri": networks.uri(var.network),
-            "tags": ['observation']
+            "tags": ["observation"],
         }
         for var in tst_variables
         if var.network == tst_networks[0]
@@ -55,5 +55,5 @@ def test_variable_item(everything_session, tst_networks, tst_variables):
                 "unit": var.unit,
                 "precision": var.precision,
                 "network_uri": networks.uri(var.network),
-                "tags": ['observation']
+                "tags": ["observation"],
             }

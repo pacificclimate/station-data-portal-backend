@@ -91,7 +91,7 @@ def config_override(database_uri):
         "TESTING": True,
         "SQLALCHEMY_DATABASE_URI": database_uri,
         "SERVER_NAME": "test",
-#        "SQLALCHEMY_ECHO": True,
+        #        "SQLALCHEMY_ECHO": True,
     }
 
 
@@ -497,14 +497,14 @@ def cv_values(cv_variables, tst_histories):
 # Summary: One bogus SOS per history
 
 
-#def make_tst_stn_obs_stat(
+# def make_tst_stn_obs_stat(
 #    history,
 #    min_obs_time=datetime.datetime(2004, 1, 2, 3, 4, 5),
 #    max_obs_time=datetime.datetime(2005, 1, 2, 3, 4, 5),
 #    obs_count=999,
-#):
-    #code = random.randint(0, 1000)
-    #print("inside make_test_stn_obs_stat {}".format(code))
+# ):
+# code = random.randint(0, 1000)
+# print("inside make_test_stn_obs_stat {}".format(code))
 
 #    stat = StationObservationStats(
 #        station_id=history.station_id,
@@ -513,15 +513,15 @@ def cv_values(cv_variables, tst_histories):
 #        max_obs_time=max_obs_time,
 #        obs_count=obs_count,
 #    )
-    
-    #print("{} {}".format(code,stat))
-    #print("returning stat")
-    
+
+# print("{} {}".format(code,stat))
+# print("returning stat")
+
 #    return stat
 
 
-#@pytest.fixture(scope="package")
-#def tst_stn_obs_stats(tst_histories):
+# @pytest.fixture(scope="package")
+# def tst_stn_obs_stats(tst_histories):
 #    return [make_tst_stn_obs_stat(history) for history in tst_histories]
 
 
@@ -529,14 +529,16 @@ def cv_values(cv_variables, tst_histories):
 # time for each history. They're used to check data extracted from the
 # StationObservationStats materialized view
 
-# Currently the materialized view is not initializing properly and is returning 
+
+# Currently the materialized view is not initializing properly and is returning
 # None dates. Todo - fix this!
 @pytest.fixture(scope="package")
 def expected_min_obs_times():
     return {
         0: None,
-        1: None, 
+        1: None,
     }
+
 
 @pytest.fixture(scope="package")
 def expected_max_obs_times():
@@ -582,7 +584,6 @@ def everything_session(
     tst_observations,
     cv_values,
 ):
-    
     for items in [
         tst_networks,
         tst_variables,
@@ -675,9 +676,7 @@ def expected_network_item_exception(tst_networks):
 
 
 @pytest.fixture(scope="package")
-def expected_station_rep(
-    tst_histories, tst_vars_by_hx, expected_history_rep
-):
+def expected_station_rep(tst_histories, tst_vars_by_hx, expected_history_rep):
     def f(station, compact=False, expand=None):
         hxs_by_station_id = groupby_dict(tst_histories, key=lambda h: h.station_id)
         try:
@@ -731,7 +730,9 @@ def expected_stations_collection(tst_stations, expected_station_rep):
 
 
 @pytest.fixture(scope="package")
-def expected_history_rep(expected_min_obs_times, expected_max_obs_times, tst_vars_by_hx):
+def expected_history_rep(
+    expected_min_obs_times, expected_max_obs_times, tst_vars_by_hx
+):
     def f(history, compact=False):
         def history_id_match(r):
             return r.history_id == history.id

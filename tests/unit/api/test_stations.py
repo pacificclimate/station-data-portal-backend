@@ -53,21 +53,21 @@ def test_station_collection(
 # has associated observations, so we only expect that one to be returned
 @pytest.mark.parametrize("station_id,expected_histories", [(0, [0])])
 def test_single_station(
-    flask_app, everything_session, expected_stations_collection, station_id, expected_histories
+    flask_app,
+    everything_session,
+    expected_stations_collection,
+    station_id,
+    expected_histories,
 ):
     received = stations.single(id=station_id)
     expected = expected_stations_collection(compact=True, expand="histories")
     expected = next(s for s in expected if s["id"] == station_id)
-    
+
     # check regular attributes, excluding the history
     for att in expected:
         if att != "histories":
             assert att in received
             assert received[att] == expected[att]
-    
+
     # check histories
-    assert {h for h in expected_histories} == {
-        h["id"] for h in received["histories"]
-    }
-
-
+    assert {h for h in expected_histories} == {h["id"] for h in received["histories"]}
