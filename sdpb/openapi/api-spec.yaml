@@ -1,21 +1,18 @@
 # OpenAPI version is critical to Connexion working properly.
 # At time of writing, it must be 3.0.x, and only 3.0.1 is known for sure to
 # work.
-openapi: '3.0.1'
-
+openapi: "3.0.1"
 
 info:
   title: Station Data Portal API
   description: Get information from from a PCDS/CRMP database. Includes networks, variables, stations, histories.
-  version: '0.1'
-
+  version: "0.1"
 
 servers:
   - url: http://localhost:5000
     description: Local dev server
   - url: https://services.pacificclimate.org/station-data-portal
     description: Production server
-
 
 tags:
   - name: Networks
@@ -51,7 +48,6 @@ tags:
       matviews that support the Weather Anomaly Viewer.
 
 paths:
-
   # Networks
 
   /networks:
@@ -75,7 +71,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NetworkList'
+                $ref: "#/components/schemas/NetworkList"
 
   /networks/{id}:
     get:
@@ -97,9 +93,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Network'
+                $ref: "#/components/schemas/Network"
         404:
-          $ref: '#/components/responses/404NotFound'
+          $ref: "#/components/responses/404NotFound"
 
   # Variables
 
@@ -124,7 +120,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VariableList'
+                $ref: "#/components/schemas/VariableList"
 
   /variables/{id}:
     get:
@@ -146,9 +142,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Variable'
+                $ref: "#/components/schemas/Variable"
         404:
-          $ref: '#/components/responses/404NotFound'
+          $ref: "#/components/responses/404NotFound"
 
   # Frequencies
 
@@ -173,7 +169,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FrequencyList'
+                $ref: "#/components/schemas/FrequencyList"
 
   # Histories
 
@@ -203,7 +199,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HistoryList'
+                $ref: "#/components/schemas/HistoryList"
 
   /histories/{id}:
     get:
@@ -225,9 +221,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/History'
+                $ref: "#/components/schemas/History"
         404:
-          $ref: '#/components/responses/404NotFound'
+          $ref: "#/components/responses/404NotFound"
 
   # Stations
 
@@ -288,7 +284,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StationList'
+                $ref: "#/components/schemas/StationList"
 
   /stations/{id}:
     get:
@@ -310,9 +306,113 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Station'
+                $ref: "#/components/schemas/Station"
         404:
-          $ref: '#/components/responses/404NotFound'
+          $ref: "#/components/responses/404NotFound"
+
+  /stations/{station_id}/variables:
+    get:
+      summary: Get a list of station variables
+      description: Get the set of variables associated with a station
+      tags:
+        - Stations
+        - Variables
+      operationId: sdpb.api.station_variables.get_station_variables
+      parameters:
+        - name: station_id
+          in: path
+          required: true
+          description: Unique id of resource
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StationVariables"
+        404:
+          $ref: "#/components"
+
+  /stations/{station_id}/variables/{var_id}:
+    get:
+      summary: Get metadata about a station variable
+      description: Get metadata describing a single variables associated with a station
+      tags:
+        - Stations
+        - Variables
+      operationId: sdpb.api.station_variables.get_station_variable
+      parameters:
+        - name: station_id
+          in: path
+          required: true
+          description: Station to query
+          schema:
+            type: integer
+        - name: var_id
+          in: path
+          required: true
+          description: Variable to query
+          schema:
+            type: string
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StationVariable"
+        404:
+          $ref: "#/components"
+
+  /stations/{station_id}/variables/{var_id}/observations:
+    get:
+      summary: Get a set of observations for a station variable
+      description: Gets a span of observations
+      tags:
+        - Stations
+        - Variables
+        - Observations
+      operationId: sdpb.api.station_variables.get_observations
+      parameters:
+        - name: station_id
+          in: path
+          required: true
+          description: Station to query
+          schema:
+            type: integer
+        - name: var_id
+          in: path
+          required: true
+          description: Variable to query
+          schema:
+            type: string
+        - name: start_date
+          in: query
+          description: |
+            Earliest date (inclusive) of observations returned.
+            Default: earliest available
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          description: |
+            Latest date (inclusive) of observations returned.
+            Default: latest available
+          schema:
+            type: string
+            format: date
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StationObservations"
+        404:
+          $ref: "#/components/responses/404NotFound"
 
   /crmp_network_geoserver:
     get:
@@ -326,7 +426,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StationList'
+                $ref: "#/components/schemas/StationList"
 
   # Observations
 
@@ -379,9 +479,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ObservationCounts'
+                $ref: "#/components/schemas/ObservationCounts"
 
-# Weather
+  # Weather
 
   /weather/monthly/baseline/{variable};{month}:
     get:
@@ -415,7 +515,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WeatherMonthlyBaselineList'
+                $ref: "#/components/schemas/WeatherMonthlyBaselineList"
 
   # TODO: Change `weather` to `ongoing` or something. This will require an
   #   update to client app (WAV).
@@ -458,7 +558,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WeatherMonthlyOngoingList'
+                $ref: "#/components/schemas/WeatherMonthlyOngoingList"
 
 components:
   responses:
@@ -467,13 +567,12 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           example:
-            code: '404'
+            code: "404"
             message: Resource not found
 
   schemas:
-
     # Response schemas
 
     ErrorResponse:
@@ -488,7 +587,7 @@ components:
         - code
         - message
       example:
-        code: '404'
+        code: "404"
         message: Message giving details of problem
 
     # Networks
@@ -535,7 +634,7 @@ components:
       description: List of networks.
       type: array
       items:
-        $ref: '#/components/schemas/Network'
+        $ref: "#/components/schemas/Network"
 
     # Variables
 
@@ -592,7 +691,7 @@ components:
         - network_uri
         - tags
       example:
-        cell_method: 'time: point'
+        cell_method: "time: point"
         display_name: Surface Snow Depth (Point)
         id: 450
         name: HEIGHT_OF_SNOW
@@ -608,7 +707,7 @@ components:
       description: List of variables.
       type: array
       items:
-        $ref: '#/components/schemas/Variable'
+        $ref: "#/components/schemas/Variable"
 
     # Frequencies
 
@@ -620,7 +719,7 @@ components:
       description: List of frequency descriptors.
       type: array
       items:
-        $ref: '#/components/schemas/Frequency'
+        $ref: "#/components/schemas/Frequency"
 
     # Histories
 
@@ -714,30 +813,30 @@ components:
         id: 999
         lat: 54.05
         lon: -128.683333
-        max_obs_time: '1996-11-30T00:00:00'
-        min_obs_time: '1984-07-01T00:00:00'
+        max_obs_time: "1996-11-30T00:00:00"
+        min_obs_time: "1984-07-01T00:00:00"
         province: BC
         sdate:
         station_name: KITIMAT
         tz_offset:
         uri: "/histories/999"
         variable_uris:
-        - "/variables/427"
-        - "/variables/428"
-        - "/variables/429"
-        - "/variables/430"
-        - "/variables/431"
-        - "/variables/432"
-        - "/variables/556"
-        - "/variables/557"
-        - "/variables/558"
-        - "/variables/559"
+          - "/variables/427"
+          - "/variables/428"
+          - "/variables/429"
+          - "/variables/430"
+          - "/variables/431"
+          - "/variables/432"
+          - "/variables/556"
+          - "/variables/557"
+          - "/variables/558"
+          - "/variables/559"
 
     HistoryList:
       description: List of histories.
       type: array
       items:
-        $ref: '#/components/schemas/History'
+        $ref: "#/components/schemas/History"
 
     # Stations
 
@@ -770,7 +869,7 @@ components:
           description: History records for this station.
           type: array
           items:
-            $ref: '#/components/schemas/History'
+            $ref: "#/components/schemas/History"
       required:
         - id
         - uri
@@ -781,28 +880,28 @@ components:
         - histories
       example:
         histories:
-        - country:
-          edate:
-          elevation: 4
-          freq: daily
-          id: 404
-          lat: 48.866667
-          lon: -123.283333
-          province: BC
-          sdate:
-          station_name: ACTIVE PASS
-          tz_offset:
-          uri: "/histories/404"
-          variable_uris:
-          - "/variables/429"
-          - "/variables/430"
-          - "/variables/431"
-          - "/variables/432"
-          - "/variables/559"
+          - country:
+            edate:
+            elevation: 4
+            freq: daily
+            id: 404
+            lat: 48.866667
+            lon: -123.283333
+            province: BC
+            sdate:
+            station_name: ACTIVE PASS
+            tz_offset:
+            uri: "/histories/404"
+            variable_uris:
+              - "/variables/429"
+              - "/variables/430"
+              - "/variables/431"
+              - "/variables/432"
+              - "/variables/559"
         id: 1
-        max_obs_time: '1996-11-30T00:00:00'
-        min_obs_time: '1984-07-01T00:00:00'
-        native_id: '1010066'
+        max_obs_time: "1996-11-30T00:00:00"
+        min_obs_time: "1984-07-01T00:00:00"
+        native_id: "1010066"
         network_uri: "/networks/1"
         uri: "/stations/1"
 
@@ -810,10 +909,130 @@ components:
       description: List of stations.
       type: array
       items:
-        $ref: '#/components/schemas/Station'
+        $ref: "#/components/schemas/Station"
+
+    StationVariable:
+      description: list of variables available to this station
+      type: object
+      allOf:
+        # extend standard variable output with min and max obs times for this station
+        # these are aggregate properties of both station and variable so I'm not 100% 
+        # sure that this is the correct location for them to live.
+        - $ref: "#/components/schemas/Variable"
+        - type: object
+          properties:
+            min_obs_time:
+              description: Earliest time of observation for this variable
+              type: string
+              format: date-time
+            max_obs_time:
+              description: Latest time of observation for this variable
+              type: string
+              format: date-time
+            station_id:
+              description: Unique internal id of station
+              type: string
+      required:
+        - min_obs_time
+        - max_obs_time
+      example:
+        # standard variable
+        cell_method: "time: point"
+        display_name: Surface Snow Depth (Point)
+        id: 450
+        name: HEIGHT_OF_SNOW
+        network_uri: "/networks/2"
+        precision:
+        short_name: surface_snow_thickness_point
+        standard_name: surface_snow_thickness
+        unit: cm
+        uri: "/variables/450"
+        tags: ["climatology"]
+        # station specific
+        max_obs_time: "1996-11-30T00:00:00"
+        min_obs_time: "1984-07-01T00:00:00"
+        station_id: 1
+
+    StationVariables:
+      description: List of variables associated with a station
+      type: object
+      properties:
+        station_id:
+          description: Unique internal id of station
+          type: string
+        variables:
+          description: list of variables available to this station
+          type: array
+          items:
+            $ref: "#/components/schemas/StationVariable"
+      required:
+        - station_id
+        - variables
+      example:
+        station_id: 1
+        variables:
+          - cell_method: "time: point"
+            display_name: Surface Snow Depth (Point)
+            id: 450
+            name: HEIGHT_OF_SNOW
+            network_uri: "/networks/2"
+            precision:
+            short_name: surface_snow_thickness_point
+            standard_name: surface_snow_thickness
+            unit: cm
+            uri: "/variables/450"
+            tags: ["climatology"]
+            station_id: 1
+            min_obs_time: "1984-07-01T00:00:00"
+            max_obs_time: "1996-11-30T00:00:00"
+          - cell_method: "time: minimum"
+            display_name: Temperature (Min)
+            id: 451
+            name: HEIGHT_OF_SNOW
+            network_uri: "/networks/2"
+            precision:
+            short_name: surface_snow_thickness_point
+            standard_name: surface_snow_thickness
+            unit: cm
+            uri: "/variables/451"
+            tags: ["observation"]
+            station_id: 1
+            min_obs_time: "1984-07-01T00:00:00"
+            max_obs_time: "1996-11-30T00:00:00"
+
+
+    StationObservations:
+      description: List of Observations from a station's variable and its associated metadata
+      type: object
+      properties:
+        station_id:
+          type: string
+          description: the requested station
+        variable_id:
+          type: string
+          description: the requested variable
+        start_date:
+          type: string
+          format: date-time
+          description: the start date of the requested observation range
+        end_date:
+          type: string
+          format: date-time
+          description: the end date of the requested observation range
+        observations:
+          type: array
+          items:
+            type: object
+            properties:
+              time:
+                type: string
+                format: date-time
+                description: the time of the observation
+              value:
+                type: number
+                description: the value of the observation
 
     # Observations
-  
     ObservationCounts:
       description: Counts of observations and climatologies, by station, in a specified date range.
       type: object
@@ -854,23 +1073,23 @@ components:
       example:
         end_date:
         start_date:
-        station_ids: [1,2,3,4,5]
+        station_ids: [1, 2, 3, 4, 5]
         uri: "/observations/counts?station_ids=1&station_ids=2&station_ids=3&station_ids=4&station_ids=5"
         climatologyCounts:
-          '1': 12
-          '3': 12
-          '4': 12
+          "1": 12
+          "3": 12
+          "4": 12
         observationCounts:
-          '1': 15857
-          '2': 62488
-          '3': 13544
-          '4': 8040
-          '5': 9330
+          "1": 15857
+          "2": 62488
+          "3": 13544
+          "4": 8040
+          "5": 9330
 
     # Weather
     # Note these are legacy endpoints which do not conform to the pattern of
-    # the other endpoints in this API. To be updated. 
-    
+    # the other endpoints in this API. To be updated.
+
     WeatherMonthlyBaseline:
       description: |
         Representation of a weather monthly baseline resource for a single 
@@ -921,7 +1140,7 @@ components:
       description: List of monthly weather baseline items.
       type: array
       items:
-        $ref: '#/components/schemas/WeatherMonthlyBaseline'
+        $ref: "#/components/schemas/WeatherMonthlyBaseline"
 
     WeatherMonthlyOngoing:
       description: |
@@ -980,5 +1199,4 @@ components:
       description: List of weather ongoing items.
       type: array
       items:
-        $ref: '#/components/schemas/WeatherMonthlyOngoing'
-
+        $ref: "#/components/schemas/WeatherMonthlyOngoing"

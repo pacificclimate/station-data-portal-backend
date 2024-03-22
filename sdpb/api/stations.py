@@ -22,12 +22,21 @@ Stations returned are always filtered by:
 - Matches province filter (collection)
 """
 import logging
+import datetime
 from flask import url_for
 from sqlalchemy import func
-from pycds import Station, History, StationObservationStats
+from pycds import (
+    Station,
+    History,
+    StationObservationStats,
+    Obs,
+    Variable,
+    VarsPerHistory,
+)
 from sdpb import get_app_session
 from sdpb.api import networks
 from sdpb.api import histories
+from sdpb.api import variables
 from sdpb.util.representation import date_rep, is_expanded
 from sdpb.util.query import (
     get_all_histories_etc_by_station,
@@ -179,6 +188,11 @@ def collection_rep(
     ]
 
 
+####
+# /stations/{station_id}
+####
+
+
 def single(id=None, compact=True, expand="histories"):
     assert id is not None
     session = get_app_session()
@@ -206,13 +220,17 @@ def single(id=None, compact=True, expand="histories"):
     )
 
 
+####
+# /stations/
+####
+
+
 def collection(
     stride=None,
     limit=None,
     offset=None,
     provinces=None,
     compact=True,
-    group_vars_in_database=True,
     expand="histories",
 ):
     """
@@ -226,8 +244,6 @@ def collection(
         attribute match this value. Match means value is None or attribute
         occurs in list.
     :param compact: Boolean. Return compact rep?
-    :param group_vars_in_database: Boolean. Group variables by history id in
-        database or in code?
     :param expand: Associated items to expand. Valid values: "histories".
     :return: list of dict
     """
@@ -248,9 +264,7 @@ def collection(
                 all_histories_etc_by_station = get_all_histories_etc_by_station(
                     session, provinces=provinces
                 )
-                all_vars_by_hx = get_all_vars_by_hx(
-                    session, group_in_database=group_vars_in_database
-                )
+                all_vars_by_hx = get_all_vars_by_hx(session)
             else:
                 stations_query = (
                     session.query(
