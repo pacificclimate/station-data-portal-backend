@@ -2,7 +2,7 @@
 name = "sdpb"
 version = "11.3.0"
 description = "PCIC microservice for station data"
-authors = ["rod-glover <rglover@uvic.ca>"]
+authors = ["rod-glover <rglover@uvic.ca>", "john-sampson <johnsampson@uvic.ca>", "lee-zeman <lzeman@uvic.ca>"]
 license = "GNU General Public License v3 (GPLv3)"
 readme = "README.md"
 homepage = "http://www.pacificclimate.org/"
