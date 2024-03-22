@@ -1,6 +1,6 @@
 import pytest
 from pycds import Station
-from sdpb.api import stations, variables
+from sdpb.api import stations, variables, station_variables
 from helpers import omit
 
 
@@ -57,11 +57,22 @@ def test_single_station(
     expected = expected_stations_collection(compact=True, expand="histories")
     expected = next(s for s in expected if s["id"] == station_id)
 
+    print("received")
+    print(received)
+    print("expected")
+    print(expected)
+    
     # check regular attributes, excluding the history
     for att in expected:
+        print("checking {}".format(att))
         if att != "histories":
             assert att in received
             assert received[att] == expected[att]
+
+    #check histories
+    expected_histories = {h["id"] for h in expected["histories"]}
+    print("expected histories")
+    print(expected_histories)
 
     # check histories
     assert {h["id"] for h in expected["histories"]} == {
@@ -69,26 +80,3 @@ def test_single_station(
     }
 
 
-# These tests check varable metadata, and invoke the variable_tags database function,
-# which is not yet available in the test setup
-@pytest.mark.xfail(reason="Needs a version of PyCDS that has not yet been released")
-def test_station_variables(flask_app, everything_session, expected_stations_collection):
-    received = stations.get_station_variables(0)
-
-
-@pytest.mark.xfail(reason="Needs a version of PyCDS that has not yet been released")
-def test_station_variable(flask_app, everything_session, expected_stations_collection):
-    received = stations.get_station_variable(0, 0)
-
-
-@pytest.mark.xfail
-@pytest.mark.parametrize("variable_id", [0, 1, 2, 3, 4])
-def test_station_variable_observations(
-    flask_app,
-    everything_session,
-    expected_stations_collection,
-    tst_variables,
-    tst_networks,
-    variable_id,
-):
-    received = stations.get_observations(0, variable_id)

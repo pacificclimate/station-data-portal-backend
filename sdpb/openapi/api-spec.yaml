@@ -317,7 +317,7 @@ paths:
       tags:
         - Stations
         - Variables
-      operationId: sdpb.api.stations.get_station_variables
+      operationId: sdpb.api.station_variables.get_station_variables
       parameters:
         - name: station_id
           in: path
@@ -342,7 +342,7 @@ paths:
       tags:
         - Stations
         - Variables
-      operationId: sdpb.api.stations.get_station_variable
+      operationId: sdpb.api.station_variables.get_station_variable
       parameters:
         - name: station_id
           in: path
@@ -374,7 +374,7 @@ paths:
         - Stations
         - Variables
         - Observations
-      operationId: sdpb.api.stations.get_observations
+      operationId: sdpb.api.station_variables.get_observations
       parameters:
         - name: station_id
           in: path
