@@ -1,5 +1,17 @@
 # News / Release Notes
 
+## 11.4.0
+
+*Release date: 2024-Mar-22*
+
+This version adds `/stations/{station_id}/variables` , `/stations/{station_id}/variables/{variable_id}` and `/stations/{station_id}/variables/{variable_id}/observations/` to the API. These endpoint provide information about a variable in the context of a station and allow request some observations to support a "data preview" functionality in the front end.
+
+Changes:
+- [Update postgres version](https://github.com/pacificclimate/station-data-portal-backend/pull/79)
+- [Remove get_all_vars_by_hx function and clean up tests depending on it](https://github.com/pacificclimate/station-data-portal-backend/pull/82)
+- [Add endpoints describing variables in association with a station](https://github.com/pacificclimate/station-data-portal-backend/pull/80)
+
+
 ## 11.3.0
 
 *Release date: 2023-Nov-03*
