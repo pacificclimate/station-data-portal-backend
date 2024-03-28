@@ -162,6 +162,7 @@ def obs_values_by_station_query(
         .filter(History.station_id == station_id)
         .join(History)
         .join(Variable)
+        .order_by(Obs.time)
     )
 
     if start_date:
