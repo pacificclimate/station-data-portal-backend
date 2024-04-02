@@ -50,7 +50,8 @@ def obs_counts_by_station_query(
             ),
             History.station_id.label("station_id"),
         )
-        .join(History)
+        .select_from(ObsCountPerMonthHistory)
+        .join(History, History.id == ObsCountPerMonthHistory.history_id)
         .group_by(History.station_id)
     )
 
@@ -96,7 +97,8 @@ def climo_counts_by_station_query(session, station_ids=None, provinces=None):
             cast(func.sum(ClimoObsCount.count), sqlalchemy.Integer).label("total"),
             History.station_id.label("station_id"),
         )
-        .join(History)
+        .select_from(ClimoObsCount)
+        .join(History, History.id == ClimoObsCount.history_id)
         .group_by(History.station_id)
     )
 
