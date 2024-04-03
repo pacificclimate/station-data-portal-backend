@@ -1,5 +1,13 @@
 # News / Release Notes
 
+## 11.4.1
+
+*Release date: 2024-Apr-04*
+
+Changes:
+- [Provide a default sort order when requesting observations](https://github.com/pacificclimate/station-data-portal-backend/pull/80)
+- [Fix observation counts endpoint due to ambiguous table joins](https://github.com/pacificclimate/station-data-portal-backend/pull/80)
+
 ## 11.4.0
 
 *Release date: 2024-Mar-22*
