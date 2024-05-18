@@ -34,7 +34,7 @@ python = "^3.8"
 PyYAML = "^6.0"
 python-dateutil = "^2.8.2"
 sqlalchemy = "~=1.4.35,<2.0"
-pycds = { version = "4.5.0", source = "pcic"}
+pycds = {git = "https://github.com/pacificclimate/pycds", rev = "pcpn_amt_pst24hrs"}
 connexion = { version = "^2.14.2", extras = ["swagger-ui"] }
 flask = ">=1.0.4,<2.3"  # Versions required by connexion
 flask-cors = "^4.0.0"
