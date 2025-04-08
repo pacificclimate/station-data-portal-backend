@@ -37,6 +37,9 @@ def create_app(config_override={}):
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         SQLALCHEMY_ECHO=False,
         COMPRESS_ALGORITHM="gzip",
+        SQLALCHEMY_ENGINE_OPTIONS={
+            "pool_pre_ping": True,
+        },
     )
     flask_app.config.update(config_override)
     compress.init_app(flask_app)
