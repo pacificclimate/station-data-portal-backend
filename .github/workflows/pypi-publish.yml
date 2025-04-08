@@ -20,7 +20,7 @@ jobs:
 
     - name: Install Poetry
       run: |
-        pip install poetry
+        pip install poetry==1.8.5
 
     - name: Install, build and publish project
       env:

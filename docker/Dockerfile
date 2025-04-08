@@ -54,7 +54,7 @@ ENV PATH=${USER_DIR}/.local/bin:${PATH}
 
 RUN \
     # Install Poetry && \
-    pip install poetry && \
+    pip install poetry==1.8.5 && \
     # Install the project && \
     poetry install
 
