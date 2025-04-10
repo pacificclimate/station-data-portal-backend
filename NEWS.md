@@ -1,5 +1,12 @@
 # News / Release Notes
 
+## 11.4.2
+
+*Release date: 2025-Apr-10*
+
+Changes:
+- [Enable SQLAlechemy's pre-ping feature to reduce risk of dropped database connections](https://github.com/pacificclimate/station-data-portal-backend/pull/90)
+
 ## 11.4.1
 
 *Release date: 2024-Apr-04*
