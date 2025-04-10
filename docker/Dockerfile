@@ -12,7 +12,6 @@ ENV LANG=C.UTF-8
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get -yq install \
-        curl \
         libpq-dev \
         python3 \
         python3-dev \
@@ -55,7 +54,7 @@ ENV PATH=${USER_DIR}/.local/bin:${PATH}
 
 RUN \
     # Install Poetry && \
-    curl -sSL https://install.python-poetry.org | python3 - && \
+    pip install poetry==1.8.5 && \
     # Install the project && \
     poetry install
 
