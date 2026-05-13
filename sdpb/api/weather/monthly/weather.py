@@ -1,5 +1,5 @@
 import datetime
-from sqlalchemy import cast, Float
+from sqlalchemy import cast, Float, select
 
 from pycds import Network, Station, History, Variable
 from pycds import (
@@ -48,7 +48,7 @@ def weather(session, variable, year, month):
     WeatherView = view_for_variable[variable]
 
     q = (
-        session.query(
+        select(
             Network.name.label("network_name"),
             Station.id.label("station_db_id"),
             Station.native_id.label("station_native_id"),
@@ -68,13 +68,13 @@ def weather(session, variable, year, month):
         .join(History.station)
         .join(Station.network)
         .join(Variable, WeatherView.vars_id == Variable.id)
-        .filter(WeatherView.obs_month == datetime.datetime(year, month, 1))
+        .where(WeatherView.obs_month == datetime.datetime(year, month, 1))
     )
 
     if WeatherView == MonthlyTotalPrecipitation:
-        q = q.filter(Variable.standard_name == "lwe_thickness_of_precipitation_amount")
+        q = q.where(Variable.standard_name == "lwe_thickness_of_precipitation_amount")
 
-    return q.all()
+    return session.execute(q).all()
 
 
 def collection(variable=None, year=None, month=None):

@@ -12,6 +12,7 @@ with timing("description/label", log=logger.debug):
 # Timing end message logged here
 ```
 """
+
 from contextlib import contextmanager
 from time import perf_counter, sleep
 

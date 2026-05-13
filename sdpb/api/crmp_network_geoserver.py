@@ -1,4 +1,5 @@
 import logging
+from sqlalchemy import select
 from pycds import CrmpNetworkGeoserver
 from sdpb import get_app_session
 from sdpb.timing import log_timing
@@ -52,11 +53,11 @@ def collection_rep(items):
 def collection():
     with log_timing("List all CNG items", log=logger.debug):
         with log_timing("Query all CNG items", log=logger.debug):
-            items = (
-                get_app_session()
-                .query(CrmpNetworkGeoserver)
-                .order_by(CrmpNetworkGeoserver.network_id.asc())
-                .all()
-            )
+            session = get_app_session()
+            items = session.scalars(
+                select(CrmpNetworkGeoserver).order_by(
+                    CrmpNetworkGeoserver.network_id.asc()
+                )
+            ).all()
         with log_timing("Convert CNG items to rep", log=logger.debug):
             return collection_rep(items)

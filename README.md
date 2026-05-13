@@ -17,7 +17,6 @@ At present, this service provides only metadata. _Data_ download services are pr
 - [Configuration](docs/configuration.md)
 - [Production](docs/production.md)
 - Development
-  - [Caveats](docs/development/caveats.md)
   - [Installation](docs/development/installation.md)
   - [Running locally](docs/development/running-locally.md)
   - [Unit testing](docs/development/unit-testing.md)
@@ -32,7 +31,7 @@ To create a versioned release:
 2. Summarize the changes from the last release in `NEWS.md`.
 3. Add, commit, and tag, and push these changes:
    ```
-   git add setup.py NEWS.md
+   git add pyproject.toml NEWS.md
    git commit -m "Bump to version x.x.x
    git tag -a -m "x.x.x" x.x.x
    git push --follow-tags

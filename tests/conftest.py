@@ -31,7 +31,12 @@ def config_override():
 
 @pytest.fixture(scope="package")
 def app_parts(database_uri, config_override):
-    yield create_app(config_override)
+    app_parts = create_app(config_override)
+    connexion_app, flask_app, app_db = app_parts
+    # In connexion 3.x, Flask routes are registered when the ASGI middleware stack is
+    # built (lazily on first request). Force it here so url_for works in test contexts.
+    connexion_app.middleware._build_middleware_stack()
+    yield app_parts
 
 
 @pytest.fixture(scope="package")

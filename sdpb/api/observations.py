@@ -12,6 +12,7 @@ Results may be restricted to a subset of stations by specifying `station_ids`.
 import logging
 import datetime
 import sqlalchemy
+from sqlalchemy import select
 from sqlalchemy.sql import func
 from sqlalchemy.sql.expression import cast
 from flask import url_for
@@ -44,7 +45,7 @@ def obs_counts_by_station_query(
     # Fundamental query: Sum observation counts by month and history id over history
     # id's for each station, yielding counts per station.
     q = (
-        session.query(
+        select(
             cast(func.sum(ObsCountPerMonthHistory.count), sqlalchemy.Integer).label(
                 "total"
             ),
@@ -56,18 +57,18 @@ def obs_counts_by_station_query(
     )
 
     if start_date:
-        q = q.filter(
+        q = q.where(
             ObsCountPerMonthHistory.date_trunc
             >= func.date_trunc("month", datetime.datetime.fromisoformat(start_date))
         )
     if end_date:
-        q = q.filter(
+        q = q.where(
             ObsCountPerMonthHistory.date_trunc
             <= func.date_trunc("month", datetime.datetime.fromisoformat(end_date))
         )
 
     if station_ids:
-        q = q.filter(History.station_id.in_(station_ids))
+        q = q.where(History.station_id.in_(station_ids))
 
     if provinces is not None:
         q = add_province_filter(q, provinces)
@@ -93,7 +94,7 @@ def climo_counts_by_station_query(session, station_ids=None, provinces=None):
     # Fundamental query: Sum climatology counts by history id over history
     # id's for each station, yielding counts per station.
     q = (
-        session.query(
+        select(
             cast(func.sum(ClimoObsCount.count), sqlalchemy.Integer).label("total"),
             History.station_id.label("station_id"),
         )
@@ -103,7 +104,7 @@ def climo_counts_by_station_query(session, station_ids=None, provinces=None):
     )
 
     if station_ids:
-        q = q.filter(History.station_id.in_(station_ids))
+        q = q.where(History.station_id.in_(station_ids))
 
     if provinces is not None:
         q = add_province_filter(q, provinces)
@@ -113,7 +114,7 @@ def climo_counts_by_station_query(session, station_ids=None, provinces=None):
 
 def observations_counts_uri(start_date=None, end_date=None, station_ids=None):
     return url_for(
-        "sdpb_api_observations_get_counts",
+        "/.sdpb_api_observations_get_counts",
         start_date=start_date,
         end_date=end_date,
         station_ids=station_ids,
@@ -123,16 +124,20 @@ def observations_counts_uri(start_date=None, end_date=None, station_ids=None):
 def get_counts(start_date=None, end_date=None, station_ids=None, provinces=None):
     session = get_app_session()
 
-    obs_counts_by_station = obs_counts_by_station_query(
-        session,
-        start_date=start_date,
-        end_date=end_date,
-        station_ids=station_ids,
-        provinces=provinces,
+    obs_counts_by_station = session.execute(
+        obs_counts_by_station_query(
+            session,
+            start_date=start_date,
+            end_date=end_date,
+            station_ids=station_ids,
+            provinces=provinces,
+        )
     ).all()
 
-    climo_counts_by_station = climo_counts_by_station_query(
-        session, station_ids=station_ids, provinces=provinces
+    climo_counts_by_station = session.execute(
+        climo_counts_by_station_query(
+            session, station_ids=station_ids, provinces=provinces
+        )
     ).all()
 
     return {

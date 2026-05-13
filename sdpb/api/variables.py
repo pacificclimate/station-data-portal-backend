@@ -1,5 +1,5 @@
 from flask import url_for
-from sqlalchemy import distinct, func, text
+from sqlalchemy import distinct, func, select, text
 from sqlalchemy.dialects.postgresql import ARRAY, TEXT
 
 from pycds import Network, Variable, Station, History
@@ -18,7 +18,7 @@ def id_(variable):
 
 
 def uri(variable):
-    return url_for("sdpb_api_variables_single", id=id_(variable))
+    return url_for("/.sdpb_api_variables_single", id=id_(variable))
 
 
 # Invoke the user-defined database function variable_tags on the Variable table.
@@ -44,14 +44,13 @@ def single_item_rep(variable, tags):
 
 def single(id=None):
     assert id is not None
-    row = (
-        get_app_session()
-        .query(Variable, variable_tags.label("tags"))
+    session = get_app_session()
+    row = session.execute(
+        select(Variable, variable_tags.label("tags"))
         .select_from(Variable)
         .join(Network, Variable.network_id == Network.id)
-        .filter(Variable.id == id, Network.publish == True)
-        .one()
-    )
+        .where(Variable.id == id, Network.publish == True)
+    ).one()
     return single_item_rep(row.Variable, row.tags)
 
 
@@ -71,22 +70,22 @@ def collection(provinces=None):
     session = get_app_session()
 
     if provinces is None:
-        network_ids = session.query(Network.id.label("network_id")).select_from(Network)
+        network_ids = select(Network.id.label("network_id")).select_from(Network)
     else:
         network_ids = (
-            session.query(distinct(Network.id).label("network_id"))
+            select(distinct(Network.id).label("network_id"))
             .select_from(Network)
             .join(Station, Station.network_id == Network.id)
             .join(History, History.station_id == Station.id)
         )
         network_ids = add_province_filter(network_ids, provinces)
-    network_ids = network_ids.filter(Network.publish == True)
+    network_ids = network_ids.where(Network.publish == True)
     network_ids = network_ids.cte(name="network_ids")
 
     q = (
-        session.query(Variable, variable_tags.label("tags"))
+        select(Variable, variable_tags.label("tags"))
         .join(network_ids, Variable.network_id == network_ids.c.network_id)
         .order_by(Variable.id.asc())
     )
-    rows = q.all()
+    rows = session.execute(q).all()
     return collection_rep(rows)

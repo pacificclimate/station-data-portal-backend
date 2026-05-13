@@ -11,3 +11,4 @@ __pycache__
 # local 
 .env
 sdpb.log
+.pgpass

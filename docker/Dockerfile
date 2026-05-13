@@ -2,9 +2,10 @@
 # climate-explorer-backend/docker/Dockerfile.dev
 # As always with docker, is there a better way to do this? Almost certainly.
 
-FROM ubuntu:20.04
-
-LABEL Maintainer="Rod Glover <rglover@uvic.ca>"
+# ── Build stage ───────────────────────────────────────────────────────────────
+# Compiles C extensions (psycopg2, etc.) and assembles the virtualenv.
+# None of the build tooling ends up in the final image.
+FROM ubuntu:24.04 AS builder
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
@@ -15,51 +16,69 @@ RUN apt-get update && \
         libpq-dev \
         python3 \
         python3-dev \
-        python3-pip \
-        postgresql-client
+        python3-pip && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install Poetry (--break-system-packages required on Ubuntu 24.04 / PEP 668)
+RUN pip install --break-system-packages poetry==2.4.1
+
+# Copy dependency manifests first to leverage layer caching
+COPY pyproject.toml poetry.lock ./
+
+# Install runtime dependencies into an in-project virtualenv; skip dev deps
+RUN poetry config virtualenvs.in-project true && \
+    poetry install --no-root --only main,deploy
+
+# Copy source (deps already installed; --no-root means the package itself is not installed,
+# but sdpb/ is importable directly from the working directory)
+COPY sdpb/ ./sdpb/
+
+
+# ── Runtime stage ─────────────────────────────────────────────────────────────
+# Only the shared library (libpq5), Python runtime, the venv, and app source.
+# No pip, no Poetry, no compiler toolchain, no headers.
+FROM ubuntu:24.04
+
+LABEL Maintainer="Rod Glover <rglover@uvic.ca>"
+
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+    apt-get -yq install \
+        libpq5 \
+        python3 \
+        postgresql-client && \
+    rm -rf /var/lib/apt/lists/*
 
 # Build arguments (scope limited to build). If you wish to use a different user,
 # group, or home dir, override these in the build command or change them here.
-# If you specify build arg USERNAME=root, then the user is root.
-ARG USERNAME=dockremap
-ARG UID=1000
-ARG GROUPNAME=${USERNAME}
-ARG GID=1000
+ARG USERNAME=ubuntu
 ARG USER_DIR=/app
 
 # Environment variables (scope NOT limited to build). These are set here so that
 # subsequent builds and containers have access to these build arguments.
 ENV USERNAME=${USERNAME}
-ENV UID=${UID}
-ENV GROUPNAME=${GROUPNAME}
-ENV GID=${GID}
 ENV USER_DIR=${USER_DIR}
 
-# Create non-privileged user, group, and its directory. This is only done if USERNAME is not root.
-RUN if [ "$USERNAME" != "root" ]; \
-    then \
-        echo "Creating non-root user"; \
-        groupadd -r -g ${GID} ${GROUPNAME}; \
-        useradd -r -d ${USER_DIR} -g ${GROUPNAME} -u ${UID} ${USERNAME}; \
-        mkdir -p ${USER_DIR}; \
-        chown ${USERNAME}:${GROUPNAME} ${USER_DIR}; \
-    fi
+# The 'ubuntu' user (UID/GID 1000) is pre-installed in ubuntu:24.04.
+# Just create the app directory and assign ownership.
+RUN mkdir -p ${USER_DIR} && chown ${USERNAME}:${USERNAME} ${USER_DIR}
 
-# Set user
+# Copy the virtualenv and application source from the build stage
+COPY --from=builder --chown=${USERNAME}:${USERNAME} --chmod=755 /app/.venv ${USER_DIR}/.venv
+COPY --from=builder --chown=${USERNAME}:${USERNAME} --chmod=755 /app/sdpb  ${USER_DIR}/sdpb
+
+
 USER ${USERNAME}
-
-ADD --chown=${USERNAME}:${GROUPNAME} . ${USER_DIR}
 WORKDIR ${USER_DIR}
-ENV PATH=${USER_DIR}/.local/bin:${PATH}
-
-RUN \
-    # Install Poetry && \
-    pip install poetry==1.8.5 && \
-    # Install the project && \
-    poetry install
+ENV PATH=${USER_DIR}/.venv/bin:${PATH}
 
 EXPOSE 8000
 
 # gunicorn.conf is set up so that Gunicorn settings are set by environment variables.
 # Gunicorn setting [setting] is set by env var GUNICORN_[setting].
-CMD poetry run gunicorn --config gunicorn.conf --log-config logging.conf -b ":8000" sdpb.wsgi:flask_app
+CMD ["gunicorn", "--config", "gunicorn.conf", "--log-config", "logging.conf", "-b", ":8000", "-k", "uvicorn.workers.UvicornWorker", "sdpb.wsgi:connexion_app"]

@@ -1,8 +1,11 @@
+import logging
 import os
 import connexion
-from flask_cors import CORS
 from flask_compress import Compress
 from flask_sqlalchemy import SQLAlchemy
+from starlette.middleware.cors import CORSMiddleware
+
+logger = logging.getLogger(__name__)
 
 # This is a nasty way to do this.
 #
@@ -29,7 +32,6 @@ def create_app(config_override={}):
     connexion_app = connexion.FlaskApp(__name__, specification_dir="openapi/")
 
     flask_app = connexion_app.app
-    CORS(flask_app)
     flask_app.config.from_mapping(
         SQLALCHEMY_DATABASE_URI=os.getenv(
             "PCDS_DSN", "postgresql://httpd@db.pcic.uvic.ca/crmp"
@@ -46,6 +48,11 @@ def create_app(config_override={}):
 
     app_db = SQLAlchemy(flask_app)
 
+    @flask_app.errorhandler(Exception)
+    def log_unhandled_exception(e):
+        logger.exception("Unhandled exception")
+        raise e
+
     # Must establish database before adding API spec(s). API specs refer to
     # handlers (`operationId`), which in turn import the database.
     # If you try to add the API spec before the database is defined, then the
@@ -54,6 +61,12 @@ def create_app(config_override={}):
     # ordering during setup.
 
     connexion_app.add_api("api-spec.yaml")
+    connexion_app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     return connexion_app, flask_app, app_db
 

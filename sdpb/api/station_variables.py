@@ -1,7 +1,7 @@
 """
 /stations{station_id}/variables API implementation
 
-Shows the variables associated with a station. 
+Shows the variables associated with a station.
 
 /stations/{station_id}/variables
 shows all variables that have observations associated with this stations
@@ -10,14 +10,14 @@ shows all variables that have observations associated with this stations
 shows information about one variable in the context of this station
 
 /stations/{station_id}/variables/{variable_id}/observations
-fetch data from this station's observations for this variable; 
+fetch data from this station's observations for this variable;
 start date and end data are provided as URL parameters
 """
 
 import logging
 import datetime
 from flask import url_for
-from sqlalchemy import func
+from sqlalchemy import func, select
 from pycds import (
     Station,
     History,
@@ -54,14 +54,14 @@ def station_variable_timespan_query(session, station_id, var_id):
     """
 
     return (
-        session.query(
+        select(
             func.min(VarsPerHistory.start_time).label("min_obs_time"),
             func.max(VarsPerHistory.end_time).label("max_obs_time"),
         )
         .select_from(History)
         .join(VarsPerHistory, VarsPerHistory.history_id == History.id)
-        .filter(History.station_id == station_id)
-        .filter(VarsPerHistory.vars_id == var_id)
+        .where(History.station_id == station_id)
+        .where(VarsPerHistory.vars_id == var_id)
     )
 
 
@@ -74,7 +74,9 @@ def get_station_variable(station_id, var_id):
     assert station_id is not None, "station_id must be specified"
     assert var_id is not None, "var_id must be specified"
     session = get_app_session()
-    timespan = station_variable_timespan_query(session, station_id, var_id).one()
+    timespan = session.execute(
+        station_variable_timespan_query(session, station_id, var_id)
+    ).one()
 
     var = variables.single(var_id)
     var["min_obs_time"] = timespan.min_obs_time
@@ -91,20 +93,19 @@ def get_station_variable(station_id, var_id):
 def get_station_variables(station_id=None):
     assert station_id is not None
     session = get_app_session()
-    q = session.query(Station).select_from(Station).filter(Station.id == station_id)
+    q = select(Station).select_from(Station).where(Station.id == station_id)
     q = add_station_network_publish_filter(q)
-    station = q.one()
-    station_histories_etc = (
-        session.query(History, StationObservationStats)
+    station = session.scalars(q).one()
+    station_histories_etc = session.execute(
+        select(History, StationObservationStats)
         .select_from(History)
         .join(
             StationObservationStats,
             StationObservationStats.history_id == History.id,
         )
-        .filter_by(station_id=station_id)
+        .where(History.station_id == station_id)
         .order_by(History.id)
-        .all()
-    )
+    ).all()
     all_vars_by_hx = get_all_vars_by_hx(session)
 
     vars_by_history = single_item_rep(
@@ -131,7 +132,7 @@ def get_station_variables(station_id=None):
 
 def observations_span_uri(station_id, var_id, start_date=None, end_date=None):
     return url_for(
-        "sdpb_api_station_variables_get_observations",
+        "/.sdpb_api_station_variables_get_observations",
         station_id=station_id,
         var_id=var_id,
         start_date=start_date,
@@ -157,19 +158,19 @@ def obs_values_by_station_query(
     # Fundamental query: Sum observation counts by month and history id over history
     # id's for each station, yielding counts per station.
     q = (
-        session.query(Obs)
-        .filter(Variable.id == var_id)
-        .filter(History.station_id == station_id)
+        select(Obs)
+        .where(Variable.id == var_id)
+        .where(History.station_id == station_id)
         .join(History)
         .join(Variable)
         .order_by(Obs.time)
     )
 
     if start_date:
-        q = q.filter(Obs.time >= func.date_trunc("day", start_date))
+        q = q.where(Obs.time >= func.date_trunc("day", start_date))
 
     if end_date:
-        q = q.filter(Obs.time <= func.date_trunc("day", end_date))
+        q = q.where(Obs.time <= func.date_trunc("day", end_date))
 
     return q
 
@@ -208,16 +209,18 @@ def get_observations(station_id, var_id, start_date=None, end_date=None):
 
     session = get_app_session()
 
-    obs_vals_by_station = obs_values_by_station_query(
-        session,
-        station_id=station_id,
-        var_id=var_id,
-        start_date=start_date_obj,
-        end_date=end_date_obj,
+    obs_vals_by_station = session.scalars(
+        obs_values_by_station_query(
+            session,
+            station_id=station_id,
+            var_id=var_id,
+            start_date=start_date_obj,
+            end_date=end_date_obj,
+        )
     ).all()
 
-    station = session.query(Station).filter(Station.id == station_id).one()
-    variable = session.query(Variable).filter(Variable.id == var_id).one()
+    station = session.scalars(select(Station).where(Station.id == station_id)).one()
+    variable = session.scalars(select(Variable).where(Variable.id == var_id)).one()
 
     return {
         "uri": observations_span_uri(
@@ -227,12 +230,12 @@ def get_observations(station_id, var_id, start_date=None, end_date=None):
         "end_date": end_date_obj,
         "station": {
             "id": station.id,
-            "uri": url_for("sdpb_api_stations_single", id=station.id),
+            "uri": url_for("/.sdpb_api_stations_single", id=station.id),
             "network_uri": networks.uri(station.network),
         },
         "variable": {
             "id": variable.id,
-            "uri": url_for("sdpb_api_variables_single", id=variable.id),
+            "uri": url_for("/.sdpb_api_variables_single", id=variable.id),
             "name": variable.display_name,
             "unit": variable.unit,
         },
