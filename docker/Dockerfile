@@ -9,6 +9,7 @@ FROM ubuntu:24.04 AS builder
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
+ENV PATH="/root/.local/bin:${PATH}"
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
@@ -16,13 +17,14 @@ RUN apt-get update && \
         libpq-dev \
         python3 \
         python3-dev \
-        python3-pip && \
+        python3-pip \
+        pipx && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 # Install Poetry (--break-system-packages required on Ubuntu 24.04 / PEP 668)
-RUN pip install --break-system-packages poetry==2.4.1
+RUN pipx install "poetry==2.4.1"
 
 # Copy dependency manifests first to leverage layer caching
 COPY pyproject.toml poetry.lock ./
