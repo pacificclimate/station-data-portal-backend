@@ -21,10 +21,11 @@ Stations returned are always filtered by:
 - Has an associated History with an associated StationObservationStats
 - Matches province filter (collection)
 """
+
 import logging
 import datetime
 from flask import url_for
-from sqlalchemy import func
+from sqlalchemy import func, select
 from pycds import (
     Station,
     History,
@@ -52,7 +53,7 @@ logger = logging.getLogger("sdpb")
 
 def uri(station):
     """Return uri for a station"""
-    return url_for("sdpb_api_stations_single", id=station.id)
+    return url_for("/.sdpb_api_stations_single", id=station.id)
 
 
 def single_item_rep(
@@ -196,20 +197,19 @@ def collection_rep(
 def single(id=None, compact=True, expand="histories"):
     assert id is not None
     session = get_app_session()
-    q = session.query(Station).select_from(Station).filter(Station.id == id)
+    q = select(Station).select_from(Station).where(Station.id == id)
     q = add_station_network_publish_filter(q)
-    station = q.one()
-    station_histories_etc = (
-        session.query(History, StationObservationStats)
+    station = session.scalars(q).one()
+    station_histories_etc = session.execute(
+        select(History, StationObservationStats)
         .select_from(History)
         .join(
             StationObservationStats,
             StationObservationStats.history_id == History.id,
         )
-        .filter_by(station_id=id)
+        .where(History.station_id == id)
         .order_by(History.id)
-        .all()
-    )
+    ).all()
     all_vars_by_hx = get_all_vars_by_hx(session)
     return single_item_rep(
         station,
@@ -260,16 +260,14 @@ def collection(
             # Note: Station is always joined with History, and stations with
             # no associated history records are not returned.
             if expand_histories:
-                stations_query = session.query(Station).select_from(Station).distinct()
+                stations_query = select(Station).select_from(Station).distinct()
                 all_histories_etc_by_station = get_all_histories_etc_by_station(
                     session, provinces=provinces
                 )
                 all_vars_by_hx = get_all_vars_by_hx(session)
             else:
                 stations_query = (
-                    session.query(
-                        Station, func.array_agg(History.id).label("history_ids")
-                    )
+                    select(Station, func.array_agg(History.id).label("history_ids"))
                     .select_from(Station)
                     .group_by(Station.id)
                 )
@@ -282,12 +280,12 @@ def collection(
             stations_query = add_province_filter(stations_query, provinces)
             stations_query = stations_query.order_by(Station.id.asc())
             if stride:
-                stations_query = stations_query.filter(Station.id % stride == 0)
+                stations_query = stations_query.where(Station.id % stride == 0)
             if limit:
                 stations_query = stations_query.limit(limit)
             if offset:
                 stations_query = stations_query.offset(offset)
-            stations = stations_query.all()
+            stations = session.execute(stations_query).all()
 
         with log_timing("Convert stations to rep", log=logger.debug):
             return collection_rep(

@@ -21,6 +21,7 @@ import pytest
 import testing.postgresql
 
 from sqlalchemy.schema import CreateSchema
+from sqlalchemy import text
 from sqlalchemy.exc import NoResultFound
 
 from alembic.config import Config
@@ -97,18 +98,23 @@ def config_override(database_uri):
 
 def initialize_database(engine, schema_name):
     """Initialize an empty database"""
-    # Add role required by PyCDS migrations for privileged operations.
-    engine.execute(f"CREATE ROLE {pycds.get_su_role_name()} WITH SUPERUSER NOINHERIT;")
-    # pyCDS also uses these roles
-    engine.execute(f"CREATE ROLE inspector;")
-    engine.execute(f"CREATE ROLE viewer;")
-    engine.execute(f"CREATE ROLE steward;")
-    # Add extensions required by PyCDS.
-    engine.execute("CREATE EXTENSION postgis")
-    engine.execute("CREATE EXTENSION plpython3u")
-    engine.execute("CREATE EXTENSION IF NOT EXISTS citext")
-    # Add schema.
-    engine.execute(CreateSchema(schema_name))
+    with engine.connect() as conn:
+        # Add role required by PyCDS migrations for privileged operations.
+        conn.execute(
+            text(f"CREATE ROLE {pycds.get_su_role_name()} WITH SUPERUSER NOINHERIT;")
+        )
+        # pyCDS also uses these roles
+        conn.execute(text(f"CREATE ROLE inspector;"))
+        conn.execute(text(f"CREATE ROLE viewer;"))
+        conn.execute(text(f"CREATE ROLE steward;"))
+        # Add extensions required by PyCDS.
+        conn.execute(text("CREATE EXTENSION postgis"))
+        conn.execute(text("CREATE EXTENSION plpython3u"))
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS citext"))
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS hstore"))
+        # Add schema.
+        conn.execute(CreateSchema(schema_name))
+        conn.commit()
 
 
 def migrate_database(script_location, database_uri, revision="head"):
@@ -568,7 +574,7 @@ def session(engine, app_db):
     session = app_db.session
     # Default search path is `"$user", public`. Need to reset that to search
     # crmp (for our app_db/orm content) and public (for postgis functions)
-    session.execute("SET search_path TO crmp, public")
+    session.execute(text("SET search_path TO crmp, public"))
     yield session
     session.rollback()
     # session.close()

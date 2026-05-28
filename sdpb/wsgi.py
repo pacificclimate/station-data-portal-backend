@@ -1,8 +1,18 @@
 import logging.config
+import os
 import yaml
+
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except ImportError:
+    pass
+
 from sdpb import create_app
 
-logging.config.dictConfig(yaml.safe_load(open("logging.yaml")))
+if os.path.exists("logging.yaml"):
+    logging.config.dictConfig(yaml.safe_load(open("logging.yaml")))
 logger = logging.getLogger("sdpb")
 logger.info("Creating app")
 

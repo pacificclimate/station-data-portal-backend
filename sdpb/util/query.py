@@ -1,6 +1,6 @@
 import logging
 from flask import request
-from sqlalchemy import func
+from sqlalchemy import func, select
 from sqlalchemy.sql import visitors
 from itertools import groupby
 from pycds import (
@@ -37,9 +37,9 @@ def get_tables(query):
     ]
 
 
-def base_history_query(session):
+def base_history_query():
     return (
-        session.query(History, StationObservationStats)
+        select(History, StationObservationStats)
         .select_from(History)
         .join(Station, History.station_id == Station.id)
         .outerjoin(
@@ -51,12 +51,12 @@ def base_history_query(session):
 
 def get_all_histories_etc(session, provinces=None):
     with log_timing("Query all histories by station", log=logger.debug):
-        q = base_history_query(session)
+        q = base_history_query()
         # NB: Must order by station_id for groupby to work
         q = q.order_by(History.station_id, History.id)
         q = add_station_network_publish_filter(q)
         q = add_province_filter(q, provinces)
-        return q.all()
+        return session.execute(q).all()
 
 
 def get_all_histories_etc_by_station(session, provinces=None):
@@ -88,22 +88,21 @@ def get_all_vars_by_hx(session):
     """
     set_logger_level_from_qp(logger)
     with log_timing("Query and group all vars by hx", log=logger.debug):
-        rows = (
-            session.query(
+        rows = session.execute(
+            select(
                 History.id.label("history_id"),
                 func.array_agg(VarsPerHistory.vars_id).label("variable_ids"),
             )
             .select_from(History)
             .outerjoin(VarsPerHistory, VarsPerHistory.history_id == History.id)
             .group_by(History.id)
-            .all()
-        )
+        ).all()
         return {row.history_id: row.variable_ids for row in rows}
 
 
 def add_station_network_publish_filter(q):
     """Add filtering by Network.publish via Station to a query"""
-    return q.join(Network, Station.network_id == Network.id).filter(
+    return q.join(Network, Station.network_id == Network.id).where(
         Network.publish == True
     )
 
@@ -112,4 +111,4 @@ def add_province_filter(q, provinces):
     """Add filtering by province"""
     if provinces is None:
         return q
-    return q.filter(History.province.in_(provinces.split(",")))
+    return q.where(History.province.in_(provinces.split(",")))

@@ -1,10 +1,13 @@
-version: '3.2'
 services:
   backend:
-    image: pcic/station-data-portal-backend:latest
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: sdpb-local:latest
     container_name: station-data-portal-backend
+    user: "1001:1001"
     env_file:
-      - secret.env
+      - ../.env
       - gunicorn.env
     volumes:
       - type: bind
@@ -15,10 +18,9 @@ services:
         source: ./logging.conf
         target: /app/logging.conf
         read_only: true
+      - type: bind
+        source: ../.pgpass
+        target: /workspaces/station-data-portal-backend/.pgpass
+        read_only: true
     ports:
-      - "30502:8000"
-
-networks:
-  default:
-    external:
-      name: pcicbr0
+      - "8000:8000"

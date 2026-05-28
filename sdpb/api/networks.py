@@ -19,7 +19,7 @@ filtering Networks by province(s))
 """
 
 from flask import url_for
-from sqlalchemy import distinct
+from sqlalchemy import distinct, select
 from sqlalchemy.sql import func
 from pycds import Network, Station, History
 from sdpb import get_app_session
@@ -27,7 +27,7 @@ from sdpb.util.query import add_province_filter
 
 
 def uri(network):
-    return url_for("sdpb_api_networks_single", id=network.id)
+    return url_for("/.sdpb_api_networks_single", id=network.id)
 
 
 def single_item_rep(network_etc):
@@ -57,28 +57,30 @@ def collection_rep(networks_etc):
     return [collection_item_rep(network) for network in networks_etc]
 
 
-def base_query(session):
+def base_query():
     return (
-        session.query(Network, func.count(distinct(Station.id)).label("station_count"))
+        select(Network, func.count(distinct(Station.id)).label("station_count"))
         .select_from(Network)
         .join(Station, Station.network_id == Network.id)
         # History join allows filtering on province
         # TODO: maybe this shouldn't be in the base query
         .join(History, History.station_id == Station.id)
         .group_by(Network.id)
-        .filter(Network.publish == True)
+        .where(Network.publish == True)
     )
 
 
 def collection(provinces=None):
-    q = base_query(get_app_session())
+    session = get_app_session()
+    q = base_query()
     q = add_province_filter(q, provinces)
     q = q.order_by(Network.name.asc())
     # q = q.order_by(Network.id.asc())
-    networks_etc = q.all()
+    networks_etc = session.execute(q).all()
     return collection_rep(networks_etc)
 
 
 def single(id):
-    network_etc = base_query(get_app_session()).filter(Network.id == id).one()
+    session = get_app_session()
+    network_etc = session.execute(base_query().where(Network.id == id)).one()
     return single_item_rep(network_etc)

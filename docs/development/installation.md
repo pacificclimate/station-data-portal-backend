@@ -3,37 +3,51 @@
 ## Clone the project
 
 ```bash
-$ git clone https://github.com/pacificclimate/station-data-portal-backend
+git clone https://github.com/pacificclimate/station-data-portal-backend
 ```
+
+## Option 1: Docker (recommended)
+
+The simplest way to run the app locally is with Docker Compose:
+
+```bash
+cd docker
+docker compose up
+```
+
+The container exposes the API on port 8084. See the `docker/` directory for configuration options.
+
+## Option 2: Local installation with Poetry
+
+Requires Python **>=3.9, <3.14**.
 
 ### Install Poetry package manager
 
-It is best practice to install using a virtual environment. We use [Poetry](https://python-poetry.org/) to manage package dependencies and installation. To install Poetry, we recommend using the [official installer](https://python-poetry.org/docs/#installation):
+We use [Poetry](https://python-poetry.org/) to manage package dependencies. To install Poetry, use the [official installer](https://python-poetry.org/docs/#installation):
 
-```text
+```bash
 curl -sSL https://install.python-poetry.org | python3 -
 ```
 
-## Install the project using Poetry
+### Install the project
 
-You can install the project in any version of Python >= 3.7. By default,
-Poetry uses the base version of Python 3 installed on your system, and without
-further intervention the project will be installed in a virtual environment
-based on that.
-
-```text
+```bash
 poetry install
 ```
 
-If you have other versions of Python installed on your system then you can
-add virtual environments based on them using the
-[environment management](https://python-poetry.org/docs/managing-environments/)
-commands. (You do not need to use Pyenv to install the other Pythons; any
-method will work. You can skip the Pyenv discussion.)
+Poetry creates a virtual environment automatically. If you need to target a specific Python version within the supported range, use Poetry's [environment management](https://python-poetry.org/docs/managing-environments/) commands to switch between them.
 
-Once you have activated an environment, you can issue `poetry install` again
-to install it in that environment. Environments are persistent, so one
-installation is sufficient unless you are actually changing the dependencies
-or other aspects of the installation. You may switch at will between different
-environments.
+## Production deployment
 
+For production, run gunicorn with the `UvicornWorker` to serve the ASGI app:
+
+```bash
+gunicorn \
+  -b :8000 \
+  -k uvicorn.workers.UvicornWorker \
+  sdpb.wsgi:connexion_app
+```
+
+Gunicorn settings (workers, threads, timeout, etc.) can be controlled via environment variables prefixed with `GUNICORN_` — for example, `GUNICORN_WORKERS=4`. See `docker/gunicorn.conf` for details.
+
+The Docker image handles this automatically; see [Docker (recommended)](#option-1-docker-recommended) above.

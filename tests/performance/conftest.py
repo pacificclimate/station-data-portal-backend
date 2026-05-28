@@ -1,5 +1,9 @@
 import os
 import pytest
+from dotenv import load_dotenv
+
+# Load .env before any fixtures run so PCDS_DSN is available when the app is created.
+load_dotenv()
 
 
 # These fixtures allow specifying the number of repeats with a command line

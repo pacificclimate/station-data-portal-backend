@@ -3,7 +3,7 @@ import dateutil.parser
 
 def dict_from_row(row):
     """Return a dict version of a SQLAlchemy result row"""
-    return dict(zip(row.keys(), row))
+    return dict(row._mapping)
 
 
 def dicts_from_rows(rows):

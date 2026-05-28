@@ -30,7 +30,9 @@ Histories returned are always filtered by:
 - Associated Station is published (via associated Network)
 - Matches province filter (for collection)
 """
+
 import logging
+from sqlalchemy import select
 from flask import url_for
 from pycds import History, VarsPerHistory
 from sdpb import get_app_session
@@ -59,7 +61,7 @@ def id_(history):
 def uri(history):
     # TODO: Using url_for approx doubles the time to convert
     #  *entire record* to rep
-    return url_for("sdpb_api_histories_single", id=id_(history))
+    return url_for("/.sdpb_api_histories_single", id=id_(history))
 
 
 def single_item_rep(history_etc, vars=None, compact=False, include_uri=False):
@@ -168,20 +170,19 @@ def single(id=None, compact=False):
     assert id is not None
     logger.debug("get history")
     session = get_app_session()
-    q = base_history_query(session)
-    q = q.filter(History.id == id)
+    q = base_history_query()
+    q = q.where(History.id == id)
     q = add_station_network_publish_filter(q)
-    history_etc = q.one()
+    history_etc = session.execute(q).one()
     logger.debug("get vars")
-    hx_vars = (
-        session.query(
+    hx_vars = session.execute(
+        select(
             VarsPerHistory.history_id.label("history_id"),
             VarsPerHistory.vars_id.label("id"),
         )
-        .filter(VarsPerHistory.history_id == id)
+        .where(VarsPerHistory.history_id == id)
         .order_by(VarsPerHistory.vars_id)
-        .all()
-    )
+    ).all()
     logger.debug("data retrieved")
     return single_item_rep(history_etc, hx_vars, compact=compact, include_uri=True)
 

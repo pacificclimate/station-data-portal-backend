@@ -1,4 +1,4 @@
-from sqlalchemy import func, cast, Float
+from sqlalchemy import func, cast, Float, select
 from pycds import Network, Station, History, Variable, DerivedValue
 from pycds.climate_baseline_helpers import pcic_climate_variable_network_name
 from sdpb import get_app_session
@@ -39,18 +39,18 @@ def baseline(session, variable, month):
     }
 
     values = (
-        session.query(DerivedValue)
+        select(DerivedValue)
         .select_from(DerivedValue)
         .join(Variable, DerivedValue.vars_id == Variable.id)
         .join(Network, Variable.network_id == Network.id)
-        .filter(Network.name == pcic_climate_variable_network_name)
-        .filter(Variable.name == db_variable_name[variable])
-        .filter(func.date_part("month", DerivedValue.time) == float(month))
+        .where(Network.name == pcic_climate_variable_network_name)
+        .where(Variable.name == db_variable_name[variable])
+        .where(func.date_part("month", DerivedValue.time) == float(month))
         .subquery()
     )
 
     values_with_station_info = (
-        session.query(
+        select(
             Network.name.label("network_name"),
             Station.id.label("station_db_id"),
             Station.native_id.label("station_native_id"),
@@ -67,7 +67,7 @@ def baseline(session, variable, month):
         .join(Network, Station.network_id == Network.id)
     )
 
-    return values_with_station_info.all()
+    return session.execute(values_with_station_info).all()
 
 
 def collection(variable=None, month=None):
