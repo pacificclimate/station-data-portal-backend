@@ -1,5 +1,14 @@
 # News / Release Notes
 
+## 12.0.0
+
+*Release date: 2026-May-28*
+
+Due to the scale of the updates this is a major version update.
+
+Changes:
+- [Connexion 2->3 migration, Updated Pycds to 5.0, Sqlalchemy 2.0, revised docker build, dev tooling, updated secured github actions](https://github.com/pacificclimate/station-data-portal-backend/pull/92)
+
 ## 11.4.2
 
 *Release date: 2025-Apr-10*
