@@ -51,6 +51,7 @@ ENV LANG=C.UTF-8
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get -yq install \
+        curl \
         libpq5 \
         python3 \
         postgresql-client && \
@@ -80,6 +81,9 @@ WORKDIR ${USER_DIR}
 ENV PATH=${USER_DIR}/.venv/bin:${PATH}
 
 EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/readyz || exit 1
 
 # gunicorn.conf is set up so that Gunicorn settings are set by environment variables.
 # Gunicorn setting [setting] is set by env var GUNICORN_[setting].
