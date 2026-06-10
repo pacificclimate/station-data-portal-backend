@@ -1,5 +1,11 @@
 # News / Release Notes
 
+## 12.1.0
+*Release date: 2026-Jun-10*
+
+Changes:
+- [add SQLAlchemy connection pool customisation, readyz route](https://github.com/pacificclimate/station-data-portal-backend/pull/93)
+
 ## 12.0.0
 
 *Release date: 2026-May-28*
