@@ -40,3 +40,14 @@ below:
 - `CACHE_TTL_FREQUENCIES`: `604800` seconds
 - `CACHE_TTL_NETWORKS`: `604800` seconds
 - `CACHE_TTL_VARIABLES`: `604800` seconds
+
+Cache keys use this schema:
+
+```text
+<CACHE_KEY_PREFIX>:<resource>:<sha256-of-request-params>
+```
+
+Examples:
+
+- `sdpb-pcds:variables:<hash>`
+- `sdpb-ynwt:stations:<hash>`
