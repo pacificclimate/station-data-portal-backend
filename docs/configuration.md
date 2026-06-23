@@ -14,6 +14,11 @@ storage:
 - Set to `false` to disable response caching intentionally, for example in local
   development. Defaults to `true`.
 
+`CACHE_KEY_PREFIX`
+
+- Prefix used for cache keys. Set this per portal, for example `sdpb-pcds` or
+  `sdpb-ynwt`. Defaults to `sdpb`.
+
 `DRAGONFLY_HOST`
 
 - Dragonfly or Redis hostname for metadata response caching.

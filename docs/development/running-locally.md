@@ -15,6 +15,7 @@ To enable response caching locally with DragonflyDB:
 docker run --rm -p 6379:6379 docker.dragonflydb.io/dragonflydb/dragonfly
 
 export PCDS_DSN=postgresql://user@host/dbname
+export CACHE_KEY_PREFIX=sdpb-pcds
 export DRAGONFLY_HOST=localhost
 export DRAGONFLY_PORT=6379
 export CACHE_TTL_STATIONS=86400

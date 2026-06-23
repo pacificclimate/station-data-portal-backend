@@ -41,6 +41,10 @@ def cache_ttl(namespace):
     return int(os.getenv(env_var, DEFAULT_CACHE_TTLS[namespace]))
 
 
+def cache_key_prefix():
+    return os.getenv("CACHE_KEY_PREFIX", "sdpb")
+
+
 def get_cache_client():
     global _cache_client, _cache_disabled
 
@@ -88,7 +92,7 @@ def cache_get_or_set(namespace, params, producer):
             "utf-8"
         )
     ).hexdigest()
-    key = f"sdpb:{namespace}:{digest}"
+    key = f"{cache_key_prefix()}:{namespace}:{digest}"
 
     try:
         cached_value = client.get(key)
