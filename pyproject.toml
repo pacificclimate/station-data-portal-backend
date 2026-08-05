@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sdpb"
-version = "12.1.0"
+version = "12.2.0"
 description = "PCIC microservice for station data"
 authors = [
     "rod-glover <rglover@uvic.ca>",
@@ -71,4 +71,3 @@ filterwarnings = [
     # pycds uses datetime.datetime.utcnow() as a SQLAlchemy column default (third-party issue)
     "ignore:datetime.datetime.utcnow\\(\\) is deprecated:DeprecationWarning",
 ]
-
