@@ -38,6 +38,7 @@ from sdpb import get_app_session
 from sdpb.api import networks
 from sdpb.api import histories
 from sdpb.api import variables
+from sdpb.cache import cache_get_or_set
 from sdpb.util.representation import date_rep, is_expanded
 from sdpb.util.query import (
     get_all_histories_etc_by_station,
@@ -252,46 +253,60 @@ def collection(
         f"stations.list(stride={stride}, limit={limit}, offset={offset}, "
         f"provinces={provinces}, compact={compact}, expand={expand})"
     )
-    session = get_app_session()
-    expand_histories = is_expanded("histories", expand)
+    def producer():
+        session = get_app_session()
+        expand_histories = is_expanded("histories", expand)
 
-    with log_timing("List all stations", log=logger.debug):
-        with log_timing("Query all stations", log=logger.debug):
-            # Note: Station is always joined with History, and stations with
-            # no associated history records are not returned.
-            if expand_histories:
-                stations_query = select(Station).select_from(Station).distinct()
-                all_histories_etc_by_station = get_all_histories_etc_by_station(
-                    session, provinces=provinces
+        with log_timing("List all stations", log=logger.debug):
+            with log_timing("Query all stations", log=logger.debug):
+                # Note: Station is always joined with History, and stations with
+                # no associated history records are not returned.
+                if expand_histories:
+                    stations_query = select(Station).select_from(Station).distinct()
+                    all_histories_etc_by_station = get_all_histories_etc_by_station(
+                        session, provinces=provinces
+                    )
+                    all_vars_by_hx = get_all_vars_by_hx(session)
+                else:
+                    stations_query = (
+                        select(Station, func.array_agg(History.id).label("history_ids"))
+                        .select_from(Station)
+                        .group_by(Station.id)
+                    )
+                    all_histories_etc_by_station = None
+                    all_vars_by_hx = None
+                stations_query = stations_query.join(
+                    History, History.station_id == Station.id
                 )
-                all_vars_by_hx = get_all_vars_by_hx(session)
-            else:
-                stations_query = (
-                    select(Station, func.array_agg(History.id).label("history_ids"))
-                    .select_from(Station)
-                    .group_by(Station.id)
-                )
-                all_histories_etc_by_station = None
-                all_vars_by_hx = None
-            stations_query = stations_query.join(
-                History, History.station_id == Station.id
-            )
-            stations_query = add_station_network_publish_filter(stations_query)
-            stations_query = add_province_filter(stations_query, provinces)
-            stations_query = stations_query.order_by(Station.id.asc())
-            if stride:
-                stations_query = stations_query.where(Station.id % stride == 0)
-            if limit:
-                stations_query = stations_query.limit(limit)
-            if offset:
-                stations_query = stations_query.offset(offset)
-            stations = session.execute(stations_query).all()
+                stations_query = add_station_network_publish_filter(stations_query)
+                stations_query = add_province_filter(stations_query, provinces)
+                stations_query = stations_query.order_by(Station.id.asc())
+                if stride:
+                    stations_query = stations_query.where(Station.id % stride == 0)
+                if limit:
+                    stations_query = stations_query.limit(limit)
+                if offset:
+                    stations_query = stations_query.offset(offset)
+                stations = session.execute(stations_query).all()
 
-        with log_timing("Convert stations to rep", log=logger.debug):
-            return collection_rep(
-                stations,
-                all_histories_etc_by_station,
-                all_vars_by_hx=all_vars_by_hx,
-                compact=compact,
-                expand=expand,
-            )
+            with log_timing("Convert stations to rep", log=logger.debug):
+                return collection_rep(
+                    stations,
+                    all_histories_etc_by_station,
+                    all_vars_by_hx=all_vars_by_hx,
+                    compact=compact,
+                    expand=expand,
+                )
+
+    return cache_get_or_set(
+        "stations",
+        {
+            "stride": stride,
+            "limit": limit,
+            "offset": offset,
+            "provinces": provinces,
+            "compact": compact,
+            "expand": expand,
+        },
+        producer,
+    )

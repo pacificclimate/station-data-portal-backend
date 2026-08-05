@@ -37,6 +37,7 @@ from flask import url_for
 from pycds import History, VarsPerHistory
 from sdpb import get_app_session
 from sdpb.api import variables
+from sdpb.cache import cache_get_or_set
 from sdpb.util.representation import date_rep, float_rep, obs_stats_rep
 from sdpb.util.query import (
     get_all_vars_by_hx,
@@ -205,14 +206,25 @@ def collection(
         - does not put information in attribute variables
     :return: dict
     """
-    session = get_app_session()
-    with log_timing("List all histories", log=logger.debug):
-        histories_etc = get_all_histories_etc(session, provinces=provinces)
-        all_vars_by_hx = get_all_vars_by_hx(session)
-        with log_timing("Convert histories etc to rep", log=logger.debug):
-            return collection_rep(
-                histories_etc,
-                all_vars_by_hx,
-                compact=compact,
-                include_uri=include_uri,
-            )
+    def producer():
+        session = get_app_session()
+        with log_timing("List all histories", log=logger.debug):
+            histories_etc = get_all_histories_etc(session, provinces=provinces)
+            all_vars_by_hx = get_all_vars_by_hx(session)
+            with log_timing("Convert histories etc to rep", log=logger.debug):
+                return collection_rep(
+                    histories_etc,
+                    all_vars_by_hx,
+                    compact=compact,
+                    include_uri=include_uri,
+                )
+
+    return cache_get_or_set(
+        "histories",
+        {
+            "provinces": provinces,
+            "compact": compact,
+            "include_uri": include_uri,
+        },
+        producer,
+    )
