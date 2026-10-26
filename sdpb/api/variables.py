@@ -6,6 +6,7 @@ from pycds import Network, Variable, Station, History
 
 from sdpb import get_app_session
 from sdpb.api import networks
+from sdpb.cache import cache_get_or_set
 from sdpb.util.query import add_province_filter
 
 
@@ -67,25 +68,32 @@ def collection_rep(rows):
 
 def collection(provinces=None):
     """Get variables from database, and return their representation."""
-    session = get_app_session()
+    def producer():
+        session = get_app_session()
 
-    if provinces is None:
-        network_ids = select(Network.id.label("network_id")).select_from(Network)
-    else:
-        network_ids = (
-            select(distinct(Network.id).label("network_id"))
-            .select_from(Network)
-            .join(Station, Station.network_id == Network.id)
-            .join(History, History.station_id == Station.id)
+        if provinces is None:
+            network_ids = select(Network.id.label("network_id")).select_from(Network)
+        else:
+            network_ids = (
+                select(distinct(Network.id).label("network_id"))
+                .select_from(Network)
+                .join(Station, Station.network_id == Network.id)
+                .join(History, History.station_id == Station.id)
+            )
+            network_ids = add_province_filter(network_ids, provinces)
+        network_ids = network_ids.where(Network.publish == True)
+        network_ids = network_ids.cte(name="network_ids")
+
+        q = (
+            select(Variable, variable_tags.label("tags"))
+            .join(network_ids, Variable.network_id == network_ids.c.network_id)
+            .order_by(Variable.id.asc())
         )
-        network_ids = add_province_filter(network_ids, provinces)
-    network_ids = network_ids.where(Network.publish == True)
-    network_ids = network_ids.cte(name="network_ids")
+        rows = session.execute(q).all()
+        return collection_rep(rows)
 
-    q = (
-        select(Variable, variable_tags.label("tags"))
-        .join(network_ids, Variable.network_id == network_ids.c.network_id)
-        .order_by(Variable.id.asc())
+    return cache_get_or_set(
+        "variables",
+        {"provinces": provinces},
+        producer,
     )
-    rows = session.execute(q).all()
-    return collection_rep(rows)

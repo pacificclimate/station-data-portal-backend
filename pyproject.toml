@@ -1,14 +1,18 @@
 [tool.poetry]
 name = "sdpb"
-version = "12.1.0"
+version = "12.2.0"
 description = "PCIC microservice for station data"
-authors = ["rod-glover <rglover@uvic.ca>", "john-sampson <johnsampson@uvic.ca>", "lee-zeman <lzeman@uvic.ca>"]
+authors = [
+    "rod-glover <rglover@uvic.ca>",
+    "john-sampson <johnsampson@uvic.ca>",
+    "lee-zeman <lzeman@uvic.ca>",
+]
 license = "GNU General Public License v3 (GPLv3)"
 readme = "README.md"
 homepage = "http://www.pacificclimate.org/"
 repository = "https://github.com/pacificclimate/station-data-portal-backend"
-keywords=["sql", "database", "pcds", "crmp", "climate", "meteorology"]
-classifiers=[
+keywords = ["sql", "database", "pcds", "crmp", "climate", "meteorology"]
+classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Environment :: Web Environment",
     "Intended Audience :: Developers",
@@ -20,21 +24,22 @@ classifiers=[
     "Topic :: Internet",
     "Topic :: Scientific/Engineering",
     "Topic :: Database",
-    "Topic :: Software Development :: Libraries :: Python Modules"
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-packages = [{ include = "sdpb"}]
+packages = [{ include = "sdpb" }]
 
 [[tool.poetry.source]]
 name = "pcic"
 url = "https://pypi.pacificclimate.org/simple/"
+priority = "supplemental"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.14"
 PyYAML = "^6.0"
 python-dateutil = "^2.8.2"
 sqlalchemy = "^2.0"
-pycds = { version = "5.0.0", source = "pcic"}
-connexion = {version = "^3.3", extras = ["flask", "swagger-ui", "uvicorn"]}
+pycds = { version = "5.0.0", source = "pcic" }
+connexion = { version = "^3.3", extras = ["flask", "swagger-ui", "uvicorn"] }
 flask-sqlalchemy = "^3.1"
 flask-compress = "^1.13"
 # Explicit floor for Flask-Compress's transitive brotli deps (CVE fix).
@@ -42,6 +47,7 @@ brotli = { version = ">=1.2.1", markers = "platform_python_implementation != 'Py
 brotlicffi = { version = ">=1.2.1.0", markers = "platform_python_implementation == 'PyPy'" }
 psycopg2 = ">=2.9.10"
 werkzeug = ">=3.0"
+redis = ">=5,<7"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
@@ -68,6 +74,3 @@ filterwarnings = [
     # pycds uses datetime.datetime.utcnow() as a SQLAlchemy column default (third-party issue)
     "ignore:datetime.datetime.utcnow\\(\\) is deprecated:DeprecationWarning",
 ]
-
-[solver]
-min-release-age = 7

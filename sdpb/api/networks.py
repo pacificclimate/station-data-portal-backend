@@ -23,6 +23,7 @@ from sqlalchemy import distinct, select
 from sqlalchemy.sql import func
 from pycds import Network, Station, History
 from sdpb import get_app_session
+from sdpb.cache import cache_get_or_set
 from sdpb.util.query import add_province_filter
 
 
@@ -71,13 +72,20 @@ def base_query():
 
 
 def collection(provinces=None):
-    session = get_app_session()
-    q = base_query()
-    q = add_province_filter(q, provinces)
-    q = q.order_by(Network.name.asc())
-    # q = q.order_by(Network.id.asc())
-    networks_etc = session.execute(q).all()
-    return collection_rep(networks_etc)
+    def producer():
+        session = get_app_session()
+        q = base_query()
+        q = add_province_filter(q, provinces)
+        q = q.order_by(Network.name.asc())
+        # q = q.order_by(Network.id.asc())
+        networks_etc = session.execute(q).all()
+        return collection_rep(networks_etc)
+
+    return cache_get_or_set(
+        "networks",
+        {"provinces": provinces},
+        producer,
+    )
 
 
 def single(id):
