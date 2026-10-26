@@ -1,5 +1,13 @@
 # News / Release Notes
 
+## 12.2.1
+
+_Release date: 2026-Oct-26_
+
+Changes:
+
+- [Bump brotli to 1.2.1 to address CVE](https://github.com/pacificclimate/station-data-portal-backend/pull/96)
+
 ## 12.2.0
 
 _Release date: 2026-Aug-05_
