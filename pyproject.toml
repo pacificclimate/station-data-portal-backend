@@ -42,6 +42,9 @@ pycds = { version = "5.0.0", source = "pcic" }
 connexion = { version = "^3.3", extras = ["flask", "swagger-ui", "uvicorn"] }
 flask-sqlalchemy = "^3.1"
 flask-compress = "^1.13"
+# Explicit floor for Flask-Compress's transitive brotli deps (CVE fix).
+brotli = { version = ">=1.2.1", markers = "platform_python_implementation != 'PyPy'" }
+brotlicffi = { version = ">=1.2.1.0", markers = "platform_python_implementation == 'PyPy'" }
 psycopg2 = ">=2.9.10"
 werkzeug = ">=3.0"
 redis = ">=5,<7"

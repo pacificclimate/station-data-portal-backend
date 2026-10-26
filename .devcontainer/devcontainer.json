@@ -38,6 +38,7 @@
   },
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   //"forwardPorts": [48423],
+  "initializeCommand": "mkdir -p ${localEnv:HOME}/.claude ${localEnv:HOME}/scratch && touch ${localEnv:HOME}/.claude.json",
   // Use 'postCreateCommand' to run commands after the container is created.
   "postCreateCommand": "bash ./.devcontainer/post-install.sh",
   "postStartCommand": "bash ./.devcontainer/post-start.sh",
@@ -59,13 +60,16 @@
     //		"PATH": "${containerEnv:PATH}:${containerEnv:HOME}/.local/bin"
   },
   "runArgs": [
-    // allow container to be treated with no network isolation
-    "--network=host",
     // give a nicer name to the container
     "--name",
     "sdp_backend_devcontainer_${localEnv:USER}"
   ],
   "mounts": [
-    "source=/storage/data/projects/crmp/code/git/climatologies/final_climatologies_jan2023/,target=/data,type=bind,consistency=cached"
+    "source=/storage/data/projects/crmp/code/git/climatologies/final_climatologies_jan2023/,target=/data,type=bind,consistency=cached",
+    // Claude Code's config directory -- skills, plugins, agents, session
+    // history -- and its settings file, so they persist into the container
+    // instead of starting fresh each time.
+    "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.claude.json,target=/home/vscode/.claude.json,type=bind,consistency=cached"
   ]
 }

@@ -13,3 +13,11 @@ RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-
 RUN apt-get update \
     && apt-get -y install --no-install-recommends postgresql-plpython3-14 postgresql-14-postgis-3 libpq-dev
     
+# Keep the inner (docker-in-docker) daemon off 172.17.0.0/16. Its default
+# docker0 would otherwise collide with the outer bridge, making the outer
+# gateway/DNS (172.17.0.1) look local and breaking name resolution.
+RUN mkdir -p /etc/docker && printf '%s\n' \
+    '{' \
+    '  "bip": "10.200.0.1/24",' \
+    '  "default-address-pools": [{ "base": "10.201.0.0/16", "size": 24 }]' \
+    '}' > /etc/docker/daemon.json
